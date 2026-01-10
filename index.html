@@ -4,46 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Salon des Arcanes - Oracle IA en Direct</title>
+    <title>Le Salon des Arcanes - Cabinet de Curiosités</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Great+Vibes&family=EB+Garamond:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020617;
-            color: #f8fafc;
+        :root {
+            --parchment: #f4e4bc;
+            --gold: #d4af37;
+            --mahogany: #4a0404;
         }
-        .font-serif {
+        body {
+            font-family: 'EB Garamond', serif;
+            background-color: #1a0f0a;
+            color: #d4af37;
+            overflow-x: hidden;
+        }
+        .font-serif-ornate {
             font-family: 'Cinzel', serif;
         }
-        .glass {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .font-cursive {
+            font-family: 'Great Vibes', cursive;
         }
-        .perspective-1000 {
-            perspective: 1000px;
+        .parchment {
+            background-color: var(--parchment);
+            background-image: url('https://www.transparenttextures.com/patterns/p6.png');
+            color: #2c1e11;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.2), 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #c9ad81;
         }
-        .preserve-3d {
-            transform-style: preserve-3d;
+        .antique-border {
+            border: 8px double var(--gold);
+            outline: 2px solid var(--gold);
+            outline-offset: -12px;
         }
-        .backface-hidden {
-            backface-visibility: hidden;
+        .sidebar-velvet {
+            background: linear-gradient(to right, #4a0404, #2d0202);
+            border-right: 3px solid var(--gold);
         }
-        .rotate-y-180 {
-            transform: rotateY(180deg);
+        .wax-seal {
+            background: radial-gradient(circle, #8b0000, #4a0000);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            border: 2px solid #a52a2a;
         }
-        /* Custom scrollbar */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
+        .perspective-1000 { perspective: 1000px; }
+        .preserve-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        
+        /* Grain d'image ancien */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            pointer-events: none;
+            opacity: 0.15;
+            z-index: 9999;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #d4af37;
-            border-radius: 10px;
-        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a0f0a; }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
     </style>
 <script type="importmap">
 {

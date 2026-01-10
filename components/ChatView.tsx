@@ -47,7 +47,7 @@ const ChatView: React.FC = () => {
       console.error(error);
       setMessages(prev => [...prev, {
         role: 'model',
-        content: "Désolé, j'ai rencontré une erreur. Veuillez réessayer.",
+        content: "Hélas, ma plume s'est brisée. Veuillez réitérer votre demande plus tard.",
         timestamp: Date.now()
       }]);
     } finally {
@@ -56,55 +56,58 @@ const ChatView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto glass rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
-      <div className="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+    <div className="flex flex-col h-full max-w-5xl mx-auto antique-border shadow-2xl overflow-hidden rounded-sm">
+      <div className="p-8 border-b-4 border-gold bg-[#2d1b11] flex justify-between items-center">
         <div>
-          <h3 className="text-xl font-bold">Nexus Chat</h3>
-          <p className="text-xs text-indigo-400 font-medium">Équipé de la recherche Google</p>
+          <h3 className="text-3xl font-serif-ornate font-black text-gold tracking-widest uppercase">Bureau de Correspondance</h3>
+          <p className="text-sm font-cursive text-amber-100/60 text-xl">L'Esprit des Arcanes vous répond...</p>
         </div>
         <button 
           onClick={() => setMessages([])} 
-          className="text-slate-500 hover:text-white transition-colors"
-          title="Effacer la discussion"
+          className="w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center hover:bg-gold hover:text-black transition-all"
+          title="Brûler les archives"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
           </svg>
         </button>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-12 space-y-12 bg-[url('https://www.transparenttextures.com/patterns/dark-wood.png')]">
         {messages.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4 opacity-50">
-            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-            </svg>
-            <p className="text-lg">Posez-moi n'importe quelle question !</p>
+          <div className="h-full flex flex-col items-center justify-center text-gold/30 space-y-6 opacity-40 italic">
+            <span className="text-9xl">🖋️</span>
+            <p className="text-2xl font-serif">Quelle question tourmente votre esprit ?</p>
           </div>
         )}
         
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] rounded-2xl px-5 py-3 ${
+            <div className={`max-w-[85%] parchment p-8 rounded-sm shadow-xl relative ${
               msg.role === 'user' 
-                ? 'bg-indigo-600 text-white' 
-                : 'bg-slate-800 text-slate-200'
+                ? 'bg-[#fff9e6] border-r-8 border-r-amber-900/20' 
+                : 'bg-[#f4e4bc] border-l-8 border-l-gold/20'
             }`}>
-              <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+              {/* Effet de papier déchiré ou timbre */}
+              <div className="absolute -top-3 -right-3 w-10 h-10 wax-seal rounded-full flex items-center justify-center text-white text-[10px] opacity-20">ARCANE</div>
+              
+              <p className={`whitespace-pre-wrap leading-relaxed text-lg ${msg.role === 'model' ? 'font-serif' : 'font-serif'}`}>
+                {msg.content}
+              </p>
               
               {msg.sources && msg.sources.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-slate-700/50">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Sources Web</p>
-                  <div className="flex flex-wrap gap-2">
+                <div className="mt-8 pt-6 border-t border-black/10">
+                  <p className="text-[10px] font-serif-ornate font-bold text-black/40 uppercase tracking-widest mb-3">Archives Mondiales</p>
+                  <div className="flex flex-wrap gap-3">
                     {msg.sources.map((source, si) => (
                       <a 
                         key={si} 
                         href={source.uri} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-xs bg-slate-900/50 hover:bg-slate-900 px-2 py-1 rounded border border-slate-700 text-indigo-400 hover:text-indigo-300 transition-all"
+                        className="text-xs bg-black/5 hover:bg-gold/20 px-3 py-1 rounded-sm border border-black/10 text-amber-900 font-serif italic transition-all"
                       >
-                        {source.title.length > 25 ? source.title.substring(0, 25) + '...' : source.title}
+                        {source.title}
                       </a>
                     ))}
                   </div>
@@ -116,30 +119,28 @@ const ChatView: React.FC = () => {
         
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-slate-800 rounded-2xl px-5 py-3 flex gap-2">
-              <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce"></span>
-              <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-              <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+            <div className="parchment px-8 py-4 flex gap-3 italic text-amber-900">
+               <span className="animate-pulse">La plume court sur le papier...</span>
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-6 bg-slate-900/50 border-t border-slate-800">
-        <form onSubmit={handleSubmit} className="relative">
+      <div className="p-8 bg-[#2d1b11] border-t-4 border-gold">
+        <form onSubmit={handleSubmit} className="relative flex gap-4">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Écrivez votre message..."
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-5 py-4 pr-16 focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-500"
+            placeholder="Confiez votre requête à l'Oracle..."
+            className="flex-1 bg-black/40 border-2 border-gold/30 rounded-lg px-6 py-5 text-gold focus:outline-none focus:border-gold transition-all placeholder:text-gold/30 font-serif"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white disabled:opacity-50 disabled:bg-slate-700 hover:bg-indigo-500 transition-all"
+            className="w-16 bg-gold text-black rounded-lg flex items-center justify-center disabled:opacity-30 hover:scale-105 transition-all shadow-lg"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
           </button>
