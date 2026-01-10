@@ -1,0 +1,8 @@
+{
+  "name": "Le Salon des Arcanes",
+  "description": "Une expérience mystique de cartomancie en direct propulsée par l'IA Gemini. Tarot de Marseille et Sybille des Salons.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
