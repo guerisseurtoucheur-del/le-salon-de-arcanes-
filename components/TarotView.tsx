@@ -5,28 +5,28 @@ import { GoogleGenAI, Modality } from '@google/genai';
 import { encodeAudio, decodeAudio, decodeAudioData } from '../services/geminiService';
 
 const MARSEILLE_CARDS: TarotCard[] = [
-  { name: "Le Bateleur", image: "🃏", meaning: "Nouveau départ, potentiel, habileté." },
-  { name: "La Papesse", image: "📖", meaning: "Intuition, sagesse cachée, mystère." },
-  { name: "L'Impératrice", image: "👑", meaning: "Créativité, fertilité, abondance." },
-  { name: "L'Empereur", image: "🏛️", meaning: "Autorité, structure, stabilité." },
-  { name: "Le Pape", image: "🕊️", meaning: "Tradition, conseil, spiritualité." },
-  { name: "L'Amoureux", image: "❤️", meaning: "Choix, relations, harmonie." },
-  { name: "Le Chariot", image: "🚜", meaning: "Victoire, détermination, voyage." },
-  { name: "La Justice", image: "⚖️", meaning: "Équilibre, vérité, responsabilité." },
-  { name: "L'Ermite", image: "🕯️", meaning: "Solitude, introspection, recherche." },
-  { name: "La Roue de Fortune", image: "🎡", meaning: "Changement, cycles, destin." },
-  { name: "La Force", image: "🦁", meaning: "Courage, maîtrise de soi, patience." },
-  { name: "Le Pendu", image: "🤸", meaning: "Lâcher-prise, perspective, sacrifice." },
-  { name: "L'Arcane sans nom", image: "💀", meaning: "Transformation, fin, renouveau." },
-  { name: "La Tempérance", image: "🍶", meaning: "Modération, flux, alchimie." },
-  { name: "Le Diable", image: "😈", meaning: "Passion, tentation, attachement." },
-  { name: "La Maison Dieu", image: "🏰", meaning: "Bouleversement, libération, éveil." },
-  { name: "L'Étoile", image: "✨", meaning: "Espoir, inspiration, sérénité." },
-  { name: "La Lune", image: "🌙", meaning: "Rêves, illusions, subconscient." },
-  { name: "Le Soleil", image: "☀️", meaning: "Joie, succès, vitalité." },
-  { name: "Le Jugement", image: "🎺", meaning: "Renaissance, bilan, appel." },
-  { name: "Le Monde", image: "🌍", meaning: "Accomplissement, plénitude, succès." },
-  { name: "Le Mat", image: "🚶", meaning: "Inconnu, liberté, voyage intérieur." },
+  { romanNumeral: "I", name: "Le Bateleur", image: "🧙", meaning: "Nouveau départ, potentiel, habileté." },
+  { romanNumeral: "II", name: "La Papesse", image: "📖", meaning: "Intuition, sagesse cachée, mystère." },
+  { romanNumeral: "III", name: "L'Impératrice", image: "👑", meaning: "Créativité, fertilité, abondance." },
+  { romanNumeral: "IIII", name: "L'Empereur", image: "🏛️", meaning: "Autorité, structure, stabilité." },
+  { romanNumeral: "V", name: "Le Pape", image: "🕊️", meaning: "Tradition, conseil, spiritualité." },
+  { romanNumeral: "VI", name: "L'Amoureux", image: "❤️", meaning: "Choix, relations, harmonie." },
+  { romanNumeral: "VII", name: "Le Chariot", image: "🚜", meaning: "Victoire, détermination, voyage." },
+  { romanNumeral: "VIII", name: "La Justice", image: "⚖️", meaning: "Équilibre, vérité, responsabilité." },
+  { romanNumeral: "VIIII", name: "L'Ermite", image: "🕯️", meaning: "Solitude, introspection, recherche." },
+  { romanNumeral: "X", name: "La Roue de Fortune", image: "🎡", meaning: "Changement, cycles, destin." },
+  { romanNumeral: "XI", name: "La Force", image: "🦁", meaning: "Courage, maîtrise de soi, patience." },
+  { romanNumeral: "XII", name: "Le Pendu", image: "🤸", meaning: "Lâcher-prise, perspective, sacrifice." },
+  { romanNumeral: "XIII", name: "L'Arcane sans nom", image: "💀", meaning: "Transformation, fin, renouveau." },
+  { romanNumeral: "XIIII", name: "La Tempérance", image: "🍶", meaning: "Modération, flux, alchimie." },
+  { romanNumeral: "XV", name: "Le Diable", image: "😈", meaning: "Passion, tentation, attachement." },
+  { romanNumeral: "XVI", name: "La Maison Dieu", image: "🏰", meaning: "Bouleversement, libération, éveil." },
+  { romanNumeral: "XVII", name: "L'Étoile", image: "✨", meaning: "Espoir, inspiration, sérénité." },
+  { romanNumeral: "XVIII", name: "La Lune", image: "🌙", meaning: "Rêves, illusions, subconscient." },
+  { romanNumeral: "XVIIII", name: "Le Soleil", image: "☀️", meaning: "Joie, succès, vitalité." },
+  { romanNumeral: "XX", name: "Le Jugement", image: "🎺", meaning: "Renaissance, bilan, appel." },
+  { romanNumeral: "XXI", name: "Le Monde", image: "🌍", meaning: "Accomplissement, plénitude, succès." },
+  { romanNumeral: "", name: "Le Mat", image: "🚶", meaning: "Inconnu, liberté, voyage intérieur." },
 ];
 
 const SYBILLE_CARDS: TarotCard[] = [
@@ -72,7 +72,6 @@ const TarotView: React.FC = () => {
     if (selectedCards.length >= 3) return;
     const cards = deckType === 'MARSEILLE' ? MARSEILLE_CARDS : SYBILLE_CARDS;
     
-    // Éviter de tirer deux fois la même carte
     let randomCard;
     do {
       randomCard = cards[Math.floor(Math.random() * cards.length)];
@@ -97,13 +96,13 @@ const TarotView: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const cardDetails = selectedCards.map(c => `${c.name} (${c.playingCard || ''})`).join(", ");
+      const cardDetails = selectedCards.map(c => `${c.romanNumeral || ''} ${c.name}`).join(", ");
       const systemPrompt = `Tu es l'Oracle du Salon des Arcanes, une entité mystique experte en cartomancie spécialisée dans le ${deckType === 'MARSEILLE' ? 'Tarot de Marseille' : 'Sybille des Salons'}. 
-      L'utilisateur vient de tirer 3 cartes dans ton salon : ${cardDetails}. 
-      1. Commence ton intervention par : "Bienvenue au Salon des Arcanes. Je suis votre guide. Vos cartes ont été révélées..."
-      2. Interprète ces 3 cartes comme le Passé, le Présent et le Futur de manière poétique, profonde et mystérieuse. 
-      3. Si c'est la Sybille des Salons, mentionne parfois la correspondance avec les cartes à jouer (ex: l'As de Cœur, le 9 de Pique) pour plus d'authenticité.
-      4. Utilise un ton de voix calme, légèrement solennel et très empathique. Réponds en français uniquement.`;
+      L'utilisateur vient de tirer 3 cartes : ${cardDetails}. 
+      1. Commence par : "Bienvenue au Salon des Arcanes. Je suis votre guide. Vos cartes ont été révélées..."
+      2. Interprète les 3 cartes (Passé, Présent, Futur).
+      3. Ton ton doit être celui d'un vieux sage ou d'une sybille élégante.
+      4. Réponds en français uniquement.`;
 
       const sessionPromise = ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
@@ -163,17 +162,16 @@ const TarotView: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto py-12 text-center space-y-12">
         <h2 className="text-5xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Le Salon des Arcanes</h2>
-        <p className="text-amber-200/60 font-serif italic text-xl">Quel Oracle souhaitez-vous consulter aujourd'hui ?</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
           <DeckCard 
             title="Tarot de Marseille" 
-            desc="L'art sacré des arcanes majeurs pour une guidance spirituelle profonde." 
+            desc="L'art sacré des arcanes majeurs. Une guidance spirituelle profonde." 
             img="🃏"
             onClick={() => startTarotReading('MARSEILLE')}
           />
           <DeckCard 
             title="Sybille des Salons" 
-            desc="Un oracle authentique du XIXe siècle pour explorer le quotidien et les sentiments." 
+            desc="Un oracle authentique du XIXe siècle pour explorer le quotidien." 
             img="🔮"
             onClick={() => startTarotReading('SYBILLE')}
           />
@@ -197,16 +195,16 @@ const TarotView: React.FC = () => {
           <div className="flex flex-col items-center gap-6">
             <div className="relative w-32 h-48">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className={`absolute inset-0 bg-slate-800 border-2 border-amber-500/50 rounded-xl shadow-2xl animate-pulse`} style={{ transform: `rotate(${i * 5}deg) translate(${i * 2}px, ${i * 2}px)` }}></div>
+                <div key={i} className={`absolute inset-0 bg-slate-800 border-2 border-amber-500/50 rounded-xl animate-pulse`} style={{ transform: `rotate(${i * 5}deg) translate(${i * 2}px, ${i * 2}px)` }}></div>
               ))}
             </div>
-            <p className="text-amber-200 animate-pulse text-lg font-serif italic">Les énergies se mêlent dans le salon...</p>
+            <p className="text-amber-200 animate-pulse text-lg font-serif italic">Mélange des arcanes...</p>
           </div>
         ) : (
           <div className="space-y-12 w-full flex flex-col items-center">
             {selectedCards.length < 3 ? (
               <div className="text-center space-y-8">
-                <p className="text-2xl text-slate-300 font-serif px-4">Concentrez-vous sur votre question...<br/>Tirez <span className="text-amber-400 font-bold">{3 - selectedCards.length}</span> carte(s)</p>
+                <p className="text-2xl text-slate-300 font-serif px-4 italic">Concentrez-vous... Tirez <span className="text-amber-400 font-bold">{3 - selectedCards.length}</span> carte(s)</p>
                 <div className="flex flex-wrap justify-center gap-4 px-4">
                   {[...Array(8)].map((_, i) => (
                     <button 
@@ -236,27 +234,27 @@ const TarotView: React.FC = () => {
                   ))}
                 </div>
                 
-                {isFlipped.every(v => v) && (
+                {isFlipped.every(v => v) && !isLive && (
                   <div className="flex flex-col items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                    {!isLive ? (
-                      <button 
-                        onClick={startOracleLive}
-                        className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 px-12 py-4 rounded-full font-serif font-bold text-xl shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all hover:scale-105"
-                      >
-                        Consulter l'Oracle du Salon
-                      </button>
-                    ) : (
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="w-16 h-16 bg-amber-500 rounded-full animate-ping absolute opacity-20"></div>
-                        <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center relative shadow-lg">
-                           <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                           </svg>
-                        </div>
-                        <p className="text-amber-400 font-serif italic text-xl">L'Oracle déchiffre votre destin...</p>
-                        <button onClick={stopOracle} className="text-slate-500 hover:text-rose-400 text-sm font-serif underline mt-4">Terminer la consultation</button>
-                      </div>
-                    )}
+                    <button 
+                      onClick={startOracleLive}
+                      className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 px-12 py-4 rounded-full font-serif font-bold text-xl shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all hover:scale-105"
+                    >
+                      Interroger l'Oracle
+                    </button>
+                  </div>
+                )}
+
+                {isLive && (
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 bg-amber-500 rounded-full animate-ping absolute opacity-20"></div>
+                    <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center relative shadow-lg">
+                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                       </svg>
+                    </div>
+                    <p className="text-amber-400 font-serif italic text-xl">L'Oracle vous parle...</p>
+                    <button onClick={stopOracle} className="text-slate-500 hover:text-rose-400 text-sm font-serif underline mt-4">Terminer la consultation</button>
                   </div>
                 )}
               </div>
@@ -282,7 +280,7 @@ const DeckCard: React.FC<{ title: string; desc: string; img: string; onClick: ()
     <h4 className="text-3xl font-serif font-bold text-white group-hover:text-amber-400 transition-colors">{title}</h4>
     <p className="text-slate-400 leading-relaxed text-lg">{desc}</p>
     <div className="flex items-center text-amber-500 font-serif font-bold gap-2">
-      <span>Prendre place</span>
+      <span>Ouvrir</span>
       <svg className="w-5 h-5 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
@@ -296,7 +294,7 @@ const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClic
     className={`w-44 h-64 md:w-52 md:h-80 cursor-pointer perspective-1000 transition-all duration-700 ${isFlipped ? '' : 'hover:-translate-y-2'}`}
   >
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-      {/* Front (Dos de carte) */}
+      {/* Front (Dos) */}
       <div className="absolute inset-0 bg-slate-900 border-2 border-amber-600/50 rounded-xl flex flex-col items-center justify-center p-4 backface-hidden shadow-2xl">
         <div className="absolute inset-2 border border-amber-500/10 rounded-lg"></div>
         <div className="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-transparent to-transparent flex items-center justify-center">
@@ -305,46 +303,47 @@ const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClic
       </div>
       
       {/* Back (Révélée) */}
-      <div className={`absolute inset-0 rounded-xl flex flex-col p-2 rotate-y-180 backface-hidden shadow-2xl overflow-hidden
-        ${deckType === 'SYBILLE' ? 'bg-[#fdf6e3] border-[6px] border-[#d4af37] text-slate-900' : 'bg-white border-4 border-amber-500 text-slate-800'}`}>
+      <div className={`absolute inset-0 rounded-xl flex flex-col rotate-y-180 backface-hidden shadow-2xl overflow-hidden bg-[#fdf6e3] text-slate-900
+        ${deckType === 'SYBILLE' ? 'border-[6px] border-[#d4af37]' : 'border-[6px] border-[#2b427b]'}`}>
         
         {deckType === 'SYBILLE' ? (
-          /* Design Sybille des Salons Authentique */
           <div className="h-full flex flex-col relative border border-[#d4af37]/40 p-1">
-            {/* Miniature Carte à Jouer (Top Left) */}
             <div className="absolute top-1 left-1 bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm">
                 <span className={`text-lg font-bold ${card.playingCard?.includes('♥') || card.playingCard?.includes('♦') ? 'text-red-600' : 'text-slate-900'}`}>
                   {card.playingCard}
                 </span>
             </div>
-            
-            {/* Nom de la carte (Top Center) */}
             <div className="mt-8 text-center">
               <span className="text-sm font-serif font-bold uppercase tracking-tight leading-tight block border-b border-slate-200 pb-1 px-4">{card.name}</span>
             </div>
-
-            {/* Illustration centrale */}
-            <div className="flex-1 flex items-center justify-center text-8xl drop-shadow-lg">
-              {card.image}
-            </div>
-
-            {/* Signification (Bottom) */}
+            <div className="flex-1 flex items-center justify-center text-8xl drop-shadow-lg">{card.image}</div>
             <div className="mb-2 text-center px-2 py-1 bg-slate-100/50 rounded border-t border-slate-200">
                <span className="text-[11px] font-serif italic leading-none">{card.meaning}</span>
             </div>
           </div>
         ) : (
-          /* Design Tarot de Marseille Classique */
-          <div className="h-full flex flex-col items-center justify-between py-2">
-            <div className="font-serif font-bold text-sm uppercase tracking-tighter text-center h-8 flex items-center leading-none px-1 border-b border-slate-100 w-full justify-center">
-              {card.name}
+          /* Design Tarot de Marseille Authentique */
+          <div className="h-full flex flex-col relative border border-[#2b427b]/30">
+            {/* Cartouche Chiffre Romain (Top) */}
+            <div className="absolute top-0 left-0 right-0 h-10 flex items-center justify-center border-b border-[#2b427b]/20 bg-white/50">
+              <span className="font-serif font-bold text-lg text-[#2b427b] tracking-widest">{card.romanNumeral}</span>
             </div>
-            <div className="text-8xl my-4 flex-1 flex items-center justify-center drop-shadow-md">
+
+            {/* Illustration centrale */}
+            <div className="flex-1 flex items-center justify-center text-8xl md:text-9xl drop-shadow-xl my-8">
               {card.image}
             </div>
-            <div className="text-[11px] text-slate-500 italic text-center leading-tight font-serif px-2 bg-slate-50 w-full py-2 rounded-b-lg">
-              {card.meaning}
+
+            {/* Cartouche Nom de l'Arcane (Bottom) */}
+            <div className="absolute bottom-0 left-0 right-0 h-12 bg-white flex items-center justify-center border-t-2 border-[#2b427b]">
+               <div className="text-center w-full px-1">
+                 <span className="text-sm md:text-base font-serif font-bold uppercase tracking-tighter text-[#2b427b] leading-none block">{card.name}</span>
+                 <span className="text-[9px] text-slate-400 font-serif italic block mt-0.5 truncate">{card.meaning}</span>
+               </div>
             </div>
+            
+            {/* Décoration de bordure interne typique */}
+            <div className="absolute inset-1 border border-[#2b427b]/10 pointer-events-none"></div>
           </div>
         )}
       </div>

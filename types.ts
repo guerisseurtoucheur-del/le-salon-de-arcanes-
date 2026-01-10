@@ -14,6 +14,7 @@ export interface TarotCard {
   image: string;
   meaning: string;
   playingCard?: string; // Correspondance (ex: "A♥", "10♠")
+  romanNumeral?: string; // Chiffre romain pour le Tarot de Marseille
 }
 
 export interface ChatMessage {
