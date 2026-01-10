@@ -30,16 +30,20 @@ const MARSEILLE_CARDS: TarotCard[] = [
 ];
 
 const SYBILLE_CARDS: TarotCard[] = [
-  { name: "La Fidélité", image: "🐕", meaning: "Loyauté, attachement, amitié sincère." },
-  { name: "Le Cadeau", image: "🎁", meaning: "Surprise agréable, gain, générosité." },
-  { name: "La Lettre", image: "✉️", meaning: "Nouvelles, communication, information." },
-  { name: "Le Voyage", image: "🚢", meaning: "Déplacement, changement d'air, aventure." },
-  { name: "La Rencontre", image: "🤝", meaning: "Contact social, nouvelle personne, opportunité." },
-  { name: "Le Mariage", image: "💍", meaning: "Union, engagement, contrat solide." },
-  { name: "La Maison", image: "🏠", meaning: "Foyer, sécurité, famille." },
-  { name: "La Pensée", image: "💭", meaning: "Réflexion, souci, projets futurs." },
-  { name: "Le Malheur", image: "🌪️", meaning: "Obstacle, épreuve passagère, tristesse." },
-  { name: "La Réussite", image: "🏆", meaning: "Triomphe, satisfaction, aboutissement." },
+  { name: "La Fidélité", image: "🐕", meaning: "Loyauté, attachement, amitié.", playingCard: "10♥" },
+  { name: "Le Cadeau", image: "🎁", meaning: "Surprise, gain, générosité.", playingCard: "9♦" },
+  { name: "La Lettre", image: "✉️", meaning: "Nouvelles, communication.", playingCard: "7♠" },
+  { name: "Le Voyage", image: "🚢", meaning: "Déplacement, aventure.", playingCard: "A♣" },
+  { name: "La Rencontre", image: "🤝", meaning: "Contact social, opportunité.", playingCard: "V♥" },
+  { name: "Le Mariage", image: "💍", meaning: "Union, engagement, contrat.", playingCard: "A♥" },
+  { name: "La Maison", image: "🏠", meaning: "Foyer, sécurité, famille.", playingCard: "10♦" },
+  { name: "La Pensée", image: "💭", meaning: "Réflexion, projets.", playingCard: "9♥" },
+  { name: "Le Malheur", image: "🌪️", meaning: "Obstacle, épreuve passagère.", playingCard: "9♠" },
+  { name: "La Réussite", image: "🏆", meaning: "Triomphe, satisfaction.", playingCard: "10♣" },
+  { name: "L'Argent", image: "💰", playingCard: "10♠", meaning: "Prospérité, finances." },
+  { name: "La Maladie", image: "🛌", playingCard: "9♣", meaning: "Repos forcé, fatigue." },
+  { name: "Le Jaloux", image: "🐍", playingCard: "V♣", meaning: "Envie, médisance." },
+  { name: "La Surprise", image: "🎆", playingCard: "7♥", meaning: "Étonnement, imprévu." },
 ];
 
 const TarotView: React.FC = () => {
@@ -58,14 +62,22 @@ const TarotView: React.FC = () => {
 
   const startTarotReading = (type: DeckType) => {
     setDeckType(type);
+    setSelectedCards([]);
+    setIsFlipped([false, false, false]);
     setStep('shuffling');
     setTimeout(() => setStep('reading'), 2000);
   };
 
-  const drawCard = (cardIndex: number) => {
+  const drawCard = () => {
     if (selectedCards.length >= 3) return;
     const cards = deckType === 'MARSEILLE' ? MARSEILLE_CARDS : SYBILLE_CARDS;
-    const randomCard = cards[Math.floor(Math.random() * cards.length)];
+    
+    // Éviter de tirer deux fois la même carte
+    let randomCard;
+    do {
+      randomCard = cards[Math.floor(Math.random() * cards.length)];
+    } while (selectedCards.find(c => c.name === randomCard.name));
+
     setSelectedCards(prev => [...prev, randomCard]);
   };
 
@@ -85,12 +97,13 @@ const TarotView: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const cardNames = selectedCards.map(c => c.name).join(", ");
+      const cardDetails = selectedCards.map(c => `${c.name} (${c.playingCard || ''})`).join(", ");
       const systemPrompt = `Tu es l'Oracle du Salon des Arcanes, une entité mystique experte en cartomancie spécialisée dans le ${deckType === 'MARSEILLE' ? 'Tarot de Marseille' : 'Sybille des Salons'}. 
-      L'utilisateur vient de tirer 3 cartes dans ton salon : ${cardNames}. 
+      L'utilisateur vient de tirer 3 cartes dans ton salon : ${cardDetails}. 
       1. Commence ton intervention par : "Bienvenue au Salon des Arcanes. Je suis votre guide. Vos cartes ont été révélées..."
       2. Interprète ces 3 cartes comme le Passé, le Présent et le Futur de manière poétique, profonde et mystérieuse. 
-      3. Utilise un ton de voix calme, légèrement solennel et très empathique. Réponds en français uniquement.`;
+      3. Si c'est la Sybille des Salons, mentionne parfois la correspondance avec les cartes à jouer (ex: l'As de Cœur, le 9 de Pique) pour plus d'authenticité.
+      4. Utilise un ton de voix calme, légèrement solennel et très empathique. Réponds en français uniquement.`;
 
       const sessionPromise = ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
@@ -151,16 +164,16 @@ const TarotView: React.FC = () => {
       <div className="max-w-4xl mx-auto py-12 text-center space-y-12">
         <h2 className="text-5xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Le Salon des Arcanes</h2>
         <p className="text-amber-200/60 font-serif italic text-xl">Quel Oracle souhaitez-vous consulter aujourd'hui ?</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
           <DeckCard 
             title="Tarot de Marseille" 
-            desc="L'art sacré des arcanes majeurs pour une guidance spirituelle profonde et universelle." 
+            desc="L'art sacré des arcanes majeurs pour une guidance spirituelle profonde." 
             img="🃏"
             onClick={() => startTarotReading('MARSEILLE')}
           />
           <DeckCard 
             title="Sybille des Salons" 
-            desc="Un oracle raffiné pour explorer les mystères du quotidien, des sentiments et des rencontres." 
+            desc="Un oracle authentique du XIXe siècle pour explorer le quotidien et les sentiments." 
             img="🔮"
             onClick={() => startTarotReading('SYBILLE')}
           />
@@ -193,12 +206,12 @@ const TarotView: React.FC = () => {
           <div className="space-y-12 w-full flex flex-col items-center">
             {selectedCards.length < 3 ? (
               <div className="text-center space-y-8">
-                <p className="text-2xl text-slate-300 font-serif">Concentrez-vous sur votre question...<br/>Tirez <span className="text-amber-400 font-bold">{3 - selectedCards.length}</span> carte(s)</p>
-                <div className="flex flex-wrap justify-center gap-4">
+                <p className="text-2xl text-slate-300 font-serif px-4">Concentrez-vous sur votre question...<br/>Tirez <span className="text-amber-400 font-bold">{3 - selectedCards.length}</span> carte(s)</p>
+                <div className="flex flex-wrap justify-center gap-4 px-4">
                   {[...Array(8)].map((_, i) => (
                     <button 
                       key={i} 
-                      onClick={() => drawCard(i)}
+                      onClick={drawCard}
                       className="w-24 h-36 bg-slate-900 border-2 border-amber-600/30 rounded-lg hover:-translate-y-4 hover:border-amber-400 transition-all duration-300 shadow-lg relative overflow-hidden group"
                     >
                        <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-transparent"></div>
@@ -208,15 +221,16 @@ const TarotView: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="space-y-12 w-full">
-                <div className="flex justify-center gap-8">
+              <div className="space-y-12 w-full px-4">
+                <div className="flex flex-wrap justify-center gap-6 md:gap-12">
                   {selectedCards.map((card, i) => (
                     <div key={i} className="flex flex-col items-center gap-4">
                       <span className="text-xs uppercase tracking-widest text-slate-500 font-serif font-bold">{i === 0 ? "Passé" : i === 1 ? "Présent" : "Futur"}</span>
                       <TarotCardComponent 
                         card={card} 
                         isFlipped={isFlipped[i]} 
-                        onClick={() => flipCard(i)} 
+                        onClick={() => flipCard(i)}
+                        deckType={deckType!}
                       />
                     </div>
                   ))}
@@ -276,25 +290,63 @@ const DeckCard: React.FC<{ title: string; desc: string; img: string; onClick: ()
   </button>
 );
 
-const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void }> = ({ card, isFlipped, onClick }) => (
+const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void; deckType: DeckType }> = ({ card, isFlipped, onClick, deckType }) => (
   <div 
     onClick={onClick}
-    className={`w-40 h-64 cursor-pointer perspective-1000 transition-all duration-700 ${isFlipped ? '' : 'hover:-translate-y-2'}`}
+    className={`w-44 h-64 md:w-52 md:h-80 cursor-pointer perspective-1000 transition-all duration-700 ${isFlipped ? '' : 'hover:-translate-y-2'}`}
   >
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-      {/* Front */}
+      {/* Front (Dos de carte) */}
       <div className="absolute inset-0 bg-slate-900 border-2 border-amber-600/50 rounded-xl flex flex-col items-center justify-center p-4 backface-hidden shadow-2xl">
-        <div className="absolute inset-2 border border-amber-500/10 rounded"></div>
-        <div className="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent flex items-center justify-center">
-           <span className="text-4xl opacity-20">✨</span>
+        <div className="absolute inset-2 border border-amber-500/10 rounded-lg"></div>
+        <div className="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-transparent to-transparent flex items-center justify-center">
+           <span className="text-5xl opacity-20">✨</span>
         </div>
       </div>
       
-      {/* Back (Revealed) */}
-      <div className="absolute inset-0 bg-white border-4 border-amber-500 rounded-xl flex flex-col items-center justify-between p-4 rotate-y-180 backface-hidden shadow-[0_0_40px_rgba(245,158,11,0.2)]">
-        <div className="text-slate-800 font-serif font-bold text-xs uppercase tracking-tighter text-center h-8 flex items-center leading-none px-1">{card.name}</div>
-        <div className="text-6xl my-4">{card.image}</div>
-        <div className="text-[10px] text-slate-500 italic text-center leading-tight font-serif">{card.meaning}</div>
+      {/* Back (Révélée) */}
+      <div className={`absolute inset-0 rounded-xl flex flex-col p-2 rotate-y-180 backface-hidden shadow-2xl overflow-hidden
+        ${deckType === 'SYBILLE' ? 'bg-[#fdf6e3] border-[6px] border-[#d4af37] text-slate-900' : 'bg-white border-4 border-amber-500 text-slate-800'}`}>
+        
+        {deckType === 'SYBILLE' ? (
+          /* Design Sybille des Salons Authentique */
+          <div className="h-full flex flex-col relative border border-[#d4af37]/40 p-1">
+            {/* Miniature Carte à Jouer (Top Left) */}
+            <div className="absolute top-1 left-1 bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm">
+                <span className={`text-lg font-bold ${card.playingCard?.includes('♥') || card.playingCard?.includes('♦') ? 'text-red-600' : 'text-slate-900'}`}>
+                  {card.playingCard}
+                </span>
+            </div>
+            
+            {/* Nom de la carte (Top Center) */}
+            <div className="mt-8 text-center">
+              <span className="text-sm font-serif font-bold uppercase tracking-tight leading-tight block border-b border-slate-200 pb-1 px-4">{card.name}</span>
+            </div>
+
+            {/* Illustration centrale */}
+            <div className="flex-1 flex items-center justify-center text-8xl drop-shadow-lg">
+              {card.image}
+            </div>
+
+            {/* Signification (Bottom) */}
+            <div className="mb-2 text-center px-2 py-1 bg-slate-100/50 rounded border-t border-slate-200">
+               <span className="text-[11px] font-serif italic leading-none">{card.meaning}</span>
+            </div>
+          </div>
+        ) : (
+          /* Design Tarot de Marseille Classique */
+          <div className="h-full flex flex-col items-center justify-between py-2">
+            <div className="font-serif font-bold text-sm uppercase tracking-tighter text-center h-8 flex items-center leading-none px-1 border-b border-slate-100 w-full justify-center">
+              {card.name}
+            </div>
+            <div className="text-8xl my-4 flex-1 flex items-center justify-center drop-shadow-md">
+              {card.image}
+            </div>
+            <div className="text-[11px] text-slate-500 italic text-center leading-tight font-serif px-2 bg-slate-50 w-full py-2 rounded-b-lg">
+              {card.meaning}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   </div>

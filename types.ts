@@ -13,6 +13,7 @@ export interface TarotCard {
   name: string;
   image: string;
   meaning: string;
+  playingCard?: string; // Correspondance (ex: "A♥", "10♠")
 }
 
 export interface ChatMessage {
