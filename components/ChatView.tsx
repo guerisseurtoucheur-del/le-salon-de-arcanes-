@@ -59,7 +59,7 @@ const ChatView: React.FC = () => {
     <div className="flex flex-col h-full max-w-5xl mx-auto antique-border shadow-2xl overflow-hidden rounded-sm">
       <div className="p-8 border-b-4 border-gold bg-[#2d1b11] flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="text-center md:text-left">
-          <h3 className="text-2xl md:text-3xl font-serif-ornate font-black text-gold tracking-wider uppercase">Bureau de Correspondance</h3>
+          <h3 className="text-2xl md:text-3xl font-serif-ornate font-black text-gold tracking-widest uppercase">Le Salon des Murmures</h3>
           <p className="text-sm font-cursive text-amber-100/60 text-xl">L'Esprit des Arcanes vous répond...</p>
         </div>
         <button 
@@ -88,10 +88,9 @@ const ChatView: React.FC = () => {
                 ? 'bg-[#fff9e6] border-r-8 border-r-amber-900/20' 
                 : 'bg-[#f4e4bc] border-l-8 border-l-gold/20'
             }`}>
-              {/* Effet de papier déchiré ou timbre */}
               <div className="absolute -top-3 -right-3 w-10 h-10 wax-seal rounded-full flex items-center justify-center text-white text-[10px] opacity-20">ARCANE</div>
               
-              <p className={`whitespace-pre-wrap leading-relaxed text-lg ${msg.role === 'model' ? 'font-serif' : 'font-serif'}`}>
+              <p className={`whitespace-pre-wrap leading-relaxed text-lg font-serif`}>
                 {msg.content}
               </p>
               
@@ -127,22 +126,44 @@ const ChatView: React.FC = () => {
       </div>
 
       <div className="p-8 bg-[#2d1b11] border-t-4 border-gold">
-        <form onSubmit={handleSubmit} className="relative flex gap-4">
+        <form onSubmit={handleSubmit} className="relative flex gap-6 items-center">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Confiez votre requête à l'Oracle..."
-            className="flex-1 bg-black/40 border-2 border-gold/30 rounded-lg px-6 py-5 text-gold focus:outline-none focus:border-gold transition-all placeholder:text-gold/30 font-serif"
+            className="flex-1 bg-black/40 border-2 border-gold/30 rounded-lg px-6 py-5 text-gold focus:outline-none focus:border-gold transition-all placeholder:text-gold/30 font-serif text-lg"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="w-16 bg-gold text-black rounded-lg flex items-center justify-center disabled:opacity-30 hover:scale-105 transition-all shadow-lg"
+            className={`
+              w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300
+              shadow-[0_0_20px_rgba(212,175,55,0.4)] relative group
+              ${!input.trim() || isLoading 
+                ? 'bg-slate-800 border-2 border-slate-700 opacity-30 grayscale cursor-not-allowed' 
+                : 'bg-gradient-to-b from-amber-300 via-yellow-500 to-amber-700 border-2 border-amber-900/30 hover:scale-110 hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] active:scale-95'
+              }
+            `}
           >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            <div className="absolute inset-1 rounded-full border border-white/20 pointer-events-none"></div>
+            
+            {isLoading ? (
+              <div className="w-8 h-8 border-4 border-black/20 border-t-black rounded-full animate-spin"></div>
+            ) : (
+              <svg 
+                className={`w-10 h-10 transition-transform ${!input.trim() ? 'text-slate-500' : 'text-black drop-shadow-md'}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            )}
+            
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-black text-gold px-3 py-1 rounded border border-gold text-[10px] font-serif-ornate uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+              SCELLER LA LETTRE
+            </div>
           </button>
         </form>
       </div>
