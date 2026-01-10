@@ -57,9 +57,9 @@ const ChatView: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full max-w-5xl mx-auto antique-border shadow-2xl overflow-hidden rounded-sm">
-      <div className="p-8 border-b-4 border-gold bg-[#2d1b11] flex justify-between items-center">
-        <div>
-          <h3 className="text-3xl font-serif-ornate font-black text-gold tracking-widest uppercase">Bureau de Correspondance</h3>
+      <div className="p-8 border-b-4 border-gold bg-[#2d1b11] flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="text-center md:text-left">
+          <h3 className="text-2xl md:text-3xl font-serif-ornate font-black text-gold tracking-wider uppercase">Bureau de Correspondance</h3>
           <p className="text-sm font-cursive text-amber-100/60 text-xl">L'Esprit des Arcanes vous répond...</p>
         </div>
         <button 
@@ -73,7 +73,7 @@ const ChatView: React.FC = () => {
         </button>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-12 space-y-12 bg-[url('https://www.transparenttextures.com/patterns/dark-wood.png')]">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 bg-[url('https://www.transparenttextures.com/patterns/dark-wood.png')]">
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-gold/30 space-y-6 opacity-40 italic">
             <span className="text-9xl">🖋️</span>

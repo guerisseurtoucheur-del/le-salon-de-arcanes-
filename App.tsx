@@ -33,7 +33,7 @@ const App: React.FC = () => {
           <div className="w-16 h-16 wax-seal rounded-full flex items-center justify-center">
             <span className="text-3xl font-serif-ornate font-bold text-white">A</span>
           </div>
-          <h1 className="text-xl font-serif-ornate font-bold tracking-widest text-center uppercase leading-tight">
+          <h1 className="text-xl font-serif-ornate font-bold tracking-wider text-center uppercase leading-tight">
             Le Salon <br/> des Arcanes
           </h1>
         </div>
@@ -95,7 +95,7 @@ const NavItem: React.FC<{ active: boolean; onClick: () => void; label: string; i
     <svg className={`w-6 h-6 transition-transform group-hover:scale-110 ${active ? 'text-gold' : 'text-gold/60'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={icon} />
     </svg>
-    <span className="font-serif-ornate font-bold text-sm tracking-widest uppercase">{label}</span>
+    <span className="font-serif-ornate font-bold text-[11px] md:text-xs tracking-wider uppercase text-left leading-tight">{label}</span>
   </button>
 );
 
