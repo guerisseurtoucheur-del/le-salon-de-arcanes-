@@ -10,16 +10,42 @@ interface ChatViewProps {
 type ChatStep = 'TOURMENT' | 'IDENTITE' | 'CONVERSATION';
 
 const CandleWithDancingFlame: React.FC = () => (
-  <div className="relative flex flex-col items-center justify-end w-12 h-20 group">
-    <div className="absolute -top-4 w-12 h-12 bg-amber-500/20 rounded-full blur-xl group-hover:bg-amber-500/40 transition-all duration-1000 animate-pulse"></div>
-    <div className="absolute top-0 w-4 h-8 flex flex-col items-center">
-      <div className="w-3 h-7 bg-gradient-to-t from-orange-600 via-amber-400 to-amber-100 rounded-full dancing-flame flame-glow"></div>
-      <div className="absolute bottom-0 w-2 h-2 bg-blue-500/40 rounded-full blur-[2px]"></div>
+  <div className="relative flex flex-col items-center justify-end w-12 h-24 group">
+    {/* Halo de lumière vacillant au sol/base */}
+    <div className="absolute -bottom-2 w-10 h-4 bg-amber-900/30 rounded-full blur-md"></div>
+    
+    {/* Halo de chaleur global */}
+    <div className="absolute -top-6 w-16 h-16 bg-amber-500/10 rounded-full blur-2xl animate-pulse"></div>
+    
+    {/* Conteneur de la Flamme */}
+    <div className="absolute top-0 w-6 h-10 flex flex-col items-center">
+      {/* Halo de lumière intense autour de la mèche */}
+      <div className="absolute top-2 w-8 h-8 bg-amber-400/20 rounded-full blur-lg flame-glow"></div>
+      
+      {/* Flamme extérieure (Corps) */}
+      <div className="w-4 h-9 bg-gradient-to-t from-orange-600 via-amber-400 to-amber-100 rounded-full dancing-flame shadow-[0_0_15px_rgba(251,191,36,0.5)]">
+        {/* Flamme intérieure (Noyau chaud) */}
+        <div className="absolute inset-x-1 top-2 bottom-1 bg-gradient-to-t from-orange-400 to-white/80 rounded-full inner-flame opacity-80"></div>
+      </div>
+      
+      {/* Base de la flamme (Noyau bleu) */}
+      <div className="absolute bottom-0 w-2 h-2 bg-blue-500/60 rounded-full blur-[1px]"></div>
     </div>
-    <div className="w-6 h-12 bg-gradient-to-b from-[#f4e4bc] to-[#d4af37] rounded-sm relative overflow-hidden shadow-lg">
+
+    {/* La Mèche */}
+    <div className="absolute bottom-12 w-0.5 h-3 bg-black/80 rounded-full z-10"></div>
+
+    {/* Corps de la bougie */}
+    <div className="w-7 h-14 bg-gradient-to-b from-[#fdf6e3] via-[#f4e4bc] to-[#d4af37] rounded-sm relative overflow-hidden shadow-2xl antique-border-thin">
       <div className="absolute inset-0 bg-black/10"></div>
-      <div className="absolute top-0 left-1 w-2 h-4 bg-[#f4e4bc] rounded-full"></div>
-      <div className="absolute top-1 right-2 w-1.5 h-6 bg-[#f4e4bc] rounded-full"></div>
+      
+      {/* Coulures de cire dynamiques */}
+      <div className="absolute top-0 left-1 w-2.5 h-6 bg-[#f4e4bc] rounded-full shadow-inner opacity-80"></div>
+      <div className="absolute top-2 right-1.5 w-1.5 h-8 bg-[#f4e4bc] rounded-full shadow-inner opacity-90"></div>
+      <div className="absolute top-1 left-3 w-1.5 h-4 bg-[#f4e4bc] rounded-full shadow-inner opacity-70"></div>
+      
+      {/* Grain de la bougie */}
+      <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/p6.png')]"></div>
     </div>
   </div>
 );
@@ -46,7 +72,7 @@ const ChatView: React.FC<ChatViewProps> = ({ initialContext }) => {
         timestamp: Date.now()
       };
       setMessages([welcomeMsg]);
-      setChatStep('CONVERSATION'); // Si on vient d'un tirage, on saute l'étape identité ou on la gère plus tard
+      setChatStep('CONVERSATION');
     }
   }, [initialContext]);
 
@@ -175,7 +201,7 @@ const ChatView: React.FC<ChatViewProps> = ({ initialContext }) => {
           <div className="flex items-center justify-center gap-12 w-full">
             <div className="hidden md:block"><CandleWithDancingFlame /></div>
             <div className="flex flex-col items-center">
-              <p className="font-cursive text-5xl md:text-7xl lg:text-8xl text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-gold to-amber-600 drop-shadow-[0_0_20px_rgba(212,175,55,0.6)] py-2 text-center">
+              <p className="font-cursive text-5xl md:text-7xl lg:text-8xl text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-gold to-amber-600 drop-shadow-[0_0_20px_rgba(212,175,55,0.6)] py-2 text-center leading-tight">
                 L'Esprit des Oracles vous répond...
               </p>
             </div>
@@ -234,10 +260,10 @@ const ChatView: React.FC<ChatViewProps> = ({ initialContext }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Confiez votre tourment ici..."
-              className="flex-1 bg-black/60 border-2 border-gold/30 rounded-2xl px-8 py-6 text-gold focus:outline-none focus:border-gold transition-all font-serif text-xl"
+              className="flex-1 bg-black/60 border-2 border-gold/30 rounded-2xl px-8 py-6 text-gold focus:outline-none focus:border-gold transition-all font-serif text-xl shadow-inner"
             />
-            <button type="submit" disabled={!input.trim()} className="w-20 h-20 bg-gold/10 border-2 border-gold text-gold rounded-full flex items-center justify-center hover:bg-gold hover:text-black transition-all">
-              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+            <button type="submit" disabled={!input.trim()} className="w-20 h-20 bg-gold/10 border-2 border-gold text-gold rounded-full flex items-center justify-center hover:bg-gold hover:text-black transition-all shadow-lg active:scale-95">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
             </button>
           </form>
         )}
@@ -269,7 +295,7 @@ const ChatView: React.FC<ChatViewProps> = ({ initialContext }) => {
             </div>
             <button 
               type="submit"
-              className="mt-8 w-full bg-amber-900 text-gold font-serif-ornate font-bold py-4 rounded-lg hover:bg-black transition-all tracking-[0.2em] uppercase text-sm shadow-xl"
+              className="mt-8 w-full bg-amber-900 text-gold font-serif-ornate font-bold py-4 rounded-lg hover:bg-black transition-all tracking-[0.2em] uppercase text-sm shadow-xl active:scale-[0.98]"
             >
               Révéler mon Identité Céleste
             </button>
@@ -284,14 +310,14 @@ const ChatView: React.FC<ChatViewProps> = ({ initialContext }) => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={`Répondez à l'Oracle, ${userName}...`}
-                className="w-full bg-black/60 border-2 border-gold/30 rounded-2xl px-8 py-6 text-gold focus:outline-none focus:border-gold transition-all font-serif text-xl"
+                className="w-full bg-black/60 border-2 border-gold/30 rounded-2xl px-8 py-6 text-gold focus:outline-none focus:border-gold transition-all font-serif text-xl shadow-inner"
               />
               <div className="absolute left-0 -top-8 text-[10px] font-serif-ornate uppercase text-gold/40 tracking-widest">
                 Identité : {userName} • {zodiac}
               </div>
             </div>
-            <button type="submit" disabled={!input.trim() || isLoading} className="w-20 h-20 bg-gold text-black rounded-full flex items-center justify-center hover:scale-110 transition-all shadow-lg">
-              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+            <button type="submit" disabled={!input.trim() || isLoading} className="w-20 h-20 bg-gold text-black rounded-full flex items-center justify-center hover:scale-110 transition-all shadow-lg active:scale-95">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
             </button>
           </form>
         )}
