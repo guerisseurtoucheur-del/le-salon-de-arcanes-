@@ -97,9 +97,9 @@ const TarotView: React.FC = () => {
       streamRef.current = stream;
 
       const cardDetails = selectedCards.map(c => `${c.romanNumeral || ''} ${c.name}`).join(", ");
-      const systemPrompt = `Tu es l'Oracle du Salon des Arcanes, une entité mystique experte en cartomancie spécialisée dans le ${deckType === 'MARSEILLE' ? 'Tarot de Marseille' : 'Sybille des Salons'}. 
+      const systemPrompt = `Tu es l'Oracle du Salon de Cécile, une entité mystique experte en cartomancie spécialisée dans le ${deckType === 'MARSEILLE' ? 'Tarot de Marseille' : 'Sybille des Salons'}. 
       L'utilisateur vient de tirer 3 cartes : ${cardDetails}. 
-      1. Commence par : "Bienvenue au Salon des Arcanes. Je suis votre guide. Vos cartes ont été révélées..."
+      1. Commence par : "Bienvenue au Salon de Cécile. Je suis votre guide. Vos cartes ont été révélées..."
       2. Interprète les 3 cartes (Passé, Présent, Futur).
       3. Ton ton doit être celui d'un vieux sage ou d'une sybille élégante.
       4. Réponds en français uniquement.`;
@@ -161,7 +161,7 @@ const TarotView: React.FC = () => {
   if (step === 'selection') {
     return (
       <div className="max-w-4xl mx-auto py-12 text-center space-y-12">
-        <h2 className="text-5xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Le Salon des Arcanes</h2>
+        <h2 className="text-5xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500 tracking-wider">Le Salon de Cécile</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
           <DeckCard 
             title="Tarot de Marseille" 
@@ -186,7 +186,7 @@ const TarotView: React.FC = () => {
         <button onClick={() => setStep('selection')} className="text-slate-400 hover:text-white flex items-center gap-2 font-serif">
           ← Sortir du salon
         </button>
-        <h3 className="text-xl font-serif font-bold text-amber-400">{deckType === 'MARSEILLE' ? 'Tarot de Marseille' : 'Sybille des Salons'}</h3>
+        <h3 className="text-xl font-serif font-bold text-amber-400 tracking-wider">Le Salon de Cécile</h3>
         <div className="w-24"></div>
       </div>
 

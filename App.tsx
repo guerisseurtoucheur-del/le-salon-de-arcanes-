@@ -31,10 +31,10 @@ const App: React.FC = () => {
       <nav className="w-full md:w-72 sidebar-velvet p-6 flex flex-col gap-8 md:sticky md:top-0 md:h-screen z-50 shadow-[5px_0_30px_rgba(0,0,0,0.8)]">
         <div className="flex flex-col items-center gap-4 cursor-pointer py-6 border-b border-gold/30" onClick={() => setActiveView(ViewType.DASHBOARD)}>
           <div className="w-16 h-16 wax-seal rounded-full flex items-center justify-center">
-            <span className="text-3xl font-serif-ornate font-bold text-white">A</span>
+            <span className="text-3xl font-serif-ornate font-bold text-white">C</span>
           </div>
           <h1 className="text-xl font-serif-ornate font-bold tracking-wider text-center uppercase leading-tight">
-            Le Salon <br/> des Arcanes
+            Le Salon <br/> de Cécile
           </h1>
         </div>
 

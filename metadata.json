@@ -1,6 +1,6 @@
 {
-  "name": "Le Salon des Arcanes",
-  "description": "Une expérience mystique de cartomancie en direct propulsée par l'IA Gemini. Tarot de Marseille et Sybille des Salons.",
+  "name": "Le Salon de Cécile - Oracles et Tarots",
+  "description": "Une expérience mystique et intime de cartomancie propulsée par l'IA Gemini. Découvrez les secrets de votre destin dans le salon de Cécile.",
   "requestFramePermissions": [
     "camera",
     "microphone"

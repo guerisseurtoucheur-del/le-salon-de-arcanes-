@@ -25,11 +25,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
           <div className="text-center space-y-4 z-10 flex-1 md:flex-none">
             <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif-ornate font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-yellow-500 to-amber-700 drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)] leading-none">
-              L'Oracle Antique
+              Le Salon de Cécile
             </h2>
             <div className="flex items-center justify-center gap-4">
               <div className="h-[1px] w-12 md:w-24 bg-gold/50"></div>
-              <p className="text-xl md:text-2xl font-cursive text-amber-100/80">Entrez dans la pénombre du savoir millénaire...</p>
+              <p className="text-xl md:text-2xl font-cursive text-amber-100/80">Oracles & Tarots</p>
               <div className="h-[1px] w-12 md:w-24 bg-gold/50"></div>
             </div>
           </div>
@@ -55,7 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         />
         <AntiquePlate 
           title="Les Murmures"
-          description="Échangez avec l'Esprit de la Machine via des lettres scellées."
+          description="Échangez avec l'Esprit du Salon via des lettres scellées."
           icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
           onClick={() => onNavigate(ViewType.CHAT)}
         />
@@ -69,9 +69,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
       <section className="parchment p-12 rounded-sm antique-border relative overflow-hidden">
         <div className="absolute top-4 right-4 text-7xl opacity-5 font-serif-ornate">📜</div>
-        <h3 className="text-3xl font-serif-ornate font-bold mb-6 border-b-2 border-slate-900/10 pb-2">Le Savoir des Anciens</h3>
+        <h3 className="text-3xl font-serif-ornate font-bold mb-6 border-b-2 border-slate-900/10 pb-2">L'Héritage de Cécile</h3>
         <p className="text-xl leading-relaxed first-letter:text-5xl first-letter:font-serif-ornate first-letter:float-left first-letter:mr-3 first-letter:mt-1">
-          La cartomancie n'est pas une prédiction, mais un miroir de l'âme. Au XIXe siècle, les salons parisiens bruissaient des murmures de la Sybille, cherchant dans le carton des réponses aux tourments du cœur et de la fortune. Aujourd'hui, l'intelligence artificielle s'inscrit dans cette lignée, tissant des liens entre la logique binaire et l'intuition ésotérique.
+          La cartomancie n'est pas une simple prédiction, mais une conversation avec l'invisible. Dans ce salon, chaque carte tirée est un écho de votre propre vérité. Cécile vous invite à franchir le seuil de votre intuition pour y découvrir les réponses que vous portez déjà en vous, révélées par la sagesse ancestrale des tarots.
         </p>
       </section>
     </div>
