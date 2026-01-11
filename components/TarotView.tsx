@@ -104,9 +104,11 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
     setStatus('connexion');
     setOracleText("");
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-      audioContextRef.current = new AudioContext({ sampleRate: 16000 });
-      outputContextRef.current = new AudioContext({ sampleRate: 24000 });
+      // Use direct process.env.API_KEY as per guidelines
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Use cross-browser AudioContext initialization
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+      outputContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -127,6 +129,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const int16 = new Int16Array(inputData.length);
               for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
+              // Initiate sendRealtimeInput after sessionPromise resolves to avoid race condition
               sessionPromise.then(s => s.sendRealtimeInput({ media: { data: encodeAudio(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' } }));
             };
             source.connect(scriptProcessor);
@@ -213,7 +216,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
           <div className="flex flex-col items-center gap-8 animate-pulse">
             <div className="relative w-40 h-64">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="absolute inset-0 card-back-pattern border-[3px] border-gold rounded shadow-2xl" style={{ transform: `rotate(${i * 15 - 45}deg) translate(${i * 5}px, 0)` }}></div>
+                <div key={i} className="absolute inset-0 card-back-pattern rounded shadow-2xl" style={{ transform: `rotate(${i * 15 - 45}deg) translate(${i * 5}px, 0)` }}></div>
               ))}
             </div>
             <p className="text-gold/80 font-cursive text-4xl">L'Oracle mélange les possibles...</p>
@@ -228,9 +231,9 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
                     <button 
                       key={i} 
                       onClick={drawCard}
-                      className="w-24 h-40 card-back-pattern border-2 border-gold/30 rounded shadow-2xl transition-all duration-300 hover:-translate-y-6 hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] active:scale-95 group relative"
+                      className="w-24 h-40 card-back-pattern border-gold/30 rounded shadow-2xl transition-all duration-300 hover:-translate-y-6 hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] active:scale-95 group relative overflow-hidden"
                     >
-                       <div className="card-back-medallion scale-50 opacity-20 group-hover:opacity-100 transition-opacity"></div>
+                       <div className="card-back-ornament scale-[0.4] opacity-20 group-hover:opacity-100 transition-opacity"></div>
                     </button>
                   ))}
                 </div>
@@ -325,31 +328,34 @@ const DeckSelectionCard: React.FC<{ title: string; desc: string; img: string; on
 const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void; deckType: DeckType }> = ({ card, isFlipped, onClick, deckType }) => (
   <div 
     onClick={onClick}
-    className={`w-52 h-80 md:w-64 md:h-96 cursor-pointer perspective-1000 transition-all duration-700 group ${isFlipped ? '' : 'hover:-translate-y-8'}`}
+    className={`w-52 h-80 md:w-64 md:h-[420px] cursor-pointer perspective-1000 transition-all duration-700 group ${isFlipped ? '' : 'hover:-translate-y-8'}`}
   >
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
       {/* DOS DE CARTE (Vert et Or, style image utilisateur) */}
       <div className="absolute inset-0 card-back-pattern rounded-sm flex items-center justify-center backface-hidden shadow-[0_25px_50px_rgba(0,0,0,0.8)] overflow-hidden">
-        <div className="card-back-medallion"></div>
+        <div className="card-back-ornament"></div>
       </div>
 
-      {/* FACE DE CARTE (Style Ancien Lithographie/Gravure) */}
+      {/* FACE DE CARTE (Style Ancien Lithographie/Gravure avec structure à 3 boites) */}
       <div className={`absolute inset-0 rounded-sm rotate-y-180 backface-hidden card-antique-container p-1 overflow-hidden`}>
         <div className="card-inner-frame">
-          {/* Haut : Numéro ou Symbole de jeu */}
-          <div className="card-number-label">
-            {deckType === 'MARSEILLE' ? (card.romanNumeral || "0") : (card.playingCard || "")}
+          {/* Haut : Numéro (Cartouche supérieure) */}
+          <div className="card-label-box card-top-label">
+            {deckType === 'MARSEILLE' ? (card.romanNumeral || "•") : (card.playingCard || "•")}
           </div>
 
-          {/* Centre : Illustration avec filtre antique */}
-          <div className="card-illustration-zone antique-filter">
-             <div className="text-[10rem] drop-shadow-md">{card.image}</div>
-             {/* Overlay de texture papier pour l'illustration */}
-             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/old-map.png')] opacity-20 pointer-events-none"></div>
+          {/* Centre : Illustration (Zone centrale) */}
+          <div className="card-illustration-zone litho-filter">
+             <div className="text-[10rem] md:text-[12rem] drop-shadow-sm filter contrast-125 saturate-75">
+               {card.image}
+             </div>
+             {/* Overlay de texture pour l'illustration pour casser le côté trop "émoticône" */}
+             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/handmade-paper.png')] opacity-40 pointer-events-none"></div>
+             <div className="absolute inset-0 bg-gradient-to-tr from-amber-900/5 via-transparent to-amber-900/5"></div>
           </div>
 
-          {/* Bas : Cartouche du Nom */}
-          <div className="card-name-label">
+          {/* Bas : Cartouche du Nom (Cartouche inférieure) */}
+          <div className="card-label-box card-bottom-label">
             {card.name}
           </div>
         </div>

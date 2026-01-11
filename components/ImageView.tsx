@@ -48,7 +48,8 @@ const ImageView: React.FC = () => {
   const startVoiceSession = async () => {
     setVoiceStatus('connexion');
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Use direct process.env.API_KEY as per guidelines
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       outputContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
@@ -71,6 +72,7 @@ const ImageView: React.FC = () => {
               const int16 = new Int16Array(inputData.length);
               for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
               
+              // Call sendRealtimeInput only after sessionPromise resolves
               sessionPromise.then((session) => {
                 session.sendRealtimeInput({ 
                   media: { 

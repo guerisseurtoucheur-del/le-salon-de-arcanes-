@@ -1,27 +1,35 @@
 
 export enum ViewType {
-  CHAT = 'CHAT',
-  IMAGE = 'IMAGE',
-  VOICE = 'VOICE',
+  DASHBOARD = 'DASHBOARD',
   TAROT = 'TAROT',
-  DASHBOARD = 'DASHBOARD'
+  CRYSTAL_BALL = 'CRYSTAL_BALL',
+  ASTROLOGY = 'ASTROLOGY',
+  PENDULUM = 'PENDULUM',
+  CHAT = 'CHAT'
 }
 
+export type TarotDeck = 'MARSEILLE' | 'RIDER_WAITE';
 export type DeckType = 'MARSEILLE' | 'SYBILLE';
 
 export interface TarotCard {
   name: string;
   image: string;
   meaning: string;
-  playingCard?: string; // Correspondance (ex: "A♥", "10♠")
-  romanNumeral?: string; // Chiffre romain pour le Tarot de Marseille
+  romanNumeral?: string;
+  playingCard?: string;
+}
+
+export interface AstrologySign {
+  name: string;
+  dates: string;
+  element: string;
 }
 
 export interface ChatMessage {
   role: 'user' | 'model';
   content: string;
   timestamp: number;
-  sources?: { title: string; uri: string }[];
+  sources?: any[];
 }
 
 export interface GeneratedImage {
@@ -30,3 +38,18 @@ export interface GeneratedImage {
   prompt: string;
   timestamp: number;
 }
+
+export const ZODIAC_SIGNS: AstrologySign[] = [
+  { name: 'Bélier', dates: '21 Mars - 19 Avril', element: 'Feu' },
+  { name: 'Taureau', dates: '20 Avril - 20 Mai', element: 'Terre' },
+  { name: 'Gémeaux', dates: '21 Mai - 20 Juin', element: 'Air' },
+  { name: 'Cancer', dates: '21 Juin - 22 Juillet', element: 'Eau' },
+  { name: 'Lion', dates: '23 Juillet - 22 Août', element: 'Feu' },
+  { name: 'Vierge', dates: '23 Août - 22 Septembre', element: 'Terre' },
+  { name: 'Balance', dates: '23 Septembre - 22 Octobre', element: 'Air' },
+  { name: 'Scorpion', dates: '23 Octobre - 21 Novembre', element: 'Eau' },
+  { name: 'Sagittaire', dates: '22 Novembre - 21 Décembre', element: 'Feu' },
+  { name: 'Capricorne', dates: '22 Décembre - 19 Janvier', element: 'Terre' },
+  { name: 'Verseau', dates: '20 Janvier - 18 Février', element: 'Air' },
+  { name: 'Poissons', dates: '19 Février - 20 Mars', element: 'Eau' }
+];

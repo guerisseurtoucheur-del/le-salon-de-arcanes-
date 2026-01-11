@@ -1,74 +1,20 @@
 
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
-const getAIClient = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-};
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export const chatWithGemini = async (
-  message: string, 
-  history: { role: 'user' | 'model', content: string }[],
-  userInfo?: { name?: string, zodiac?: string, birthDate?: string }
-) => {
-  const ai = getAIClient();
-  
-  let personalizedInstruction = "Tu es l'Esprit des Oracles qui habite le salon mystique de Cécile. Ton rôle est de répondre avec profondeur, empathie et mystère.";
-  
-  if (userInfo?.name || userInfo?.zodiac) {
-    personalizedInstruction += `\n\nTu t'adresses à ${userInfo.name || 'ton visiteur'}${userInfo.zodiac ? `, né(e) sous le signe du ${userInfo.zodiac}` : ''}. Intègre ces éléments avec subtilité dans tes réponses (ex: "Oh, fier Lion...", "Je sens chez vous, ${userInfo.name}...").`;
-  }
-
-  personalizedInstruction += "\n\nIMPORTANT :\n1. RÉPONDS SYSTÉMATIQUEMENT : Ne laisse jamais un visiteur dans le doute.\n2. TON : Élégant, poétique, utilisant des métaphores sur le destin et les astres.\n3. FORMAT : Lettres anciennes ou prophéties dictées.\n4. LANGUE : Français exclusivement.";
-
-  const chat = ai.chats.create({
-    model: 'gemini-3-flash-preview',
-    config: {
-      tools: [{ googleSearch: {} }],
-      systemInstruction: personalizedInstruction
-    }
-  });
-
-  const response = await chat.sendMessage({ message });
-  return {
-    text: response.text || '',
-    sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map(chunk => ({
-      title: chunk.web?.title || 'Source',
-      uri: chunk.web?.uri || '#'
-    })) || []
-  };
-};
-
-export const generateImage = async (prompt: string) => {
-  const ai = getAIClient();
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-image',
-    contents: { parts: [{ text: prompt }] },
-    config: {
-      imageConfig: {
-        aspectRatio: "1:1"
-      }
-    }
-  });
-
-  for (const part of response.candidates?.[0]?.content?.parts || []) {
-    if (part.inlineData) {
-      return `data:image/png;base64,${part.inlineData.data}`;
-    }
-  }
-  throw new Error("Aucune donnée d'image retournée par Gemini");
-};
-
-// Live Audio Helper Functions
-export const encodeAudio = (bytes: Uint8Array): string => {
+// Encode raw bytes to base64 string
+export function encodeAudio(bytes: Uint8Array) {
   let binary = '';
   const len = bytes.byteLength;
   for (let i = 0; i < len; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
-};
+}
 
-export const decodeAudio = (base64: string): Uint8Array => {
+// Decode base64 string to Uint8Array
+export function decodeAudio(base64: string) {
   const binaryString = atob(base64);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);
@@ -76,8 +22,9 @@ export const decodeAudio = (base64: string): Uint8Array => {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes;
-};
+}
 
+// Convert raw PCM data to AudioBuffer for playback
 export async function decodeAudioData(
   data: Uint8Array,
   ctx: AudioContext,
@@ -96,3 +43,83 @@ export async function decodeAudioData(
   }
   return buffer;
 }
+
+export const getPrediction = async (userConcern: string) => {
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Tu es Cécile, une voyante mystérieuse. L'utilisateur te confie : "${userConcern}". 
+    Donne une prédiction poétique et un peu ambiguë en 3-4 phrases. 
+    Utilise un ton solennel et bienveillant.`,
+  });
+  return response.text;
+};
+
+export const generateVisionImage = async (prediction: string) => {
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash-image',
+    contents: { parts: [{ text: `A mystical, ethereal vision of the future based on this prophecy: ${prediction}. Cinematic lighting, oil painting style, dreamlike atmosphere.` }] },
+  });
+
+  for (const part of response.candidates[0].content.parts) {
+    if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
+  }
+  return null;
+};
+
+export const generateImage = async (prompt: string) => {
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash-image',
+    contents: { parts: [{ text: prompt }] },
+  });
+
+  for (const part of response.candidates[0].content.parts) {
+    if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
+  }
+  throw new Error("Impossible de générer l'image");
+};
+
+export const chatWithGemini = async (message: string, history: { role: 'user' | 'model', content: string }[]) => {
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: history.map(h => ({ 
+      role: h.role, 
+      parts: [{ text: h.content }] 
+    })).concat([{ role: 'user', parts: [{ text: message }] }]),
+    config: {
+      systemInstruction: "Tu es Cécile, une voyante mystérieuse et bienveillante. Réponds avec poésie et sagesse.",
+    }
+  });
+  
+  return {
+    text: response.text || "Le destin est flou...",
+    sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks
+  };
+};
+
+export const getPendulumResponse = async (question: string) => {
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Question pour le pendule : "${question}".
+    Réponds par OUI, NON ou PEUT-ÊTRE, suivi d'une courte justification mystique d'une phrase.`,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          answer: { type: Type.STRING, description: "OUI, NON ou PEUT-ETRE" },
+          reason: { type: Type.STRING }
+        }
+      }
+    }
+  });
+  return JSON.parse(response.text);
+};
+
+export const getHoroscope = async (sign: string) => {
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Génère l'horoscope du jour pour le signe du ${sign}. 
+    Inclus une section Travail, Amour et Énergie. Ton mystique.`,
+  });
+  return response.text;
+};

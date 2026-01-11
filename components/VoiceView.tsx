@@ -26,7 +26,8 @@ const VoiceView: React.FC = () => {
   const startSession = async () => {
     setStatus('connecting');
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Use direct process.env.API_KEY as per guidelines
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       outputContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
@@ -56,6 +57,7 @@ const VoiceView: React.FC = () => {
                 mimeType: 'audio/pcm;rate=16000',
               };
               
+              // sendRealtimeInput after sessionPromise resolves to avoid race conditions
               sessionPromise.then((session) => {
                 session.sendRealtimeInput({ media: pcmBlob });
               });
