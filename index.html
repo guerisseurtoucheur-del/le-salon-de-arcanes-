@@ -51,6 +51,29 @@
         .backface-hidden { backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
         
+        /* Animations pour la boule de cristal */
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-10px) scale(1.02); }
+        }
+        @keyframes rotate-magic {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.3; filter: blur(20px); }
+          50% { opacity: 0.6; filter: blur(40px); }
+        }
+        .magic-flow {
+          animation: rotate-magic 20s linear infinite;
+        }
+        .crystal-ball-glow {
+          animation: pulse-glow 4s ease-in-out infinite;
+        }
+        .float-anim {
+          animation: float-slow 6s ease-in-out infinite;
+        }
+
         /* Grain d'image ancien */
         body::before {
             content: "";
