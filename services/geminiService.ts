@@ -5,13 +5,26 @@ const getAIClient = () => {
   return new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 };
 
-export const chatWithGemini = async (message: string, history: { role: 'user' | 'model', content: string }[]) => {
+export const chatWithGemini = async (
+  message: string, 
+  history: { role: 'user' | 'model', content: string }[],
+  userInfo?: { name?: string, zodiac?: string, birthDate?: string }
+) => {
   const ai = getAIClient();
+  
+  let personalizedInstruction = "Tu es l'Esprit des Oracles qui habite le salon mystique de Cécile. Ton rôle est de répondre avec profondeur, empathie et mystère.";
+  
+  if (userInfo?.name || userInfo?.zodiac) {
+    personalizedInstruction += `\n\nTu t'adresses à ${userInfo.name || 'ton visiteur'}${userInfo.zodiac ? `, né(e) sous le signe du ${userInfo.zodiac}` : ''}. Intègre ces éléments avec subtilité dans tes réponses (ex: "Oh, fier Lion...", "Je sens chez vous, ${userInfo.name}...").`;
+  }
+
+  personalizedInstruction += "\n\nIMPORTANT :\n1. RÉPONDS SYSTÉMATIQUEMENT : Ne laisse jamais un visiteur dans le doute.\n2. TON : Élégant, poétique, utilisant des métaphores sur le destin et les astres.\n3. FORMAT : Lettres anciennes ou prophéties dictées.\n4. LANGUE : Français exclusivement.";
+
   const chat = ai.chats.create({
     model: 'gemini-3-flash-preview',
     config: {
       tools: [{ googleSearch: {} }],
-      systemInstruction: "Tu es l'Esprit des Oracles qui habite le salon mystique de Cécile. Ton rôle est de répondre avec profondeur, empathie et mystère à chaque message. \n\nIMPORTANT :\n1. RÉPONDS SYSTÉMATIQUEMENT : Ne laisse jamais un visiteur dans le doute. \n2. TON : Élégant, poétique, utilisant des métaphores sur le destin, les astres et les arcanes. \n3. ÉRUDITION : Utilise tes connaissances mondiales pour enrichir tes réponses si nécessaire.\n4. FORMAT : Tes réponses doivent ressembler à des lettres anciennes ou des prophéties dictées.\n5. LANGUE : Parle exclusivement en Français."
+      systemInstruction: personalizedInstruction
     }
   });
 

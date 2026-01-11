@@ -74,6 +74,21 @@
           animation: float-slow 6s ease-in-out infinite;
         }
 
+        /* Animation des Flammes qui dansent */
+        @keyframes flame-dance {
+          0%, 100% { transform: scale(1) rotate(-1deg) translateX(0); filter: blur(1px) brightness(1.2); }
+          25% { transform: scale(1.1, 0.9) rotate(2deg) translateX(1px); filter: blur(1.5px) brightness(1.4); }
+          50% { transform: scale(0.9, 1.1) rotate(-2deg) translateX(-1px); filter: blur(1px) brightness(1.2); }
+          75% { transform: scale(1.05, 0.95) rotate(1deg) translateX(1px); filter: blur(1.5px) brightness(1.4); }
+        }
+        .dancing-flame {
+          animation: flame-dance 0.6s ease-in-out infinite;
+          transform-origin: bottom center;
+        }
+        .flame-glow {
+          box-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 0 40px rgba(245, 158, 11, 0.4);
+        }
+
         /* Grain d'image ancien */
         body::before {
             content: "";
