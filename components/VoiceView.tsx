@@ -65,24 +65,32 @@ const VoiceView: React.FC = () => {
             scriptProcessor.connect(audioContextRef.current!.destination);
           },
           onmessage: async (message: any) => {
+            // Gestion de la transcription du modèle
             if (message.serverContent?.outputTranscription) {
                const text = message.serverContent.outputTranscription.text;
                setStatus('speaking');
                setTranscript(prev => {
                  const last = prev[prev.length - 1];
                  if (last && last.role === 'model') {
+                    // On vérifie si le message précédent était un message "vide" ou en cours
                     return [...prev.slice(0, -1), { role: 'model', text: last.text + text }];
                  }
                  return [...prev, { role: 'model', text }];
                });
             }
+
+            // Gestion de la transcription utilisateur
             if (message.serverContent?.inputTranscription) {
                 const text = message.serverContent.inputTranscription.text;
-                setTranscript(prev => [...prev, { role: 'user', text }]);
-                setStatus('thinking');
+                // On n'ajoute au transcript que si c'est significatif
+                if (text.trim().length > 2) {
+                    setTranscript(prev => [...prev, { role: 'user', text }]);
+                    setStatus('thinking');
+                }
             }
 
-            const audioData = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+            // Gestion de l'audio de Cécile
+            const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (audioData && outputContextRef.current) {
               setStatus('speaking');
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContextRef.current.currentTime);
@@ -99,7 +107,9 @@ const VoiceView: React.FC = () => {
               source.connect(outputContextRef.current.destination);
               source.onended = () => {
                 sourcesRef.current.delete(source);
-                if (sourcesRef.current.size === 0) setStatus('listening');
+                if (sourcesRef.current.size === 0) {
+                    setStatus('listening');
+                }
               };
               
               source.start(nextStartTimeRef.current);
@@ -127,7 +137,7 @@ const VoiceView: React.FC = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile, l'hôte du salon mystique. Tu es une cartomancienne expérimentée, empathique et un peu mystérieuse. \n\nMISSION CRITIQUE :\n1. RÉPONDS SYSTÉMATIQUEMENT : Dès qu'un visiteur te confie un tourment, une question sur son travail, ses amours ou sa vie, tu DOIS lui répondre. Ne reste jamais sans réaction.\n2. ANALYSE ET CONSEILLE : Utilise ta sagesse oracle pour donner une réponse profonde. Si quelqu'un demande 'vais-je trouver un emploi', analyse les énergies, parle de persévérance et de nouvelles opportunités.\n3. INCITE À L'APPROFONDISSEMENT : Si la confidence est brève, demande au visiteur de préciser son ressenti ou les obstacles qu'il perçoit.\n4. TON : Poétique, mystérieux mais bienveillant. Utilise des métaphores liées au destin et à la lumière.\n5. LANGUE : Réponds exclusivement en français.",
+          systemInstruction: "Tu es Cécile, une cartomancienne mystique et bienveillante. \n\nIMPORTANT : Tu es dans une séance interactive. \n1. Tu DOIS répondre immédiatement à chaque question ou confidence du visiteur.\n2. Si on te pose une question sur l'emploi, comme 'vais-je retrouver un travail', réponds avec espoir mais réalisme mystique. Analyse les énergies du mouvement et de la persévérance.\n3. Ne reste JAMAIS silencieuse. Si tu n'as pas de réponse précise, demande au visiteur d'approfondir un détail de sa vie.\n4. Ton ton est poétique, utilisant des termes comme 'les fils du destin', 'la lumière des arcanes', 'les ombres du doute'.\n5. Tu parles uniquement en Français.",
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
           },
@@ -152,6 +162,7 @@ const VoiceView: React.FC = () => {
     setTranscript(prev => [...prev, { role: 'user', text: msg }]);
     setStatus('thinking');
     
+    // On envoie le texte à la session Live
     sessionRef.current.sendRealtimeInput({
       parts: [{ text: msg }]
     });
@@ -173,6 +184,7 @@ const VoiceView: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto h-full flex flex-col items-center py-8 space-y-12">
+      {/* Titre */}
       <div className="text-center space-y-4">
         <h2 className="text-4xl md:text-5xl font-serif-ornate font-bold text-gold tracking-widest uppercase drop-shadow-lg">Séance avec Cécile</h2>
         <p className="text-amber-100/60 font-cursive text-2xl md:text-3xl italic">Partagez vos ombres, elle y trouvera la lumière...</p>
@@ -184,7 +196,7 @@ const VoiceView: React.FC = () => {
           <div className={`w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center transition-all duration-1000 ${
             isActive ? 'bg-amber-900/20 shadow-[0_0_120px_rgba(212,175,55,0.4)] border-2 border-gold/40' : 'bg-black/40 border-2 border-gold/10 shadow-inner'
           }`}>
-            {status === 'speaking' && (
+            {(status === 'speaking' || status === 'thinking') && (
               <div className="absolute inset-0 rounded-full border-2 border-gold/60 animate-[ping_2s_infinite]"></div>
             )}
             
@@ -211,7 +223,7 @@ const VoiceView: React.FC = () => {
                   <svg className="w-12 h-12 text-gold group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                   </svg>
-                  <span className="text-[10px] font-serif-ornate uppercase tracking-widest text-gold/80 text-center">Ouvrir le portail</span>
+                  <span className="text-[10px] font-serif-ornate uppercase tracking-widest text-gold/80 text-center px-4">Ouvrir le portail</span>
                 </div>
               )}
             </button>
@@ -256,7 +268,7 @@ const VoiceView: React.FC = () => {
                 )}
                 {status === 'thinking' && (
                   <div className="p-4 border-l-4 border-gold/20 text-amber-900/40 animate-pulse italic">
-                    Cécile consulte les énergies...
+                    Cécile consulte les énergies du destin...
                   </div>
                 )}
                 <div ref={transcriptEndRef} />
@@ -271,7 +283,7 @@ const VoiceView: React.FC = () => {
                   <div className="flex items-center gap-6 animate-pulse">
                     <div className="w-12 h-[2px] bg-gradient-to-r from-transparent to-gold"></div>
                     <span className="text-base md:text-lg font-serif-ornate uppercase tracking-[0.25em] text-amber-200 drop-shadow-[0_0_15px_rgba(251,191,36,0.9)] font-black text-center">
-                      Cécile attend votre question...
+                      Cécile attend que vous écriviez ou parliez...
                     </span>
                     <div className="w-12 h-[2px] bg-gradient-to-l from-transparent to-gold"></div>
                   </div>
@@ -283,13 +295,14 @@ const VoiceView: React.FC = () => {
                   type="text"
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
-                  placeholder="Confiez votre tourment par écrit..."
+                  placeholder="Écrivez ici votre tourment..."
                   className="flex-1 bg-black/80 border-2 border-gold/30 rounded-xl px-6 py-5 text-gold focus:outline-none focus:border-gold transition-all font-serif placeholder:text-gold/20 shadow-2xl text-lg"
                 />
                 <button 
                   type="submit"
                   disabled={!textInput.trim() || status === 'thinking'}
                   className="w-16 h-16 rounded-xl bg-gold/10 border-2 border-gold/40 flex items-center justify-center text-gold hover:bg-gold hover:text-black transition-all disabled:opacity-20 disabled:grayscale shadow-lg active:scale-95"
+                  title="Envoyer votre message au-delà du voile"
                 >
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -303,10 +316,14 @@ const VoiceView: React.FC = () => {
 
       {!isActive && (
         <div className="flex flex-col items-center gap-8 w-full max-w-2xl animate-in fade-in duration-1000 delay-300">
-           <p className="text-gold/40 text-sm font-serif-ornate uppercase tracking-[0.4em]">Quelques chemins à explorer...</p>
+           <p className="text-gold/40 text-sm font-serif-ornate uppercase tracking-[0.4em] flex items-center gap-4">
+             <span className="h-px w-8 bg-gold/20"></span>
+             Commencer la séance
+             <span className="h-px w-8 bg-gold/20"></span>
+           </p>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-4">
-            <Suggestion text="Vais-je enfin trouver un emploi stable ?" onClick={startSession} />
-            <Suggestion text="Cécile, éclaire mon chemin amoureux..." onClick={startSession} />
+            <Suggestion text="Vais-je enfin retrouver un emploi ?" onClick={startSession} />
+            <Suggestion text="Cécile, parle-moi de mon futur amoureux..." onClick={startSession} />
            </div>
         </div>
       )}
