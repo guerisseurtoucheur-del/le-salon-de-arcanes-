@@ -1,13 +1,30 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChatMessage } from '../types';
+import { ChatMessage, TarotCard } from '../types';
 import { chatWithGemini } from '../services/geminiService';
 
-const ChatView: React.FC = () => {
+interface ChatViewProps {
+  initialContext?: { cards: TarotCard[], text: string } | null;
+}
+
+const ChatView: React.FC<ChatViewProps> = ({ initialContext }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (initialContext && messages.length === 0) {
+      // Si on arrive d'un tirage, on initialise avec un message de bienvenue spécial
+      const cardList = initialContext.cards.map(c => c.name).join(", ");
+      const welcomeMsg: ChatMessage = {
+        role: 'model',
+        content: `Je vois que les arcanes de ${cardList} vous ont parlé. Votre esprit semble encore vibrer de cette séance. Posez-moi vos questions, mon ami(e). Que souhaitez-vous approfondir dans cette vision ?`,
+        timestamp: Date.now()
+      };
+      setMessages([welcomeMsg]);
+    }
+  }, [initialContext]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -30,7 +47,12 @@ const ChatView: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await chatWithGemini(userMessage.content, messages.map(m => ({
+      // On enrichit le prompt avec le contexte du tirage si disponible
+      const contextPrompt = initialContext 
+        ? `[CONTEXTE DU TIRAGE RÉCENT : Cartes: ${initialContext.cards.map(c => c.name).join(", ")}. Interprétation initiale: ${initialContext.text.substring(0, 500)}...] ${userMessage.content}`
+        : userMessage.content;
+
+      const response = await chatWithGemini(contextPrompt, messages.map(m => ({
         role: m.role,
         content: m.content
       })));
@@ -88,7 +110,7 @@ const ChatView: React.FC = () => {
                 ? 'bg-[#fff9e6] border-r-8 border-r-amber-900/20' 
                 : 'bg-[#f4e4bc] border-l-8 border-l-gold/20'
             }`}>
-              <div className="absolute -top-3 -right-3 w-10 h-10 wax-seal rounded-full flex items-center justify-center text-white text-[10px] opacity-20">ARCANE</div>
+              <div className="absolute -top-3 -right-3 w-10 h-10 wax-seal rounded-full flex items-center justify-center text-white text-[10px] opacity-20 shadow-lg">C</div>
               
               <p className={`whitespace-pre-wrap leading-relaxed text-lg font-serif`}>
                 {msg.content}

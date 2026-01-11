@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ViewType } from './types';
+import { ViewType, TarotCard } from './types';
 import Dashboard from './components/Dashboard';
 import ChatView from './components/ChatView';
 import ImageView from './components/ImageView';
@@ -9,17 +9,21 @@ import TarotView from './components/TarotView';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>(ViewType.DASHBOARD);
+  const [lastReading, setLastReading] = useState<{cards: TarotCard[], text: string} | null>(null);
 
   const renderView = () => {
     switch (activeView) {
       case ViewType.CHAT:
-        return <ChatView />;
+        return <ChatView initialContext={lastReading} />;
       case ViewType.IMAGE:
         return <ImageView />;
       case ViewType.VOICE:
         return <VoiceView />;
       case ViewType.TAROT:
-        return <TarotView />;
+        return <TarotView 
+          onNavigate={setActiveView} 
+          onSaveReading={(cards, text) => setLastReading({cards, text})} 
+        />;
       default:
         return <Dashboard onNavigate={setActiveView} />;
     }

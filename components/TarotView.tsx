@@ -1,13 +1,18 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { DeckType, TarotCard } from '../types';
+import { DeckType, TarotCard, ViewType } from '../types';
 import { GoogleGenAI, Modality } from '@google/genai';
 import { encodeAudio, decodeAudio, decodeAudioData } from '../services/geminiService';
+
+interface TarotViewProps {
+  onNavigate?: (view: ViewType) => void;
+  onSaveReading?: (cards: TarotCard[], text: string) => void;
+}
 
 const MARSEILLE_CARDS: TarotCard[] = [
   { romanNumeral: "I", name: "Le Bateleur", image: "🧙", meaning: "Nouveau départ, potentiel, habileté." },
   { romanNumeral: "II", name: "La Papesse", image: "📖", meaning: "Intuition, sagesse cachée, mystère." },
-  { romanNumeral: "III", name: "L'Impératrice", image: "👑", meaning: "Créativité, fertilité, abondance." },
+  { romanNumeral: "III", name: "L'Impératrice", image: "👑", meaning: "Créativité, fertilité, abundance." },
   { romanNumeral: "IIII", name: "L'Empereur", image: "🏛️", meaning: "Autorité, structure, stabilité." },
   { romanNumeral: "V", name: "Le Pape", image: "🕊️", meaning: "Tradition, conseil, spiritualité." },
   { romanNumeral: "VI", name: "L'Amoureux", image: "❤️", meaning: "Choix, relations, harmonie." },
@@ -46,25 +51,35 @@ const SYBILLE_CARDS: TarotCard[] = [
   { name: "La Surprise", image: "🎆", playingCard: "7♥", meaning: "Étonnement, imprévu." },
 ];
 
-const TarotView: React.FC = () => {
+const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
   const [deckType, setDeckType] = useState<DeckType | null>(null);
   const [step, setStep] = useState<'selection' | 'shuffling' | 'reading'>('selection');
   const [selectedCards, setSelectedCards] = useState<TarotCard[]>([]);
   const [isFlipped, setIsFlipped] = useState<boolean[]>([false, false, false]);
   const [isLive, setIsLive] = useState(false);
   const [status, setStatus] = useState<'repos' | 'connexion' | 'oracle-parle'>('repos');
+  const [oracleText, setOracleText] = useState<string>("");
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const outputContextRef = useRef<AudioContext | null>(null);
   const sessionRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const nextStartTimeRef = useRef(0);
+  const transcriptScrollRef = useRef<HTMLDivElement>(null);
+  const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
+
+  useEffect(() => {
+    if (transcriptScrollRef.current) {
+      transcriptScrollRef.current.scrollTop = transcriptScrollRef.current.scrollHeight;
+    }
+  }, [oracleText]);
 
   const startTarotReading = (type: DeckType) => {
     setDeckType(type);
     setSelectedCards([]);
     setIsFlipped([false, false, false]);
     setStep('shuffling');
+    setOracleText("");
     setTimeout(() => setStep('reading'), 2000);
   };
 
@@ -88,6 +103,7 @@ const TarotView: React.FC = () => {
 
   const startOracleLive = async () => {
     setStatus('connexion');
+    setOracleText("");
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       audioContextRef.current = new AudioContext({ sampleRate: 16000 });
@@ -96,13 +112,20 @@ const TarotView: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const cardDetails = selectedCards.map(c => `${c.romanNumeral || ''} ${c.name}`).join(", ");
-      const systemPrompt = `Tu es l'Oracle du Salon de Cécile, une entité mystique experte en cartomancie spécialisée dans le ${deckType === 'MARSEILLE' ? 'Tarot de Marseille' : 'Sybille des Salons'}. 
-      L'utilisateur vient de tirer 3 cartes : ${cardDetails}. 
-      1. Commence par : "Bienvenue au Salon de Cécile. Je suis votre guide. Vos cartes ont été révélées..."
-      2. Interprète les 3 cartes (Passé, Présent, Futur).
-      3. Ton ton doit être celui d'un vieux sage ou d'une sybille élégante.
-      4. Réponds en français uniquement.`;
+      const cardDetails = selectedCards.map((c, i) => `${i === 0 ? 'Passé' : i === 1 ? 'Présent' : 'Futur'}: ${c.romanNumeral || ''} ${c.name}`).join(", ");
+      const systemPrompt = `Tu es Cécile, l'oracle de ce salon. Ton client vient de tirer 3 cartes : ${cardDetails}.
+      
+      INSTRUCTIONS CRITIQUES :
+      1. Délivre ton interprétation d'un SEUL TRAIT, sans t'interrompre et sans poser de questions à l'interlocuteur. 
+      2. Ta réponse doit être un long monologue poétique, détaillé et mystérieux.
+      3. Structure : 
+         - Une salutation immersive.
+         - Analyse détaillée du Passé (1ère carte).
+         - Analyse détaillée du Présent (2ème carte).
+         - Analyse détaillée du Futur (3ème carte).
+         - Une conclusion profonde et une recommandation finale.
+      4. Ne t'arrête jamais avant d'avoir conclu.
+      5. Ton ton est calme, posé, mystique. Réponds exclusivement en français.`;
 
       const sessionPromise = ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
@@ -112,25 +135,49 @@ const TarotView: React.FC = () => {
             setStatus('oracle-parle');
             const source = audioContextRef.current!.createMediaStreamSource(stream);
             const scriptProcessor = audioContextRef.current!.createScriptProcessor(4096, 1, 1);
+            scriptProcessorRef.current = scriptProcessor;
+
             scriptProcessor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const int16 = new Int16Array(inputData.length);
               for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
-              sessionPromise.then(s => s.sendRealtimeInput({ media: { data: encodeAudio(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' } }));
+              
+              sessionPromise.then(s => {
+                s.sendRealtimeInput({ media: { data: encodeAudio(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' } });
+              });
             };
             source.connect(scriptProcessor);
             scriptProcessor.connect(audioContextRef.current!.destination);
           },
           onmessage: async (message: any) => {
+            if (message.serverContent?.outputTranscription) {
+              setOracleText(prev => prev + message.serverContent.outputTranscription.text);
+            }
+
             const audioData = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
             if (audioData && outputContextRef.current) {
+              if (scriptProcessorRef.current) {
+                scriptProcessorRef.current.onaudioprocess = null;
+              }
+
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContextRef.current.currentTime);
               const buffer = await decodeAudioData(decodeAudio(audioData), outputContextRef.current, 24000, 1);
               const source = outputContextRef.current.createBufferSource();
               source.buffer = buffer;
               source.connect(outputContextRef.current.destination);
+              source.onended = () => {
+                // Peut être utilisé pour détecter la fin réelle de l'audio
+              };
               source.start(nextStartTimeRef.current);
               nextStartTimeRef.current += buffer.duration;
+            }
+
+            if (message.serverContent?.turnComplete) {
+              console.log("Prophétie terminée.");
+              // Attendre un peu que l'audio finisse avant de permettre l'approfondissement
+              setTimeout(() => {
+                onSaveReading?.(selectedCards, oracleText);
+              }, 1000);
             }
           },
           onclose: () => stopOracle(),
@@ -139,7 +186,8 @@ const TarotView: React.FC = () => {
         config: {
           responseModalities: [Modality.AUDIO],
           systemInstruction: systemPrompt,
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Charon' } } }
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
+          outputAudioTranscription: {}
         }
       });
       sessionRef.current = await sessionPromise;
@@ -240,21 +288,69 @@ const TarotView: React.FC = () => {
                       onClick={startOracleLive}
                       className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 px-12 py-4 rounded-full font-serif-ornate font-bold text-xl shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all hover:scale-105"
                     >
-                      Interroger l'Oracle
+                      Écouter la Prophétie
                     </button>
                   </div>
                 )}
 
-                {isLive && (
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 bg-amber-500 rounded-full animate-ping absolute opacity-20"></div>
-                    <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center relative shadow-lg">
-                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                       </svg>
+                {(isLive || oracleText) && (
+                  <div className="flex flex-col items-center gap-8 w-full max-w-4xl animate-in fade-in duration-1000">
+                    <div className="flex flex-col items-center gap-4">
+                      {isLive && (
+                        <>
+                          <div className="w-16 h-16 bg-amber-500 rounded-full animate-ping absolute opacity-20"></div>
+                          <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center relative shadow-lg">
+                             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                             </svg>
+                          </div>
+                        </>
+                      )}
+                      <p className="text-amber-400 font-serif italic text-xl">
+                        {isLive ? "Cécile est en transe..." : "La prophétie est scellée."}
+                      </p>
                     </div>
-                    <p className="text-amber-400 font-serif italic text-xl">L'Oracle vous parle...</p>
-                    <button onClick={stopOracle} className="text-slate-500 hover:text-rose-400 text-sm font-serif underline mt-4">Terminer la consultation</button>
+
+                    <div className="w-full parchment rounded-sm p-8 antique-border shadow-2xl relative overflow-hidden group">
+                      <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-40"></div>
+                      <div className="relative h-64 overflow-y-auto scroll-smooth font-serif text-lg leading-relaxed text-amber-950 pr-4 custom-scrollbar" ref={transcriptScrollRef}>
+                        {oracleText ? (
+                          <p className="animate-in fade-in duration-500 italic first-letter:text-4xl first-letter:font-serif-ornate first-letter:float-left first-letter:mr-2">
+                            {oracleText}
+                          </p>
+                        ) : (
+                          <p className="text-amber-900/30 text-center flex items-center justify-center h-full">
+                            La plume attend le premier murmure...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {!isLive && oracleText && (
+                      <div className="flex flex-col items-center gap-6 animate-in slide-in-from-bottom-6 duration-1000">
+                        <div className="h-px w-32 bg-gradient-to-r from-transparent via-gold to-transparent"></div>
+                        <p className="text-amber-100/60 font-serif italic text-center max-w-lg">
+                          "Certains mystères demandent à être explorés plus en avant. Voulez-vous m'interroger sur un point précis de cette vision ?"
+                        </p>
+                        <button 
+                          onClick={() => {
+                            onSaveReading?.(selectedCards, oracleText);
+                            onNavigate?.(ViewType.CHAT);
+                          }}
+                          className="relative group flex items-center justify-center"
+                        >
+                          <div className="absolute inset-0 bg-gold/20 rounded-full blur-xl group-hover:bg-gold/40 transition-all animate-pulse"></div>
+                          <div className="wax-seal w-24 h-24 rounded-full flex flex-col items-center justify-center border-2 border-gold/50 shadow-2xl transform group-hover:scale-110 transition-transform group-active:scale-95">
+                            <span className="text-white font-serif-ornate font-bold text-xs tracking-tighter text-center px-2">APPROFONDIR</span>
+                            <span className="text-white text-lg">🖋️</span>
+                          </div>
+                        </button>
+                      </div>
+                    )}
+
+                    {isLive && (
+                      <button onClick={stopOracle} className="text-slate-500 hover:text-rose-400 text-sm font-serif underline transition-colors">Interrompre la séance</button>
+                    )}
                   </div>
                 )}
               </div>
@@ -294,30 +390,21 @@ const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClic
     className={`w-44 h-72 md:w-56 md:h-96 cursor-pointer perspective-1000 transition-all duration-700 ${isFlipped ? '' : 'hover:-translate-y-4'}`}
   >
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-      
-      {/* DOS DE LA CARTE (Authentique) */}
       <div className="absolute inset-0 bg-[#3a1a0e] border-8 border-[#d4af37] rounded-sm flex flex-col items-center justify-center backface-hidden shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
         <div className="absolute inset-2 border-2 border-[#d4af37]/30 flex items-center justify-center">
-            {/* Motif géométrique ancien */}
             <div className="w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/vintage-speckles.png')]"></div>
             <div className="absolute text-7xl opacity-40 font-serif-ornate text-[#d4af37]">C</div>
         </div>
       </div>
-      
-      {/* FACE DE LA CARTE RÉVÉLÉE */}
       <div className={`absolute inset-0 rounded-sm flex flex-col rotate-y-180 backface-hidden shadow-2xl overflow-hidden
         ${deckType === 'SYBILLE' 
           ? 'bg-[#f8eed3] border-[6px] border-[#2c2c2c]' 
           : 'bg-[#f4e4bc] border-[10px] border-[#1e1e1e]'}`}>
-        
-        {/* Grain de papier ancien et taches de rousseur */}
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-60 pointer-events-none"></div>
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/old-map.png')] opacity-20 pointer-events-none"></div>
 
         {deckType === 'SYBILLE' ? (
-          /* DESIGN SYBILLE DES SALONS (Chromolithographie) */
           <div className="h-full flex flex-col relative p-1">
-            {/* Miniature Carte à Jouer Antique */}
             <div className="absolute top-2 left-2 w-10 h-14 bg-white border border-black/40 rounded-sm shadow-sm flex flex-col items-center justify-center z-10">
                 <span className={`text-lg font-black leading-none ${card.playingCard?.includes('♥') || card.playingCard?.includes('♦') ? 'text-red-700' : 'text-black'}`}>
                   {card.playingCard?.replace(/[♥♦♣♠]/g, '')}
@@ -326,46 +413,27 @@ const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClic
                    {card.playingCard?.slice(-1)}
                 </span>
             </div>
-
-            {/* Cadre de l'illustration centrale */}
             <div className="mt-4 flex-1 flex flex-col items-center justify-center border-2 border-black/10 mx-2 bg-white/30 rounded shadow-inner overflow-hidden relative">
                <div className="text-8xl md:text-9xl z-10 grayscale-[0.3] contrast-125 saturate-50 brightness-90 transform hover:scale-110 transition-transform">
                  {card.image}
                </div>
-               {/* Effet trame d'impression */}
                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30"></div>
             </div>
-
-            {/* Titre Calligraphié en Bas */}
             <div className="h-16 flex flex-col items-center justify-center text-center">
               <span className="font-cursive text-2xl md:text-3xl text-amber-950 leading-none">{card.name}</span>
               <span className="text-[10px] font-serif uppercase tracking-widest text-amber-900/60 mt-1">{card.meaning.split(',')[0]}</span>
             </div>
-            
-            {/* Coins arrondis factices */}
-            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-black/20"></div>
-            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-black/20"></div>
           </div>
         ) : (
-          /* DESIGN TAROT DE MARSEILLE (Gravure sur bois / Xylographie) */
           <div className="h-full flex flex-col relative">
-            {/* Cartouche Chiffre Romain (Typique Conver) */}
             <div className="h-12 flex items-center justify-center border-b-[3px] border-[#2b427b]/80 bg-white/20">
               <span className="font-serif-ornate font-black text-2xl text-[#2b427b] tracking-[0.3em]">{card.romanNumeral}</span>
             </div>
-
-            {/* Illustration Centrale stylisée Bois gravé */}
             <div className="flex-1 flex items-center justify-center relative bg-gradient-to-b from-transparent via-[#fdf6e3]/30 to-transparent">
               <div className="text-9xl md:text-[10rem] drop-shadow-[4px_4px_0px_rgba(43,66,123,0.3)] filter contrast-150 brightness-95">
                 {card.image}
               </div>
-              
-              {/* Éléments de décorations d'angle xylographiques */}
-              <div className="absolute top-4 left-4 text-[#2b427b]/20 text-4xl">✥</div>
-              <div className="absolute top-4 right-4 text-[#2b427b]/20 text-4xl">✥</div>
             </div>
-
-            {/* Cartouche Nom de l'Arcane avec double filet */}
             <div className="h-16 border-t-[3px] border-[#c8242a] bg-white/60 flex flex-col items-center justify-center relative">
                <div className="absolute inset-1 border border-[#c8242a]/20"></div>
                <span className="text-lg md:text-xl font-serif-ornate font-black uppercase tracking-tighter text-[#c8242a] leading-tight">
@@ -377,9 +445,6 @@ const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClic
                  <div className="w-8 h-[2px] bg-[#ebb624]"></div>
                </div>
             </div>
-            
-            {/* Effet d'usure des bords de la plaque de bois */}
-            <div className="absolute inset-0 border-[1px] border-black/5 pointer-events-none"></div>
           </div>
         )}
       </div>
