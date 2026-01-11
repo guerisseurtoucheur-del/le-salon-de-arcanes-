@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { ZODIAC_SIGNS } from '../types';
 import { getHoroscope } from '../services/geminiService';
 
@@ -6,6 +7,13 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
   const [horoscope, setHoroscope] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    const now = new Date();
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    setCurrentDate(now.toLocaleDateString('fr-FR', options));
+  }, []);
 
   const fetchHoroscope = async (sign: string) => {
     setSelectedSign(sign);
@@ -23,9 +31,12 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
 
   return (
     <div className="space-y-12 py-6">
-      <div className="text-center space-y-2 mb-8 animate-fade">
-        <h2 className="text-4xl font-mystic text-gold-bright uppercase tracking-widest">Le Cercle du Zodiaque</h2>
-        <p className="text-gold-muted font-cursive text-2xl italic">Lisez la volonté des astres dans le firmament.</p>
+      <div className="text-center space-y-4 mb-8 animate-fade">
+        <div className="inline-block px-6 py-1 bg-gold-muted/10 border border-gold-muted/20 rounded-full mb-2">
+            <span className="text-[10px] font-mystic text-gold-muted uppercase tracking-[0.3em]">Consultation du {currentDate}</span>
+        </div>
+        <h2 className="text-4xl font-mystic text-gold-bright uppercase tracking-widest drop-shadow-lg">Le Cercle du Zodiaque</h2>
+        <p className="text-gold-muted font-cursive text-2xl italic">Lisez la volonté des astres dans le firmament de ce jour.</p>
       </div>
 
       {!selectedSign ? (
@@ -34,48 +45,80 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
             <button
               key={sign.name}
               onClick={() => fetchHoroscope(sign.name)}
-              className="p-6 bg-gradient-to-br from-purple-950/60 to-black/80 border-2 border-gold-muted/20 rounded-2xl hover:border-gold-bright hover:shadow-[0_0_25px_rgba(212,175,55,0.2)] transition-all group flex flex-col items-center"
+              className="p-8 bg-gradient-to-br from-purple-950/60 to-black/80 border-2 border-gold-muted/20 rounded-2xl hover:border-gold-bright hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all group flex flex-col items-center relative overflow-hidden"
             >
-              <span className="block text-4xl mb-4 group-hover:scale-125 transition-transform duration-500 drop-shadow-[0_0_10px_rgba(255,215,0,0.3)]">{sign.name}</span>
-              <span className="text-[10px] text-gold-muted font-mystic uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">{sign.dates}</span>
-              <div className="mt-3 w-8 h-[1px] bg-gold-muted/30 group-hover:w-16 transition-all"></div>
+              {/* Glyph background decoration */}
+              <span className="absolute -bottom-4 -right-4 text-6xl text-gold-muted/5 opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none">{sign.symbol}</span>
+              
+              <span className="block text-6xl mb-6 text-gold-bright group-hover:scale-125 transition-transform duration-700 drop-shadow-[0_0_15px_rgba(255,215,0,0.5)] animate-float">
+                {sign.symbol}
+              </span>
+              
+              <div className="text-center">
+                <span className="block text-xl font-mystic text-gold-bright tracking-widest mb-1">{sign.name}</span>
+                <span className="text-[10px] text-gold-muted font-serif uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">{sign.dates}</span>
+              </div>
+              
+              <div className="mt-4 w-8 h-[1px] bg-gold-muted/30 group-hover:w-full transition-all duration-500"></div>
             </button>
           ))}
         </div>
       ) : (
         <div className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-700">
           <div className="flex items-center justify-between border-b-2 border-gold-muted/30 pb-6">
-            <h2 className="text-5xl font-mystic text-gold-bright drop-shadow-lg uppercase tracking-wider">Horoscope du {selectedSign}</h2>
+            <div className="flex items-center gap-6">
+               <span className="text-6xl text-gold-bright drop-shadow-lg">
+                 {ZODIAC_SIGNS.find(s => s.name === selectedSign)?.symbol}
+               </span>
+               <h2 className="text-5xl font-mystic text-gold-bright drop-shadow-lg uppercase tracking-wider">Horoscope du {selectedSign}</h2>
+            </div>
             <button 
               onClick={() => setSelectedSign(null)} 
               className="px-6 py-2 border border-gold-muted/40 text-gold-muted hover:text-gold-bright hover:border-gold-bright transition-all font-mystic text-xs uppercase tracking-widest"
             >
-              Changer de signe
+              Retour au Cercle
             </button>
           </div>
 
           {loading ? (
             <div className="text-center py-32 flex flex-col items-center gap-8">
-               <div className="relative w-20 h-20">
+               <div className="relative w-24 h-24">
                   <div className="absolute inset-0 border-4 border-gold-muted/20 rounded-full"></div>
                   <div className="absolute inset-0 border-4 border-t-gold-bright rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse">✨</div>
                </div>
-               <span className="font-mystic text-gold-bright text-2xl tracking-[0.3em] animate-pulse">LES ÉTOILES S'ALIGNENT...</span>
+               <span className="font-mystic text-gold-bright text-2xl tracking-[0.3em] animate-pulse uppercase">Les Étoiles s'alignent...</span>
             </div>
           ) : (
-            <div className="glass-mystic gold-border p-12 rounded-[3rem] shadow-3xl relative overflow-hidden">
+            <div className="glass-mystic gold-border p-12 rounded-[3rem] shadow-3xl relative overflow-hidden min-h-[400px]">
                {/* Aesthetic constellation overlay */}
                <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none text-9xl">✨</div>
-               <div className="prose prose-invert max-w-none prose-headings:text-gold-bright prose-p:text-gold-muted text-2xl leading-relaxed whitespace-pre-wrap italic font-serif">
+               <div className="absolute bottom-0 left-0 p-10 opacity-5 pointer-events-none text-9xl rotate-180">✨</div>
+               
+               <div className="prose prose-invert max-w-none prose-headings:text-gold-bright prose-p:text-gold-muted text-3xl leading-relaxed whitespace-pre-wrap italic font-serif-elegant">
                  {horoscope}
                </div>
-               <div className="mt-10 flex justify-center opacity-30">
-                  <span className="text-2xl text-gold-bright">☾ ✦ ☽</span>
+               
+               <div className="mt-16 flex justify-center opacity-40 gap-8">
+                  <span className="text-2xl text-gold-bright">☾</span>
+                  <span className="text-2xl text-gold-bright">✦</span>
+                  <span className="text-2xl text-gold-bright">☽</span>
                </div>
             </div>
           )}
         </div>
       )}
+      
+      <style>{`
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };

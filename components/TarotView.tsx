@@ -20,7 +20,7 @@ const MARSEILLE_CARDS: TarotCard[] = [
   { romanNumeral: "VIII", name: "La Justice", image: "⚖️", meaning: "Équilibre, vérité, responsabilité." },
   { romanNumeral: "VIIII", name: "L'Ermite", image: "🕯️", meaning: "Solitude, introspection, recherche." },
   { romanNumeral: "X", name: "La Roue de Fortune", image: "🎡", meaning: "Changement, cycles, destin." },
-  { romanNumeral: "XI", name: "La Force", image: "🦁", meaning: "Courage, maîtrise de soi, patience." },
+  { romanNumeral: "XI", name: "La Force", image: "🦁", meaning: "Courage, mastery de soi, patience." },
   { romanNumeral: "XII", name: "Le Pendu", image: "🤸", meaning: "Lâcher-prise, perspective, sacrifice." },
   { romanNumeral: "XIII", name: "L'Arcane sans nom", image: "💀", meaning: "Transformation, fin, renouveau." },
   { romanNumeral: "XIIII", name: "La Tempérance", image: "🍶", meaning: "Modération, flux, alchimie." },
@@ -112,7 +112,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
       streamRef.current = stream;
 
       const cardDetails = selectedCards.map((c, i) => `${i === 0 ? 'Passé' : i === 1 ? 'Présent' : 'Futur'}: ${c.romanNumeral || ''} ${c.name}`).join(", ");
-      const systemPrompt = `Tu es Cécile, l'oracle de ce salon. Ton client vient de tirer 3 cartes : ${cardDetails}. Réponds avec profondeur, mystère et poésie.`;
+      const systemPrompt = `Tu es Cécile. Tu as une voix jeune, claire et une élocution parfaitement distincte. Tu commentes un tirage de 3 cartes : ${cardDetails}. Réponds avec mystère mais sois très articulée et compréhensible. Ta voix est mélodieuse et précise.`;
 
       const sessionPromise = ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
@@ -153,7 +153,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
         config: {
           responseModalities: [Modality.AUDIO],
           systemInstruction: systemPrompt,
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
           outputAudioTranscription: {}
         }
       });
@@ -203,7 +203,6 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
         </button>
         <div className="flex flex-col items-center">
             <h3 className="text-2xl font-serif-ornate font-bold text-gold tracking-[0.4em] uppercase">{deckType === 'MARSEILLE' ? 'Tarot de Marseille' : 'Sybille des Salons'}</h3>
-            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-gold to-transparent opacity-40 mt-1"></div>
         </div>
         <div className="w-32"></div>
       </div>
@@ -211,11 +210,6 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
       <div className="flex-1 flex flex-col items-center justify-center p-8 gap-16 relative overflow-y-auto">
         {step === 'shuffling' ? (
           <div className="flex flex-col items-center gap-8 animate-pulse">
-            <div className="relative w-40 h-64">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="absolute inset-0 card-back-pattern rounded shadow-2xl" style={{ transform: `rotate(${i * 15 - 45}deg) translate(${i * 5}px, 0)` }}></div>
-              ))}
-            </div>
             <p className="text-gold/80 font-cursive text-4xl">L'Oracle mélange les possibles...</p>
           </div>
         ) : (
@@ -225,13 +219,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
                 <p className="text-3xl text-amber-100/60 font-cursive italic">Concentrez-vous... Écoutez l'appel des Arcanes.</p>
                 <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
                   {[...Array(12)].map((_, i) => (
-                    <button 
-                      key={i} 
-                      onClick={drawCard}
-                      className="w-24 h-40 card-back-pattern border-gold/30 rounded shadow-2xl transition-all duration-300 hover:-translate-y-6 hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] active:scale-95 group relative overflow-hidden"
-                    >
-                       <div className="card-back-ornament scale-[0.4] opacity-20 group-hover:opacity-100 transition-opacity"></div>
-                    </button>
+                    <button key={i} onClick={drawCard} className="w-24 h-40 card-back-pattern border-gold/30 rounded shadow-2xl transition-all hover:-translate-y-6"></button>
                   ))}
                 </div>
               </div>
@@ -239,60 +227,19 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
               <div className="w-full flex flex-col items-center gap-16">
                 <div className="flex flex-wrap justify-center gap-12 lg:gap-24">
                   {selectedCards.map((card, i) => (
-                    <div key={i} className="flex flex-col items-center gap-6 animate-in slide-in-from-bottom-12 duration-1000" style={{ animationDelay: `${i * 200}ms` }}>
-                      <span className="text-[10px] font-serif-ornate uppercase tracking-[0.5em] text-gold/40 mb-2">{i === 0 ? "Le Passé" : i === 1 ? "Le Présent" : "Le Futur"}</span>
-                      <TarotCardComponent 
-                        card={card} 
-                        isFlipped={isFlipped[i]} 
-                        onClick={() => flipCard(i)}
-                        deckType={deckType!}
-                      />
-                    </div>
+                    <TarotCardComponent key={i} card={card} isFlipped={isFlipped[i]} onClick={() => flipCard(i)} deckType={deckType!} />
                   ))}
                 </div>
 
                 {isFlipped.every(v => v) && !isLive && (
-                  <div className="flex flex-col items-center gap-8 animate-in fade-in duration-1000">
-                    <button 
-                      onClick={startOracleLive}
-                      className="group relative px-16 py-6 overflow-hidden rounded-sm"
-                    >
-                      <div className="absolute inset-0 bg-gold/10 border-2 border-gold/50 transition-all group-hover:bg-gold group-hover:text-black"></div>
-                      <span className="relative z-10 text-gold group-hover:text-black font-serif-ornate font-bold text-xl tracking-widest uppercase">ÉCOUTER LA PROPHÉTIE</span>
-                    </button>
-                  </div>
+                  <button onClick={startOracleLive} className="px-16 py-6 bg-gold/10 border-2 border-gold/50 text-gold font-serif-ornate font-bold text-xl uppercase">ÉCOUTER LA PROPHÉTIE</button>
                 )}
 
                 {(isLive || oracleText) && (
-                  <div className="w-full max-w-5xl flex flex-col items-center gap-12 mb-12">
-                    <div className="parchment p-12 antique-border shadow-[0_0_100px_rgba(0,0,0,0.6)] relative group w-full">
-                        <div className="absolute -top-8 -right-8 w-16 h-16 wax-seal rounded-full flex items-center justify-center text-white/50 text-xl shadow-2xl bg-purple-900 border-gold-muted border">C</div>
-                        <div className="max-h-96 overflow-y-auto scroll-smooth font-serif text-2xl leading-relaxed text-amber-950 pr-6 custom-scrollbar" ref={transcriptScrollRef}>
-                            {oracleText ? (
-                                <p className="animate-in fade-in duration-1000 first-letter:text-6xl first-letter:font-serif-ornate first-letter:float-left first-letter:mr-4 first-letter:text-purple-900 italic">
-                                    {oracleText}
-                                </p>
-                            ) : (
-                                <div className="flex items-center justify-center h-48 italic text-amber-900/40">
-                                    L'Oracle entre en transe... Le silence précède la vision.
-                                </div>
-                            )}
-                        </div>
+                  <div className="parchment p-12 antique-border shadow-2xl w-full max-w-5xl">
+                    <div className="max-h-96 overflow-y-auto font-serif text-2xl leading-relaxed text-amber-950" ref={transcriptScrollRef}>
+                      {oracleText || "L'Oracle entre en transe..."}
                     </div>
-                    {!isLive && oracleText && (
-                        <button 
-                           onClick={() => {
-                               onSaveReading?.(selectedCards, oracleText);
-                               onNavigate?.(ViewType.CHAT);
-                           }}
-                           className="flex flex-col items-center gap-4 group"
-                        >
-                            <div className="wax-seal w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 bg-purple-900 border-gold-muted border">
-                                <span className="text-3xl">🖋️</span>
-                            </div>
-                            <span className="text-gold font-serif-ornate uppercase tracking-widest text-xs">Approfondir ce secret</span>
-                        </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -305,51 +252,19 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
 };
 
 const DeckSelectionCard: React.FC<{ title: string; desc: string; img: string; onClick: () => void }> = ({ title, desc, img, onClick }) => (
-  <button 
-    onClick={onClick}
-    className="parchment p-10 rounded-sm antique-border group text-left hover:scale-[1.02] transition-all relative overflow-hidden"
-  >
-    <div className="absolute -bottom-10 -right-10 text-[12rem] opacity-[0.03] group-hover:opacity-[0.08] transition-opacity rotate-12">{img}</div>
-    <div className="flex items-center gap-6 mb-8">
-        <span className="text-6xl drop-shadow-lg">{img}</span>
-        <h4 className="text-3xl font-serif-ornate font-bold text-amber-950 uppercase tracking-widest">{title}</h4>
-    </div>
-    <p className="text-xl text-amber-900 leading-relaxed font-serif italic border-l-4 border-purple-900/20 pl-6">{desc}</p>
-    <div className="mt-10 flex items-center justify-between">
-        <span className="text-[10px] font-serif-ornate uppercase tracking-widest text-amber-900/60">Sélectionner ce jeu</span>
-        <span className="text-amber-900 text-2xl group-hover:translate-x-2 transition-transform">→</span>
-    </div>
+  <button onClick={onClick} className="parchment p-10 rounded-sm antique-border group text-left hover:scale-[1.02] transition-all">
+    <h4 className="text-3xl font-serif-ornate font-bold text-amber-950 mb-4">{title}</h4>
+    <p className="text-xl text-amber-900 italic">{desc}</p>
   </button>
 );
 
 const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void; deckType: DeckType }> = ({ card, isFlipped, onClick, deckType }) => (
-  <div 
-    onClick={onClick}
-    className={`w-52 h-80 md:w-64 md:h-[420px] cursor-pointer perspective-1000 transition-all duration-700 group ${isFlipped ? '' : 'hover:-translate-y-8'}`}
-  >
+  <div onClick={onClick} className={`w-52 h-80 cursor-pointer perspective-1000 ${isFlipped ? '' : 'hover:-translate-y-8'}`}>
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-      <div className="absolute inset-0 card-back-pattern rounded-sm flex items-center justify-center backface-hidden shadow-[0_25px_50px_rgba(0,0,0,0.8)] overflow-hidden bg-purple-900">
-        <div className="card-back-ornament opacity-60"></div>
-      </div>
-
-      <div className={`absolute inset-0 rounded-sm rotate-y-180 backface-hidden card-antique-container p-1 overflow-hidden`}>
-        <div className="card-inner-frame">
-          <div className="card-label-box card-top-label">
-            {deckType === 'MARSEILLE' ? (card.romanNumeral || "•") : (card.playingCard || "•")}
-          </div>
-
-          <div className="card-illustration-zone litho-filter">
-             <div className="text-[10rem] md:text-[12rem] drop-shadow-sm filter contrast-125 saturate-75">
-               {card.image}
-             </div>
-             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/handmade-paper.png')] opacity-40 pointer-events-none"></div>
-             <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/5 via-transparent to-purple-900/5"></div>
-          </div>
-
-          <div className="card-label-box card-bottom-label">
-            {card.name}
-          </div>
-        </div>
+      <div className="absolute inset-0 card-back-pattern rounded shadow-2xl backface-hidden bg-purple-900"></div>
+      <div className="absolute inset-0 rounded rotate-y-180 backface-hidden card-antique-container p-4">
+        <div className="text-8xl flex items-center justify-center h-full">{card.image}</div>
+        <div className="text-center font-bold text-amber-950 mt-2">{card.name}</div>
       </div>
     </div>
   </div>

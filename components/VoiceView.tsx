@@ -132,9 +132,9 @@ const VoiceView: React.FC = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile, une cartomancienne mystique et bienveillante. \n\nIMPORTANT : Tu es dans une séance interactive. \n1. Tu DOIS répondre immédiatement à chaque question ou confidence du visiteur.\n2. Ton ton est poétique, utilisant des termes comme 'les fils du destin', 'la lumière des arcanes', 'les ombres du doute'.\n3. Tu parles uniquement en Français.",
+          systemInstruction: "Tu es Cécile. Tu as une voix jeune, vive et une diction parfaitement distincte et claire. Tu es une cartomancienne lumineuse. IMPORTANT : Réponds avec clarté, en articulant chaque mot. Ton ton est poétique mais toujours parfaitement compréhensible. Tu parles uniquement en Français.",
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
           },
           outputAudioTranscription: {},
           inputAudioTranscription: {}
@@ -199,8 +199,6 @@ const VoiceView: React.FC = () => {
                 isActive ? 'bg-gradient-to-b from-purple-950 to-black hover:scale-95' : 'bg-gradient-to-b from-purple-800 to-purple-950 hover:scale-105'
               }`}
             >
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30"></div>
-              
               {status === 'connecting' ? (
                 <div className="w-12 h-12 border-4 border-white/20 border-t-gold rounded-full animate-spin"></div>
               ) : isActive ? (
@@ -220,61 +218,25 @@ const VoiceView: React.FC = () => {
               )}
             </button>
           </div>
-          
-          <div className="absolute -bottom-12 inset-x-0 text-center">
-            <span className={`text-xs font-serif-ornate font-bold uppercase tracking-[0.3em] transition-colors duration-500 ${
-              isActive ? 'text-gold animate-pulse' : 'text-gold/30'
-            }`}>
-              {status === 'connecting' ? 'Appel au-delà du voile...' : status === 'listening' ? 'Cécile vous écoute...' : status === 'speaking' ? 'Cécile murmure...' : status === 'thinking' ? 'Cécile consulte les esprits...' : 'Prête pour la séance'}
-            </span>
-          </div>
         </div>
 
         {isActive && (
           <div className="flex-1 w-full max-w-md flex flex-col h-[500px] animate-in fade-in slide-in-from-right-8 duration-700">
             <div className="flex-1 parchment rounded-sm p-6 antique-border shadow-2xl overflow-y-auto mb-6 custom-scrollbar bg-[#fdf6e3]">
               <div className="space-y-6 font-serif italic text-lg text-amber-950">
-                {transcript.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center space-y-4 opacity-30">
-                    <span className="text-4xl animate-bounce">🕯️</span>
-                    <p className="text-center font-serif-ornate tracking-widest text-xs uppercase">Dites-lui ce qui pèse sur votre âme...</p>
-                  </div>
-                ) : (
-                  transcript.map((line, i) => (
+                {transcript.map((line, i) => (
                     <div key={i} className={`p-4 border-l-4 transition-all animate-in fade-in duration-500 ${
                       line.role === 'user' 
                         ? 'border-purple-900/10 text-purple-900/60 ml-8 bg-black/5 rounded-r italic' 
                         : 'border-gold text-amber-950 font-bold bg-gold/5 rounded-r'
                     }`}>
-                      <span className="text-[10px] uppercase font-bold tracking-widest block mb-2 opacity-50 flex items-center gap-2">
-                        {line.role === 'user' ? (
-                          <><span>👤</span> VOTRE MURMURE</>
-                        ) : (
-                          <><span>🔮</span> RÉVÉLATION DE CÉCILE</>
-                        )}
-                      </span>
                       {line.text}
                     </div>
-                  ))
-                )}
+                ))}
                 <div ref={transcriptEndRef} />
               </div>
             </div>
-
-            <form onSubmit={handleSendMessage} className="flex flex-col gap-4 group">
-              <div className="h-10 flex items-center justify-center transition-all duration-300">
-                {status === 'listening' && (
-                  <div className="flex items-center gap-6 animate-pulse">
-                    <div className="w-12 h-[2px] bg-gradient-to-r from-transparent to-gold"></div>
-                    <span className="text-base md:text-lg font-serif-ornate uppercase tracking-[0.25em] text-amber-200 drop-shadow-[0_0_15px_rgba(251,191,36,0.9)] font-black text-center">
-                      Cécile attend que vous écriviez ou parliez...
-                    </span>
-                    <div className="w-12 h-[2px] bg-gradient-to-l from-transparent to-gold"></div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-3">
+            <form onSubmit={handleSendMessage} className="flex gap-3">
                 <input 
                   type="text"
                   value={textInput}
@@ -285,44 +247,18 @@ const VoiceView: React.FC = () => {
                 <button 
                   type="submit"
                   disabled={!textInput.trim() || status === 'thinking'}
-                  className="w-16 h-16 rounded-xl bg-gold/10 border-2 border-gold/40 flex items-center justify-center text-gold hover:bg-gold hover:text-black transition-all disabled:opacity-20 disabled:grayscale shadow-lg active:scale-95"
-                  title="Envoyer votre message au-delà du voile"
+                  className="w-16 h-16 rounded-xl bg-gold/10 border-2 border-gold/40 flex items-center justify-center text-gold hover:bg-gold hover:text-black transition-all shadow-lg active:scale-95"
                 >
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                 </button>
-              </div>
             </form>
           </div>
         )}
       </div>
-
-      {!isActive && (
-        <div className="flex flex-col items-center gap-8 w-full max-w-2xl animate-in fade-in duration-1000 delay-300">
-           <p className="text-gold/40 text-sm font-serif-ornate uppercase tracking-[0.4em] flex items-center gap-4">
-             <span className="h-px w-8 bg-gold/20"></span>
-             Commencer la séance
-             <span className="h-px w-8 bg-gold/20"></span>
-           </p>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-4">
-            <Suggestion text="Vais-je enfin retrouver un emploi ?" onClick={startSession} />
-            <Suggestion text="Cécile, parle-moi de mon futur amoureux..." onClick={startSession} />
-           </div>
-        </div>
-      )}
     </div>
   );
 };
-
-const Suggestion: React.FC<{ text: string; onClick: () => void }> = ({ text, onClick }) => (
-  <button 
-    onClick={onClick}
-    className="bg-black/40 p-6 rounded-xl border-2 border-gold/10 hover:border-gold/50 transition-all text-gold/60 font-serif italic text-left group flex items-center justify-between shadow-lg hover:bg-black/60"
-  >
-    <span className="group-hover:text-gold transition-colors text-lg">"{text}"</span>
-    <span className="text-gold/20 group-hover:text-gold/60 transition-all">🕯️</span>
-  </button>
-);
 
 export default VoiceView;

@@ -20,18 +20,23 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = () => {
   const nextStartTimeRef = useRef(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
 
+  // Auto-start voice session on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startVoiceSession(true); // true indicates it's an auto-start
+    }, 500); // Small delay to ensure smooth transition
+    
+    return () => {
+      clearTimeout(timer);
+      stopVoiceSession();
+    };
+  }, []);
+
   useEffect(() => {
     if (responseRef.current) {
       responseRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [response, isThinking]);
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      stopVoiceSession();
-    };
-  }, []);
 
   const handleConsult = async () => {
     if (!query.trim() || isThinking) return;
@@ -47,7 +52,8 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = () => {
     }
   };
 
-  const startVoiceSession = async () => {
+  const startVoiceSession = async (isInitialGreeting = false) => {
+    if (sessionRef.current) return;
     setVoiceStatus('connecting');
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -85,6 +91,15 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = () => {
             
             source.connect(scriptProcessor);
             scriptProcessor.connect(audioContextRef.current!.destination);
+
+            // Send initial greeting trigger if this is the start of the session
+            if (isInitialGreeting) {
+              sessionPromise.then((session) => {
+                session.sendRealtimeInput({
+                  parts: [{ text: "Bonjour. Je viens d'entrer dans ton sanctuaire. Accueille-moi avec ta voix jeune et distincte, et demande-moi avec clarté : 'Qu'est-ce qui vous amène ici ?'" }]
+                });
+              });
+            }
           },
           onmessage: async (message: any) => {
             const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
@@ -123,15 +138,15 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile. Tu as 40 ans, une voix posée, calme et une immense sagesse spirituelle. Tu es une guide pour les âmes en quête de vérité. Parle avec douceur et éloquence, comme une grande prêtresse bienveillante. Réponds avec profondeur à ce que l'utilisateur te confie vocalement.",
+          systemInstruction: "Tu es Cécile. Tu as une voix jeune, fraîche, très claire et parfaitement articulée. Ta diction est distincte, sans être rapide. Tu es une guide spirituelle lumineuse. Parle avec bienveillance et une précision cristalline dans tes mots. Tu accueilles les visiteurs dans ton sanctuaire pour éclairer leur futur avec une intelligence vive et une voix mélodieuse.",
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
           }
         }
       });
       sessionRef.current = await sessionPromise;
     } catch (err) {
-      console.error(err);
+      console.error("Échec de l'initiation de la communion :", err);
       setVoiceStatus('idle');
     }
   };
@@ -184,7 +199,7 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = () => {
             
             {/* Voice Toggle Button */}
             <button 
-              onClick={isVoiceActive ? stopVoiceSession : startVoiceSession}
+              onClick={isVoiceActive ? stopVoiceSession : () => startVoiceSession(false)}
               disabled={voiceStatus === 'connecting'}
               className={`absolute right-6 top-6 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 border-2 shadow-lg ${
                 isVoiceActive 
@@ -212,9 +227,9 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = () => {
         <button 
           onClick={handleConsult}
           disabled={!query.trim() || isThinking || isVoiceActive}
-          className="w-full py-6 bg-gradient-to-r from-purple-950 via-purple-900 to-black border-2 border-gold-muted text-gold-bright font-mystic text-2xl tracking-[0.5em] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30 shadow-[0_0_50px_rgba(59,7,100,0.5)] uppercase rounded-2xl"
+          className="w-full py-6 bg-gradient-to-r from-purple-950 via-purple-900 to-black border-2 border-gold-muted text-gold-bright font-mystic text-xl md:text-2xl tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30 shadow-[0_0_50px_rgba(59,7,100,0.5)] uppercase rounded-2xl px-4"
         >
-          {isThinking ? 'Cécile sonde votre âme...' : isVoiceActive ? 'Communion vocale active' : 'Invoquer la Sagesse'}
+          {isThinking ? 'Cécile sonde votre âme...' : isVoiceActive ? 'Parler, Cécile vous écoute et va vous répondre' : 'Invoquer la Sagesse'}
         </button>
 
         {/* Animated Voice/Thinking Indicators */}

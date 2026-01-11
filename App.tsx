@@ -65,7 +65,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="mt-12 text-center text-gold-muted/50 text-sm uppercase tracking-widest">
-        L'invisible ne ment jamais • Salon ouvert depuis 1892
+        L'invisible ne ment jamais • Salon ouvert depuis 2022
       </footer>
     </div>
   );
