@@ -23,14 +23,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             />
           </div>
 
-          <div className="text-center space-y-4 z-10 flex-1 md:flex-none">
+          <div className="text-center space-y-6 z-10 flex-1 md:flex-none">
             <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif-ornate font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-yellow-500 to-amber-700 drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)] leading-none">
               Le Salon de Cécile
             </h2>
-            <div className="flex items-center justify-center gap-4">
-              <div className="h-[1px] w-12 md:w-24 bg-gold/50"></div>
-              <p className="text-xl md:text-2xl font-cursive text-amber-100/80">Oracles & Tarots</p>
-              <div className="h-[1px] w-12 md:w-24 bg-gold/50"></div>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-4 w-full">
+                <div className="h-[1px] flex-1 max-w-[100px] bg-gradient-to-r from-transparent to-gold/50"></div>
+                <p className="text-4xl md:text-5xl lg:text-6xl font-cursive text-amber-100/90 drop-shadow-[0_2px_10px_rgba(212,175,55,0.4)]">Oracles & Tarots</p>
+                <div className="h-[1px] flex-1 max-w-[100px] bg-gradient-to-l from-transparent to-gold/50"></div>
+              </div>
             </div>
           </div>
 

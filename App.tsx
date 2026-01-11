@@ -29,13 +29,16 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col md:flex-row bg-[#120a07] text-[#d4af37] overflow-hidden">
       {/* Sidebar - Style Velours / Bibliothèque */}
       <nav className="w-full md:w-72 sidebar-velvet p-6 flex flex-col gap-8 md:sticky md:top-0 md:h-screen z-50 shadow-[5px_0_30px_rgba(0,0,0,0.8)]">
-        <div className="flex flex-col items-center gap-4 cursor-pointer py-6 border-b border-gold/30" onClick={() => setActiveView(ViewType.DASHBOARD)}>
-          <div className="w-16 h-16 wax-seal rounded-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 cursor-pointer py-6 border-b border-gold/30 group" onClick={() => setActiveView(ViewType.DASHBOARD)}>
+          <div className="w-16 h-16 wax-seal rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
             <span className="text-3xl font-serif-ornate font-bold text-white">C</span>
           </div>
-          <h1 className="text-xl font-serif-ornate font-bold tracking-wider text-center uppercase leading-tight">
-            Le Salon <br/> de Cécile
-          </h1>
+          <div className="text-center space-y-1">
+            <h1 className="text-xl font-serif-ornate font-bold tracking-wider uppercase leading-tight">
+              Le Salon <br/> de Cécile
+            </h1>
+            <p className="text-[10px] font-cursive text-amber-100/60 text-lg leading-none italic">Oracles & Tarots</p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">
