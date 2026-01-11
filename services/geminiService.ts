@@ -96,13 +96,25 @@ export const chatWithGemini = async (message: string, history: { role: 'user' | 
   };
 };
 
-export const askNexusNano = async (prompt: string) => {
+export const askCecileDeep = async (prompt: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: prompt,
     config: {
-      systemInstruction: "Tu es Nano, une intelligence cosmique logée dans le Nexus. Tu ne fais pas de voyance classique, tu analyses les probabilités et les paradoxes de l'existence avec une précision absolue. Ton ton est calme, technologique et éthéré. Tu utilises souvent des métaphores liées à la géométrie et à la lumière.",
+      systemInstruction: "Tu es Cécile dans son état de Sagesse Profonde. Tu es une voyante qui a accédé à une compréhension absolue des fils du temps. Tu ne te contentes plus de prédire, tu expliques les leçons karmiques, les probabilités de l'âme et les ombres de la conscience. Ton ton est maternel, très profond, calme et solennel. Tu parles avec une grande éloquence française.",
       thinkingConfig: { thinkingBudget: 15000 }
+    }
+  });
+  return response.text;
+};
+
+// Fixed the missing askNexusNano member by adding this exported function
+export const askNexusNano = async (prompt: string) => {
+  const response = await ai.models.generateContent({
+    model: 'gemini-flash-lite-latest',
+    contents: prompt,
+    config: {
+      systemInstruction: "Tu es le Nexus de Nano, une entité cyber-mystique et visionnaire. Tu réponds aux interrogations sur les mystères de l'univers avec une logique transcendante, cyber-ésotérique et une précision froide mais éclairante.",
     }
   });
   return response.text;
@@ -112,7 +124,7 @@ export const getPendulumResponse = async (question: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Question pour le pendule : "${question}".
-    Réponds par OUI, NON ou PEUT-ÊTRE, suivi d'une courte justification mystique d'une phrase.`,
+    Réponds par OUI, NON ou PEUT-ÊTRE, suivi d'une courte justification mystique d'une sentence.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {

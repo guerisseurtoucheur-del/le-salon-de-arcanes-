@@ -1,8 +1,8 @@
 
 :root {
-  --velvet-deep: #0f001a;
-  --velvet-purple: #3b0764;
-  --mystic-violet: #5b21b6;
+  --velvet-deep: #2d0a31; /* Un pourpre riche et profond */
+  --velvet-purple: #4a0e4e; /* Pourpre plus vibrant pour les éléments */
+  --mystic-violet: #7e22ce;
   --gold-bright: #ffd700;
   --gold-muted: #b8860b;
   --parchment: #fdf6e3;
@@ -12,15 +12,17 @@
 body {
   background-color: var(--velvet-deep);
   background-image: 
-    radial-gradient(circle at center, rgba(91, 33, 182, 0.25) 0%, transparent 70%),
+    radial-gradient(circle at center, rgba(126, 34, 206, 0.3) 0%, transparent 80%),
     url('https://www.transparenttextures.com/patterns/dark-leather.png');
   color: var(--gold-bright);
-  font-family: 'EB Garamond', serif;
+  font-family: 'Cormorant Garamond', serif;
   overflow-x: hidden;
 }
 
 .font-mystic { font-family: 'Uncial Antiqua', serif; }
 .font-cursive { font-family: 'Great Vibes', cursive; }
+.font-sensual { font-family: 'Pinyon Script', cursive; }
+.font-serif-elegant { font-family: 'Cormorant Garamond', serif; }
 
 /* Salon UI */
 .salon-container {
@@ -31,10 +33,10 @@ body {
 }
 
 .glass-mystic {
-  background: rgba(15, 0, 26, 0.75);
+  background: rgba(45, 10, 49, 0.85); /* Fond pourpre transparent */
   backdrop-filter: blur(15px);
   border: 1px solid var(--gold-muted);
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(184, 134, 11, 0.15);
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(184, 134, 11, 0.1);
 }
 
 .gold-border {
@@ -69,61 +71,7 @@ body {
   background: var(--gold-muted);
   color: var(--velvet-deep);
   transform: translateY(8px);
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-}
-
-/* Pendulum Realistic Animation */
-@keyframes pendulum-swing-subtle {
-  0% { transform: rotate(-3deg); }
-  100% { transform: rotate(3deg); }
-}
-
-@keyframes pendulum-swing-active {
-  0% { transform: rotate(-45deg); }
-  100% { transform: rotate(45deg); }
-}
-
-@keyframes shadow-move-subtle {
-  0% { transform: translateX(-10px) scaleX(1); opacity: 0.2; }
-  100% { transform: translateX(10px) scaleX(1); opacity: 0.2; }
-}
-
-@keyframes shadow-move-active {
-  0% { transform: translateX(-100px) scaleX(1.8); opacity: 0.1; }
-  100% { transform: translateX(100px) scaleX(1.8); opacity: 0.1; }
-}
-
-@keyframes crystal-pulse {
-  0%, 100% { filter: drop-shadow(0 0 10px var(--gold-bright)) brightness(1); }
-  50% { filter: drop-shadow(0 0 45px var(--gold-bright)) brightness(2); }
-}
-
-.pendulum-anchor {
-  perspective: 2000px;
-  transform-style: preserve-3d;
-}
-
-.pendulum-arm {
-  transform-origin: top center;
-  transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1), top 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.swing-subtle {
-  animation: pendulum-swing-subtle 4s ease-in-out infinite alternate;
-}
-
-.swing-active {
-  animation: pendulum-swing-active 1.2s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite alternate;
-}
-
-.crystal-glow-active {
-  animation: crystal-pulse 1s ease-in-out infinite;
-}
-
-.pendulum-weight {
-  background: radial-gradient(circle at 30% 30%, #fff, var(--gold-bright) 30%, var(--gold-muted) 70%);
-  clip-path: polygon(50% 100%, 0% 15%, 20% 0%, 80% 0%, 100% 15%);
-  box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
 }
 
 /* Custom Scrollbar */

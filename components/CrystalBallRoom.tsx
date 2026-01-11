@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { getPrediction, generateVisionImage } from '../services/geminiService';
 
@@ -28,7 +29,7 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
     <div className="flex flex-col items-center gap-12 py-8">
       <div className="text-center space-y-2 mb-4 animate-fade">
         <h2 className="text-4xl font-mystic text-gold-bright uppercase tracking-widest">Le Miroir de l'Âme</h2>
-        <p className="text-gold-muted font-cursive text-2xl italic">L'avenir n'est qu'un reflet qui attend d'être révélé.</p>
+        <p className="text-gold-muted font-sensual text-3xl italic">L'avenir n'est qu'un reflet qui attend d'être révélé.</p>
       </div>
 
       <div className="relative group">
@@ -51,7 +52,7 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
       <div className="w-full max-w-xl space-y-6 z-10 px-4">
         <textarea 
           placeholder="De quoi s'inquiète votre âme ? Murmurez-le ici..."
-          className="w-full bg-black/60 border-2 border-gold-muted/30 p-6 rounded-2xl text-gold-bright text-2xl font-serif italic placeholder:text-gold-muted/20 focus:outline-none focus:border-gold-bright focus:shadow-[0_0_30px_rgba(184,134,11,0.2)] transition-all resize-none"
+          className="w-full bg-black/60 border-2 border-gold-muted/30 p-6 rounded-2xl text-gold-bright text-2xl font-serif-elegant italic placeholder:text-gold-muted/20 focus:outline-none focus:border-gold-bright focus:shadow-[0_0_30px_rgba(184,134,11,0.2)] transition-all resize-none"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           rows={3}
@@ -70,7 +71,7 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
           <div className="flex justify-center mb-6">
              <span className="text-4xl text-gold-bright opacity-40">✦ ✦ ✦</span>
           </div>
-          <p className="italic text-3xl md:text-4xl text-gold-bright font-cursive leading-relaxed text-center px-4 drop-shadow-md">
+          <p className="italic text-4xl md:text-5xl text-gold-bright font-sensual leading-relaxed text-center px-4 drop-shadow-md">
             "{prediction}"
           </p>
         </div>

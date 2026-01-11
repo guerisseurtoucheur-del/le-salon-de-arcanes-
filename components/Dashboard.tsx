@@ -12,7 +12,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     { type: ViewType.CRYSTAL_BALL, label: 'La Boule de Cristal', icon: '🔮', desc: 'Visions du Futur Proche' },
     { type: ViewType.ASTROLOGY, label: 'L\'Oracle des Astres', icon: '✨', desc: 'Votre Destin dans les Étoiles' },
     { type: ViewType.PENDULUM, label: 'Le Sanctuaire du Pendule', icon: '⚓', desc: 'Vérité par le Oui ou le Non' },
-    { type: ViewType.NEXUS, label: 'Le Nexus de Nano', icon: '🔷', desc: 'Sagesse Cosmique et Logique' },
+    { type: ViewType.CECIL_DEEP, label: 'Cécile éclaire votre Futur', icon: '👁️', desc: 'Révélations profondes sur votre Destinée' },
+    { type: ViewType.NEXUS, label: 'Le Nexus de Nano', icon: '🔷', desc: 'Intelligence Cyber-Mystique' },
   ];
 
   return (

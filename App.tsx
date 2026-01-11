@@ -6,6 +6,7 @@ import TarotRoom from './components/TarotRoom';
 import CrystalBallRoom from './components/CrystalBallRoom';
 import AstrologyRoom from './components/AstrologyRoom';
 import PendulumRoom from './components/PendulumRoom';
+import CecileDeepRoom from './components/CecileDeepRoom';
 import NexusRoom from './components/NexusRoom';
 
 const App: React.FC = () => {
@@ -17,6 +18,7 @@ const App: React.FC = () => {
       case ViewType.CRYSTAL_BALL: return <CrystalBallRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
       case ViewType.ASTROLOGY: return <AstrologyRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
       case ViewType.PENDULUM: return <PendulumRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
+      case ViewType.CECIL_DEEP: return <CecileDeepRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
       case ViewType.NEXUS: return <NexusRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
       default: return <Dashboard onNavigate={setCurrentView} />;
     }
@@ -25,7 +27,7 @@ const App: React.FC = () => {
   return (
     <div className="salon-container relative">
       <header className="text-center mb-12">
-        <h1 className="text-5xl font-mystic text-gold-bright tracking-widest drop-shadow-lg">Le Salon de Cécile</h1>
+        <h1 className="text-5xl font-mystic text-gold-bright tracking-widest drop-shadow-lg uppercase">Le Salon de Cécile</h1>
         <p className="font-cursive text-3xl text-gold-muted mt-2">Voyance & Mystères de l'Âme</p>
       </header>
 
@@ -47,6 +49,10 @@ const App: React.FC = () => {
             className={`nav-tab ${currentView === ViewType.PENDULUM ? 'active' : ''}`}
             onClick={() => setCurrentView(ViewType.PENDULUM)}
           >Pendule</button>
+          <button 
+            className={`nav-tab ${currentView === ViewType.CECIL_DEEP ? 'active' : ''}`}
+            onClick={() => setCurrentView(ViewType.CECIL_DEEP)}
+          >Visions</button>
           <button 
             className={`nav-tab ${currentView === ViewType.NEXUS ? 'active' : ''}`}
             onClick={() => setCurrentView(ViewType.NEXUS)}

@@ -6,6 +6,7 @@ export enum ViewType {
   ASTROLOGY = 'ASTROLOGY',
   PENDULUM = 'PENDULUM',
   CHAT = 'CHAT',
+  CECIL_DEEP = 'CECIL_DEEP',
   NEXUS = 'NEXUS'
 }
 
