@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ViewType } from './types';
 import Dashboard from './components/Dashboard';
 import TarotRoom from './components/TarotRoom';
@@ -11,6 +11,20 @@ import NexusRoom from './components/NexusRoom';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>(ViewType.DASHBOARD);
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatCelestialDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    };
+    return date.toLocaleDateString('fr-FR', options).toUpperCase();
+  };
 
   const renderView = () => {
     switch (currentView) {
@@ -26,7 +40,17 @@ const App: React.FC = () => {
 
   return (
     <div className="salon-container relative">
-      <header className="text-center mb-12">
+      <div className="fixed top-0 left-0 w-full z-50 pointer-events-none">
+        <div className="max-w-screen-xl mx-auto px-6 py-2 flex justify-center">
+          <div className="bg-black/40 backdrop-blur-md border-x border-b border-gold-muted/30 px-6 py-1 rounded-b-2xl shadow-[0_0_20px_rgba(184,134,11,0.2)]">
+            <span className="text-[10px] font-mystic text-gold-bright tracking-[0.3em] animate-pulse">
+              Cycle Temporel Actuel : {formatCelestialDate(time)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <header className="text-center mb-12 mt-10">
         <h1 className="text-5xl font-mystic text-gold-bright tracking-widest drop-shadow-lg uppercase">Le Salon de Cécile</h1>
         <p className="font-cursive text-3xl text-gold-muted mt-2">Voyance & Mystères de l'Âme</p>
       </header>
@@ -60,7 +84,7 @@ const App: React.FC = () => {
         </nav>
       )}
 
-      <main className="glass-mystic gold-border p-8 rounded-xl animate-fade">
+      <main className="glass-mystic gold-border p-8 rounded-xl animate-fade min-h-[60vh]">
         {renderView()}
       </main>
 

@@ -7,12 +7,11 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
   const [horoscope, setHoroscope] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentDate, setCurrentDate] = useState('');
+  const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    const now = new Date();
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    setCurrentDate(now.toLocaleDateString('fr-FR', options));
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const fetchHoroscope = async (sign: string) => {
@@ -29,14 +28,20 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
     }
   };
 
+  const getFullDate = () => {
+    return time.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
   return (
     <div className="space-y-12 py-6">
       <div className="text-center space-y-4 mb-8 animate-fade">
-        <div className="inline-block px-6 py-1 bg-gold-muted/10 border border-gold-muted/20 rounded-full mb-2">
-            <span className="text-[10px] font-mystic text-gold-muted uppercase tracking-[0.3em]">Consultation du {currentDate}</span>
+        <div className="inline-block px-10 py-2 bg-gold-muted/10 border-2 border-gold-bright/20 rounded-full mb-2 shadow-[0_0_30px_rgba(255,215,0,0.1)]">
+            <span className="text-xs font-mystic text-gold-bright uppercase tracking-[0.4em]">
+              ✧ Alignement Céleste du {getFullDate()} ✧
+            </span>
         </div>
         <h2 className="text-4xl font-mystic text-gold-bright uppercase tracking-widest drop-shadow-lg">Le Cercle du Zodiaque</h2>
-        <p className="text-gold-muted font-cursive text-2xl italic">Lisez la volonté des astres dans le firmament de ce jour.</p>
+        <p className="text-gold-muted font-cursive text-2xl italic">Les astres vous observent en cet instant précis.</p>
       </div>
 
       {!selectedSign ? (
@@ -47,7 +52,6 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
               onClick={() => fetchHoroscope(sign.name)}
               className="p-8 bg-gradient-to-br from-purple-950/60 to-black/80 border-2 border-gold-muted/20 rounded-2xl hover:border-gold-bright hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all group flex flex-col items-center relative overflow-hidden"
             >
-              {/* Glyph background decoration */}
               <span className="absolute -bottom-4 -right-4 text-6xl text-gold-muted/5 opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none">{sign.symbol}</span>
               
               <span className="block text-6xl mb-6 text-gold-bright group-hover:scale-125 transition-transform duration-700 drop-shadow-[0_0_15px_rgba(255,215,0,0.5)] animate-float">
@@ -70,7 +74,7 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
                <span className="text-6xl text-gold-bright drop-shadow-lg">
                  {ZODIAC_SIGNS.find(s => s.name === selectedSign)?.symbol}
                </span>
-               <h2 className="text-5xl font-mystic text-gold-bright drop-shadow-lg uppercase tracking-wider">Horoscope du {selectedSign}</h2>
+               <h2 className="text-5xl font-mystic text-gold-bright drop-shadow-lg uppercase tracking-wider">Vision du {selectedSign}</h2>
             </div>
             <button 
               onClick={() => setSelectedSign(null)} 
@@ -87,11 +91,10 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
                   <div className="absolute inset-0 border-4 border-t-gold-bright rounded-full animate-spin"></div>
                   <div className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse">✨</div>
                </div>
-               <span className="font-mystic text-gold-bright text-2xl tracking-[0.3em] animate-pulse uppercase">Les Étoiles s'alignent...</span>
+               <span className="font-mystic text-gold-bright text-2xl tracking-[0.3em] animate-pulse uppercase">Calcul des Conjonctions...</span>
             </div>
           ) : (
             <div className="glass-mystic gold-border p-12 rounded-[3rem] shadow-3xl relative overflow-hidden min-h-[400px]">
-               {/* Aesthetic constellation overlay */}
                <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none text-9xl">✨</div>
                <div className="absolute bottom-0 left-0 p-10 opacity-5 pointer-events-none text-9xl rotate-180">✨</div>
                
