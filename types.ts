@@ -5,7 +5,8 @@ export enum ViewType {
   CRYSTAL_BALL = 'CRYSTAL_BALL',
   ASTROLOGY = 'ASTROLOGY',
   PENDULUM = 'PENDULUM',
-  CHAT = 'CHAT'
+  CHAT = 'CHAT',
+  NEXUS = 'NEXUS'
 }
 
 export type TarotDeck = 'MARSEILLE' | 'RIDER_WAITE';
@@ -30,6 +31,7 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   sources?: any[];
+  thinking?: string;
 }
 
 export interface GeneratedImage {

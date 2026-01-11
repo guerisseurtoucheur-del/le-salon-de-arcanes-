@@ -96,6 +96,18 @@ export const chatWithGemini = async (message: string, history: { role: 'user' | 
   };
 };
 
+export const askNexusNano = async (prompt: string) => {
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: prompt,
+    config: {
+      systemInstruction: "Tu es Nano, une intelligence cosmique logée dans le Nexus. Tu ne fais pas de voyance classique, tu analyses les probabilités et les paradoxes de l'existence avec une précision absolue. Ton ton est calme, technologique et éthéré. Tu utilises souvent des métaphores liées à la géométrie et à la lumière.",
+      thinkingConfig: { thinkingBudget: 15000 }
+    }
+  });
+  return response.text;
+};
+
 export const getPendulumResponse = async (question: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',

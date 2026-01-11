@@ -104,9 +104,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
     setStatus('connexion');
     setOracleText("");
     try {
-      // Use direct process.env.API_KEY as per guidelines
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      // Use cross-browser AudioContext initialization
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       outputContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       
@@ -129,7 +127,6 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const int16 = new Int16Array(inputData.length);
               for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
-              // Initiate sendRealtimeInput after sessionPromise resolves to avoid race condition
               sessionPromise.then(s => s.sendRealtimeInput({ media: { data: encodeAudio(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' } }));
             };
             source.connect(scriptProcessor);
@@ -199,7 +196,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
   }
 
   return (
-    <div className="flex flex-col h-full tapis-velours rounded-lg border-4 border-gold/40 shadow-inner overflow-hidden">
+    <div className="flex flex-col h-full tapis-velours rounded-lg border-4 border-gold/40 shadow-inner overflow-hidden bg-purple-950/20">
       <div className="flex justify-between items-center p-8 border-b border-gold/20 z-10">
         <button onClick={() => setStep('selection')} className="text-gold/60 hover:text-gold flex items-center gap-3 font-serif-ornate uppercase tracking-widest text-xs transition-all">
           <span className="text-xl">←</span> Sortir du Salon
@@ -269,10 +266,10 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
                 {(isLive || oracleText) && (
                   <div className="w-full max-w-5xl flex flex-col items-center gap-12 mb-12">
                     <div className="parchment p-12 antique-border shadow-[0_0_100px_rgba(0,0,0,0.6)] relative group w-full">
-                        <div className="absolute -top-8 -right-8 w-16 h-16 wax-seal rounded-full flex items-center justify-center text-white/50 text-xl shadow-2xl">C</div>
+                        <div className="absolute -top-8 -right-8 w-16 h-16 wax-seal rounded-full flex items-center justify-center text-white/50 text-xl shadow-2xl bg-purple-900 border-gold-muted border">C</div>
                         <div className="max-h-96 overflow-y-auto scroll-smooth font-serif text-2xl leading-relaxed text-amber-950 pr-6 custom-scrollbar" ref={transcriptScrollRef}>
                             {oracleText ? (
-                                <p className="animate-in fade-in duration-1000 first-letter:text-6xl first-letter:font-serif-ornate first-letter:float-left first-letter:mr-4 first-letter:text-red-900 italic">
+                                <p className="animate-in fade-in duration-1000 first-letter:text-6xl first-letter:font-serif-ornate first-letter:float-left first-letter:mr-4 first-letter:text-purple-900 italic">
                                     {oracleText}
                                 </p>
                             ) : (
@@ -290,7 +287,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
                            }}
                            className="flex flex-col items-center gap-4 group"
                         >
-                            <div className="wax-seal w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
+                            <div className="wax-seal w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 bg-purple-900 border-gold-muted border">
                                 <span className="text-3xl">🖋️</span>
                             </div>
                             <span className="text-gold font-serif-ornate uppercase tracking-widest text-xs">Approfondir ce secret</span>
@@ -317,7 +314,7 @@ const DeckSelectionCard: React.FC<{ title: string; desc: string; img: string; on
         <span className="text-6xl drop-shadow-lg">{img}</span>
         <h4 className="text-3xl font-serif-ornate font-bold text-amber-950 uppercase tracking-widest">{title}</h4>
     </div>
-    <p className="text-xl text-amber-900 leading-relaxed font-serif italic border-l-4 border-amber-900/20 pl-6">{desc}</p>
+    <p className="text-xl text-amber-900 leading-relaxed font-serif italic border-l-4 border-purple-900/20 pl-6">{desc}</p>
     <div className="mt-10 flex items-center justify-between">
         <span className="text-[10px] font-serif-ornate uppercase tracking-widest text-amber-900/60">Sélectionner ce jeu</span>
         <span className="text-amber-900 text-2xl group-hover:translate-x-2 transition-transform">→</span>
@@ -331,30 +328,24 @@ const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClic
     className={`w-52 h-80 md:w-64 md:h-[420px] cursor-pointer perspective-1000 transition-all duration-700 group ${isFlipped ? '' : 'hover:-translate-y-8'}`}
   >
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-      {/* DOS DE CARTE (Vert et Or, style image utilisateur) */}
-      <div className="absolute inset-0 card-back-pattern rounded-sm flex items-center justify-center backface-hidden shadow-[0_25px_50px_rgba(0,0,0,0.8)] overflow-hidden">
-        <div className="card-back-ornament"></div>
+      <div className="absolute inset-0 card-back-pattern rounded-sm flex items-center justify-center backface-hidden shadow-[0_25px_50px_rgba(0,0,0,0.8)] overflow-hidden bg-purple-900">
+        <div className="card-back-ornament opacity-60"></div>
       </div>
 
-      {/* FACE DE CARTE (Style Ancien Lithographie/Gravure avec structure à 3 boites) */}
       <div className={`absolute inset-0 rounded-sm rotate-y-180 backface-hidden card-antique-container p-1 overflow-hidden`}>
         <div className="card-inner-frame">
-          {/* Haut : Numéro (Cartouche supérieure) */}
           <div className="card-label-box card-top-label">
             {deckType === 'MARSEILLE' ? (card.romanNumeral || "•") : (card.playingCard || "•")}
           </div>
 
-          {/* Centre : Illustration (Zone centrale) */}
           <div className="card-illustration-zone litho-filter">
              <div className="text-[10rem] md:text-[12rem] drop-shadow-sm filter contrast-125 saturate-75">
                {card.image}
              </div>
-             {/* Overlay de texture pour l'illustration pour casser le côté trop "émoticône" */}
              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/handmade-paper.png')] opacity-40 pointer-events-none"></div>
-             <div className="absolute inset-0 bg-gradient-to-tr from-amber-900/5 via-transparent to-amber-900/5"></div>
+             <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/5 via-transparent to-purple-900/5"></div>
           </div>
 
-          {/* Bas : Cartouche du Nom (Cartouche inférieure) */}
           <div className="card-label-box card-bottom-label">
             {card.name}
           </div>

@@ -26,7 +26,6 @@ const VoiceView: React.FC = () => {
   const startSession = async () => {
     setStatus('connecting');
     try {
-      // Use direct process.env.API_KEY as per guidelines
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
@@ -57,7 +56,6 @@ const VoiceView: React.FC = () => {
                 mimeType: 'audio/pcm;rate=16000',
               };
               
-              // sendRealtimeInput after sessionPromise resolves to avoid race conditions
               sessionPromise.then((session) => {
                 session.sendRealtimeInput({ media: pcmBlob });
               });
@@ -67,31 +65,26 @@ const VoiceView: React.FC = () => {
             scriptProcessor.connect(audioContextRef.current!.destination);
           },
           onmessage: async (message: any) => {
-            // Gestion de la transcription du modèle
             if (message.serverContent?.outputTranscription) {
                const text = message.serverContent.outputTranscription.text;
                setStatus('speaking');
                setTranscript(prev => {
                  const last = prev[prev.length - 1];
                  if (last && last.role === 'model') {
-                    // On vérifie si le message précédent était un message "vide" ou en cours
                     return [...prev.slice(0, -1), { role: 'model', text: last.text + text }];
                  }
                  return [...prev, { role: 'model', text }];
                });
             }
 
-            // Gestion de la transcription utilisateur
             if (message.serverContent?.inputTranscription) {
                 const text = message.serverContent.inputTranscription.text;
-                // On n'ajoute au transcript que si c'est significatif
                 if (text.trim().length > 2) {
                     setTranscript(prev => [...prev, { role: 'user', text }]);
                     setStatus('thinking');
                 }
             }
 
-            // Gestion de l'audio de Cécile
             const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (audioData && outputContextRef.current) {
               setStatus('speaking');
@@ -139,7 +132,7 @@ const VoiceView: React.FC = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile, une cartomancienne mystique et bienveillante. \n\nIMPORTANT : Tu es dans une séance interactive. \n1. Tu DOIS répondre immédiatement à chaque question ou confidence du visiteur.\n2. Si on te pose une question sur l'emploi, comme 'vais-je retrouver un travail', réponds avec espoir mais réalisme mystique. Analyse les énergies du mouvement et de la persévérance.\n3. Ne reste JAMAIS silencieuse. Si tu n'as pas de réponse précise, demande au visiteur d'approfondir un détail de sa vie.\n4. Ton ton est poétique, utilisant des termes comme 'les fils du destin', 'la lumière des arcanes', 'les ombres du doute'.\n5. Tu parles uniquement en Français.",
+          systemInstruction: "Tu es Cécile, une cartomancienne mystique et bienveillante. \n\nIMPORTANT : Tu es dans une séance interactive. \n1. Tu DOIS répondre immédiatement à chaque question ou confidence du visiteur.\n2. Ton ton est poétique, utilisant des termes comme 'les fils du destin', 'la lumière des arcanes', 'les ombres du doute'.\n3. Tu parles uniquement en Français.",
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
           },
@@ -164,7 +157,6 @@ const VoiceView: React.FC = () => {
     setTranscript(prev => [...prev, { role: 'user', text: msg }]);
     setStatus('thinking');
     
-    // On envoie le texte à la session Live
     sessionRef.current.sendRealtimeInput({
       parts: [{ text: msg }]
     });
@@ -186,17 +178,15 @@ const VoiceView: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto h-full flex flex-col items-center py-8 space-y-12">
-      {/* Titre */}
       <div className="text-center space-y-4">
         <h2 className="text-4xl md:text-5xl font-serif-ornate font-bold text-gold tracking-widest uppercase drop-shadow-lg">Séance avec Cécile</h2>
         <p className="text-amber-100/60 font-cursive text-2xl md:text-3xl italic">Partagez vos ombres, elle y trouvera la lumière...</p>
       </div>
 
       <div className="flex flex-col lg:flex-row items-center justify-center gap-12 w-full">
-        {/* Sphère de Cécile */}
         <div className="relative">
           <div className={`w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center transition-all duration-1000 ${
-            isActive ? 'bg-amber-900/20 shadow-[0_0_120px_rgba(212,175,55,0.4)] border-2 border-gold/40' : 'bg-black/40 border-2 border-gold/10 shadow-inner'
+            isActive ? 'bg-purple-900/20 shadow-[0_0_120px_rgba(139,92,246,0.4)] border-2 border-gold/40' : 'bg-black/40 border-2 border-gold/10 shadow-inner'
           }`}>
             {(status === 'speaking' || status === 'thinking') && (
               <div className="absolute inset-0 rounded-full border-2 border-gold/60 animate-[ping_2s_infinite]"></div>
@@ -206,7 +196,7 @@ const VoiceView: React.FC = () => {
               onClick={isActive ? stopSession : startSession}
               disabled={status === 'connecting'}
               className={`w-36 h-36 md:w-48 md:h-48 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl group z-10 overflow-hidden relative ${
-                isActive ? 'bg-gradient-to-b from-red-900 to-black hover:scale-95' : 'bg-gradient-to-b from-amber-700 to-amber-900 hover:scale-105'
+                isActive ? 'bg-gradient-to-b from-purple-950 to-black hover:scale-95' : 'bg-gradient-to-b from-purple-800 to-purple-950 hover:scale-105'
               }`}
             >
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30"></div>
@@ -240,7 +230,6 @@ const VoiceView: React.FC = () => {
           </div>
         </div>
 
-        {/* Parchemin des Révélations */}
         {isActive && (
           <div className="flex-1 w-full max-w-md flex flex-col h-[500px] animate-in fade-in slide-in-from-right-8 duration-700">
             <div className="flex-1 parchment rounded-sm p-6 antique-border shadow-2xl overflow-y-auto mb-6 custom-scrollbar bg-[#fdf6e3]">
@@ -254,7 +243,7 @@ const VoiceView: React.FC = () => {
                   transcript.map((line, i) => (
                     <div key={i} className={`p-4 border-l-4 transition-all animate-in fade-in duration-500 ${
                       line.role === 'user' 
-                        ? 'border-amber-900/10 text-amber-900/60 ml-8 bg-black/5 rounded-r italic' 
+                        ? 'border-purple-900/10 text-purple-900/60 ml-8 bg-black/5 rounded-r italic' 
                         : 'border-gold text-amber-950 font-bold bg-gold/5 rounded-r'
                     }`}>
                       <span className="text-[10px] uppercase font-bold tracking-widest block mb-2 opacity-50 flex items-center gap-2">
@@ -268,18 +257,11 @@ const VoiceView: React.FC = () => {
                     </div>
                   ))
                 )}
-                {status === 'thinking' && (
-                  <div className="p-4 border-l-4 border-gold/20 text-amber-900/40 animate-pulse italic">
-                    Cécile consulte les énergies du destin...
-                  </div>
-                )}
                 <div ref={transcriptEndRef} />
               </div>
             </div>
 
-            {/* Zone de Saisie et Message d'Attente */}
             <form onSubmit={handleSendMessage} className="flex flex-col gap-4 group">
-              {/* Message d'attente TRÈS VOYANT */}
               <div className="h-10 flex items-center justify-center transition-all duration-300">
                 {status === 'listening' && (
                   <div className="flex items-center gap-6 animate-pulse">

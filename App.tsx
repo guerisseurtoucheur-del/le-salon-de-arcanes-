@@ -6,6 +6,7 @@ import TarotRoom from './components/TarotRoom';
 import CrystalBallRoom from './components/CrystalBallRoom';
 import AstrologyRoom from './components/AstrologyRoom';
 import PendulumRoom from './components/PendulumRoom';
+import NexusRoom from './components/NexusRoom';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>(ViewType.DASHBOARD);
@@ -16,6 +17,7 @@ const App: React.FC = () => {
       case ViewType.CRYSTAL_BALL: return <CrystalBallRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
       case ViewType.ASTROLOGY: return <AstrologyRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
       case ViewType.PENDULUM: return <PendulumRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
+      case ViewType.NEXUS: return <NexusRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
       default: return <Dashboard onNavigate={setCurrentView} />;
     }
   };
@@ -28,7 +30,7 @@ const App: React.FC = () => {
       </header>
 
       {currentView !== ViewType.DASHBOARD && (
-        <nav className="flex justify-center gap-4 mb-8">
+        <nav className="flex justify-center flex-wrap gap-4 mb-8">
           <button 
             className={`nav-tab ${currentView === ViewType.TAROT ? 'active' : ''}`}
             onClick={() => setCurrentView(ViewType.TAROT)}
@@ -45,6 +47,10 @@ const App: React.FC = () => {
             className={`nav-tab ${currentView === ViewType.PENDULUM ? 'active' : ''}`}
             onClick={() => setCurrentView(ViewType.PENDULUM)}
           >Pendule</button>
+          <button 
+            className={`nav-tab ${currentView === ViewType.NEXUS ? 'active' : ''}`}
+            onClick={() => setCurrentView(ViewType.NEXUS)}
+          >Nexus</button>
         </nav>
       )}
 
