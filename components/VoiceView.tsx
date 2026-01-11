@@ -30,7 +30,7 @@ const VoiceView: React.FC = () => {
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         callbacks: {
           onopen: () => {
-            console.log('Session ouverte');
+            console.log('Session ouverte avec Cécile');
             setIsActive(true);
             setStatus('listening');
             
@@ -60,7 +60,7 @@ const VoiceView: React.FC = () => {
           onmessage: async (message: any) => {
             if (message.serverContent?.outputTranscription) {
                const text = message.serverContent.outputTranscription.text;
-               setTranscript(prev => [...prev, `IA : ${text}`]);
+               setTranscript(prev => [...prev, `Cécile : ${text}`]);
             }
             if (message.serverContent?.inputTranscription) {
                 const text = message.serverContent.inputTranscription.text;
@@ -99,19 +99,19 @@ const VoiceView: React.FC = () => {
             }
           },
           onerror: (err) => {
-            console.error('Erreur de session:', err);
+            console.error('Erreur de séance:', err);
             stopSession();
           },
           onclose: () => {
-            console.log('Session fermée');
+            console.log('Séance terminée');
             stopSession();
           }
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: 'Tu es une IA hautement empathique et conversationnelle. Parle de manière naturelle et chaleureuse, toujours en français.',
+          systemInstruction: "Tu es Cécile, l'âme de ce salon mystique. Tu es une femme d'une quarantaine d'années, élégante, d'une grande culture ésotérique. Ton ton est intrigant, posé, et légèrement mystérieux, comme si tu confiais des secrets millénaires à l'oreille de ton interlocuteur. Tu ne cries jamais, tu parles avec une douceur veloutée mais assurée. Tu es là pour guider les âmes à travers les arcanes du tarot et de la spiritualité. Réponds toujours en français, avec une pointe de poésie et d'énigme. N'hésite pas à utiliser des métaphores liées à la lumière, à l'ombre et au destin.",
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
           },
           outputAudioTranscription: {},
           inputAudioTranscription: {}
@@ -121,7 +121,7 @@ const VoiceView: React.FC = () => {
       sessionRef.current = await sessionPromise;
       
     } catch (err) {
-      console.error('Échec du démarrage de la session:', err);
+      console.error('Échec de la séance:', err);
       setStatus('idle');
     }
   };
@@ -139,61 +139,70 @@ const VoiceView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto h-full flex flex-col items-center justify-center space-y-12">
+    <div className="max-w-3xl mx-auto h-full flex flex-col items-center justify-center space-y-12 py-8">
       <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold">Voix en Direct Nexus</h2>
-        <p className="text-slate-400">Vivez des conversations fluides et humaines avec Gemini.</p>
+        <h2 className="text-4xl font-serif-ornate font-bold text-gold tracking-widest uppercase">Séance avec Cécile</h2>
+        <p className="text-amber-100/60 font-cursive text-2xl italic">Laissez sa voix guider vos pas dans l'obscurité...</p>
       </div>
 
       <div className="relative">
-        <div className={`w-64 h-64 rounded-full flex items-center justify-center transition-all duration-700 ${
-          isActive ? 'bg-indigo-600/20 shadow-[0_0_80px_rgba(79,70,229,0.4)]' : 'bg-slate-800'
+        <div className={`w-72 h-72 rounded-full flex items-center justify-center transition-all duration-1000 ${
+          isActive ? 'bg-amber-900/20 shadow-[0_0_100px_rgba(212,175,55,0.3)] border-2 border-gold/20' : 'bg-black/40 border-2 border-gold/10 shadow-inner'
         }`}>
           {status === 'speaking' && (
             <>
-              <div className="absolute inset-0 rounded-full border border-indigo-500 animate-[ping_2s_infinite]"></div>
-              <div className="absolute inset-0 rounded-full border border-indigo-500 animate-[ping_3s_infinite_0.5s]"></div>
+              <div className="absolute inset-0 rounded-full border border-gold/40 animate-[ping_3s_infinite]"></div>
+              <div className="absolute inset-4 rounded-full border border-gold/20 animate-[ping_4s_infinite_0.5s]"></div>
             </>
           )}
           
           <button
             onClick={isActive ? stopSession : startSession}
             disabled={status === 'connecting'}
-            className={`w-32 h-32 rounded-full flex items-center justify-center transition-all shadow-xl group z-10 ${
-              isActive ? 'bg-rose-600 hover:bg-rose-500' : 'bg-indigo-600 hover:bg-indigo-500 scale-110'
+            className={`w-40 h-40 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl group z-10 overflow-hidden relative ${
+              isActive ? 'bg-gradient-to-b from-red-900 to-black hover:scale-95' : 'bg-gradient-to-b from-amber-700 to-amber-900 hover:scale-105'
             }`}
           >
+            {/* Effet visuel interne au bouton */}
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30"></div>
+            
             {status === 'connecting' ? (
-              <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <div className="w-12 h-12 border-4 border-white/20 border-t-gold rounded-full animate-spin"></div>
             ) : isActive ? (
-              <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <div className="flex flex-col items-center gap-2">
+                <svg className="w-16 h-16 text-white/80 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span className="text-[10px] font-serif-ornate uppercase tracking-widest text-white/60">Rompre le lien</span>
+              </div>
             ) : (
-              <svg className="w-12 h-12 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
+              <div className="flex flex-col items-center gap-2">
+                <svg className="w-16 h-16 text-gold drop-shadow-lg group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                <span className="text-[10px] font-serif-ornate uppercase tracking-widest text-gold/80">Invoquer Cécile</span>
+              </div>
             )}
           </button>
         </div>
         
-        <div className="absolute -bottom-12 inset-x-0 text-center">
-          <span className={`text-sm font-bold uppercase tracking-widest ${
-            isActive ? 'text-indigo-400 animate-pulse' : 'text-slate-500'
+        <div className="absolute -bottom-16 inset-x-0 text-center">
+          <span className={`text-xs font-serif-ornate font-bold uppercase tracking-[0.3em] transition-colors duration-500 ${
+            isActive ? 'text-gold animate-pulse' : 'text-gold/30'
           }`}>
-            {status === 'connecting' ? 'Connexion...' : status === 'listening' ? 'À votre écoute...' : status === 'speaking' ? 'Gemini parle...' : 'Appuyez pour parler'}
+            {status === 'connecting' ? 'Appel au-delà du voile...' : status === 'listening' ? 'Cécile vous écoute...' : status === 'speaking' ? 'Cécile murmure...' : 'Prête pour la séance'}
           </span>
         </div>
       </div>
 
       {isActive && (
-        <div className="w-full glass rounded-3xl p-6 border border-slate-800 max-h-48 overflow-y-auto scroll-smooth">
-          <div className="space-y-3">
+        <div className="w-full parchment rounded-sm p-8 antique-border shadow-2xl max-h-64 overflow-y-auto scroll-smooth bg-[#fdf6e3]">
+          <div className="space-y-4 font-serif italic text-lg text-amber-950">
             {transcript.length === 0 ? (
-              <p className="text-slate-500 text-center italic">La transcription apparaîtra ici...</p>
+              <p className="text-amber-900/40 text-center">Le silence précède la révélation...</p>
             ) : (
               transcript.map((line, i) => (
-                <div key={i} className={`text-sm ${line.startsWith('Vous :') ? 'text-indigo-300' : 'text-slate-300'}`}>
+                <div key={i} className={`p-2 border-l-2 ${line.startsWith('Vous :') ? 'border-amber-900/10 text-amber-900/70' : 'border-gold text-amber-950 font-bold'}`}>
                   {line}
                 </div>
               ))
@@ -203,9 +212,9 @@ const VoiceView: React.FC = () => {
       )}
 
       {!isActive && (
-        <div className="grid grid-cols-2 gap-4 w-full opacity-60">
-          <Suggestion text="Raconte-moi une blague" onClick={startSession} />
-          <Suggestion text="Explique la physique quantique" onClick={startSession} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl px-4">
+          <Suggestion text="Parle-moi de mon destin, Cécile..." onClick={startSession} />
+          <Suggestion text="Que disent les ombres aujourd'hui ?" onClick={startSession} />
         </div>
       )}
     </div>
@@ -215,9 +224,9 @@ const VoiceView: React.FC = () => {
 const Suggestion: React.FC<{ text: string; onClick: () => void }> = ({ text, onClick }) => (
   <button 
     onClick={onClick}
-    className="glass p-4 rounded-xl text-sm border border-slate-800 hover:border-indigo-500/50 transition-all text-slate-400"
+    className="bg-black/40 p-4 rounded-lg text-sm border border-gold/20 hover:border-gold/50 transition-all text-gold/60 font-serif italic text-left group"
   >
-    "{text}"
+    <span className="group-hover:text-gold transition-colors">"{text}"</span>
   </button>
 );
 

@@ -161,7 +161,7 @@ const TarotView: React.FC = () => {
   if (step === 'selection') {
     return (
       <div className="max-w-4xl mx-auto py-12 text-center space-y-12">
-        <h2 className="text-5xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500 tracking-wider">Le Salon de Cécile</h2>
+        <h2 className="text-5xl font-serif-ornate font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500 tracking-wider">Le Salon de Cécile</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
           <DeckCard 
             title="Tarot de Marseille" 
@@ -186,7 +186,7 @@ const TarotView: React.FC = () => {
         <button onClick={() => setStep('selection')} className="text-slate-400 hover:text-white flex items-center gap-2 font-serif">
           ← Sortir du salon
         </button>
-        <h3 className="text-xl font-serif font-bold text-amber-400 tracking-wider">Le Salon de Cécile</h3>
+        <h3 className="text-xl font-serif-ornate font-bold text-amber-400 tracking-wider">Le Salon de Cécile</h3>
         <div className="w-24"></div>
       </div>
 
@@ -210,10 +210,10 @@ const TarotView: React.FC = () => {
                     <button 
                       key={i} 
                       onClick={drawCard}
-                      className="w-24 h-36 bg-slate-900 border-2 border-amber-600/30 rounded-lg hover:-translate-y-4 hover:border-amber-400 transition-all duration-300 shadow-lg relative overflow-hidden group"
+                      className="w-24 h-36 bg-amber-900 border-2 border-amber-600/30 rounded-lg hover:-translate-y-4 hover:border-amber-400 transition-all duration-300 shadow-lg relative overflow-hidden group"
                     >
-                       <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-transparent"></div>
-                       <div className="absolute inset-2 border border-amber-500/10 rounded"></div>
+                       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-40"></div>
+                       <div className="absolute inset-2 border border-amber-500/20 rounded"></div>
                     </button>
                   ))}
                 </div>
@@ -238,7 +238,7 @@ const TarotView: React.FC = () => {
                   <div className="flex flex-col items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     <button 
                       onClick={startOracleLive}
-                      className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 px-12 py-4 rounded-full font-serif font-bold text-xl shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all hover:scale-105"
+                      className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 px-12 py-4 rounded-full font-serif-ornate font-bold text-xl shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all hover:scale-105"
                     >
                       Interroger l'Oracle
                     </button>
@@ -277,8 +277,8 @@ const DeckCard: React.FC<{ title: string; desc: string; img: string; onClick: ()
     <div className="w-16 h-16 bg-amber-600/20 rounded-2xl flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform">
       {img}
     </div>
-    <h4 className="text-3xl font-serif font-bold text-white group-hover:text-amber-400 transition-colors">{title}</h4>
-    <p className="text-slate-400 leading-relaxed text-lg">{desc}</p>
+    <h4 className="text-3xl font-serif-ornate font-bold text-white group-hover:text-amber-400 transition-colors">{title}</h4>
+    <p className="text-slate-400 leading-relaxed text-lg font-serif italic">{desc}</p>
     <div className="flex items-center text-amber-500 font-serif font-bold gap-2">
       <span>Ouvrir</span>
       <svg className="w-5 h-5 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,59 +291,95 @@ const DeckCard: React.FC<{ title: string; desc: string; img: string; onClick: ()
 const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void; deckType: DeckType }> = ({ card, isFlipped, onClick, deckType }) => (
   <div 
     onClick={onClick}
-    className={`w-44 h-64 md:w-52 md:h-80 cursor-pointer perspective-1000 transition-all duration-700 ${isFlipped ? '' : 'hover:-translate-y-2'}`}
+    className={`w-44 h-72 md:w-56 md:h-96 cursor-pointer perspective-1000 transition-all duration-700 ${isFlipped ? '' : 'hover:-translate-y-4'}`}
   >
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-      {/* Front (Dos) */}
-      <div className="absolute inset-0 bg-slate-900 border-2 border-amber-600/50 rounded-xl flex flex-col items-center justify-center p-4 backface-hidden shadow-2xl">
-        <div className="absolute inset-2 border border-amber-500/10 rounded-lg"></div>
-        <div className="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-transparent to-transparent flex items-center justify-center">
-           <span className="text-5xl opacity-20">✨</span>
+      
+      {/* DOS DE LA CARTE (Authentique) */}
+      <div className="absolute inset-0 bg-[#3a1a0e] border-8 border-[#d4af37] rounded-sm flex flex-col items-center justify-center backface-hidden shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
+        <div className="absolute inset-2 border-2 border-[#d4af37]/30 flex items-center justify-center">
+            {/* Motif géométrique ancien */}
+            <div className="w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/vintage-speckles.png')]"></div>
+            <div className="absolute text-7xl opacity-40 font-serif-ornate text-[#d4af37]">C</div>
         </div>
       </div>
       
-      {/* Back (Révélée) */}
-      <div className={`absolute inset-0 rounded-xl flex flex-col rotate-y-180 backface-hidden shadow-2xl overflow-hidden bg-[#fdf6e3] text-slate-900
-        ${deckType === 'SYBILLE' ? 'border-[6px] border-[#d4af37]' : 'border-[6px] border-[#2b427b]'}`}>
+      {/* FACE DE LA CARTE RÉVÉLÉE */}
+      <div className={`absolute inset-0 rounded-sm flex flex-col rotate-y-180 backface-hidden shadow-2xl overflow-hidden
+        ${deckType === 'SYBILLE' 
+          ? 'bg-[#f8eed3] border-[6px] border-[#2c2c2c]' 
+          : 'bg-[#f4e4bc] border-[10px] border-[#1e1e1e]'}`}>
         
+        {/* Grain de papier ancien et taches de rousseur */}
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-60 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/old-map.png')] opacity-20 pointer-events-none"></div>
+
         {deckType === 'SYBILLE' ? (
-          <div className="h-full flex flex-col relative border border-[#d4af37]/40 p-1">
-            <div className="absolute top-1 left-1 bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm">
-                <span className={`text-lg font-bold ${card.playingCard?.includes('♥') || card.playingCard?.includes('♦') ? 'text-red-600' : 'text-slate-900'}`}>
-                  {card.playingCard}
+          /* DESIGN SYBILLE DES SALONS (Chromolithographie) */
+          <div className="h-full flex flex-col relative p-1">
+            {/* Miniature Carte à Jouer Antique */}
+            <div className="absolute top-2 left-2 w-10 h-14 bg-white border border-black/40 rounded-sm shadow-sm flex flex-col items-center justify-center z-10">
+                <span className={`text-lg font-black leading-none ${card.playingCard?.includes('♥') || card.playingCard?.includes('♦') ? 'text-red-700' : 'text-black'}`}>
+                  {card.playingCard?.replace(/[♥♦♣♠]/g, '')}
+                </span>
+                <span className={`text-xl leading-none ${card.playingCard?.includes('♥') || card.playingCard?.includes('♦') ? 'text-red-700' : 'text-black'}`}>
+                   {card.playingCard?.slice(-1)}
                 </span>
             </div>
-            <div className="mt-8 text-center">
-              <span className="text-sm font-serif font-bold uppercase tracking-tight leading-tight block border-b border-slate-200 pb-1 px-4">{card.name}</span>
+
+            {/* Cadre de l'illustration centrale */}
+            <div className="mt-4 flex-1 flex flex-col items-center justify-center border-2 border-black/10 mx-2 bg-white/30 rounded shadow-inner overflow-hidden relative">
+               <div className="text-8xl md:text-9xl z-10 grayscale-[0.3] contrast-125 saturate-50 brightness-90 transform hover:scale-110 transition-transform">
+                 {card.image}
+               </div>
+               {/* Effet trame d'impression */}
+               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30"></div>
             </div>
-            <div className="flex-1 flex items-center justify-center text-8xl drop-shadow-lg">{card.image}</div>
-            <div className="mb-2 text-center px-2 py-1 bg-slate-100/50 rounded border-t border-slate-200">
-               <span className="text-[11px] font-serif italic leading-none">{card.meaning}</span>
+
+            {/* Titre Calligraphié en Bas */}
+            <div className="h-16 flex flex-col items-center justify-center text-center">
+              <span className="font-cursive text-2xl md:text-3xl text-amber-950 leading-none">{card.name}</span>
+              <span className="text-[10px] font-serif uppercase tracking-widest text-amber-900/60 mt-1">{card.meaning.split(',')[0]}</span>
             </div>
+            
+            {/* Coins arrondis factices */}
+            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-black/20"></div>
+            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-black/20"></div>
           </div>
         ) : (
-          /* Design Tarot de Marseille Authentique */
-          <div className="h-full flex flex-col relative border border-[#2b427b]/30">
-            {/* Cartouche Chiffre Romain (Top) */}
-            <div className="absolute top-0 left-0 right-0 h-10 flex items-center justify-center border-b border-[#2b427b]/20 bg-white/50">
-              <span className="font-serif font-bold text-lg text-[#2b427b] tracking-widest">{card.romanNumeral}</span>
+          /* DESIGN TAROT DE MARSEILLE (Gravure sur bois / Xylographie) */
+          <div className="h-full flex flex-col relative">
+            {/* Cartouche Chiffre Romain (Typique Conver) */}
+            <div className="h-12 flex items-center justify-center border-b-[3px] border-[#2b427b]/80 bg-white/20">
+              <span className="font-serif-ornate font-black text-2xl text-[#2b427b] tracking-[0.3em]">{card.romanNumeral}</span>
             </div>
 
-            {/* Illustration centrale */}
-            <div className="flex-1 flex items-center justify-center text-8xl md:text-9xl drop-shadow-xl my-8">
-              {card.image}
+            {/* Illustration Centrale stylisée Bois gravé */}
+            <div className="flex-1 flex items-center justify-center relative bg-gradient-to-b from-transparent via-[#fdf6e3]/30 to-transparent">
+              <div className="text-9xl md:text-[10rem] drop-shadow-[4px_4px_0px_rgba(43,66,123,0.3)] filter contrast-150 brightness-95">
+                {card.image}
+              </div>
+              
+              {/* Éléments de décorations d'angle xylographiques */}
+              <div className="absolute top-4 left-4 text-[#2b427b]/20 text-4xl">✥</div>
+              <div className="absolute top-4 right-4 text-[#2b427b]/20 text-4xl">✥</div>
             </div>
 
-            {/* Cartouche Nom de l'Arcane (Bottom) */}
-            <div className="absolute bottom-0 left-0 right-0 h-12 bg-white flex items-center justify-center border-t-2 border-[#2b427b]">
-               <div className="text-center w-full px-1">
-                 <span className="text-sm md:text-base font-serif font-bold uppercase tracking-tighter text-[#2b427b] leading-none block">{card.name}</span>
-                 <span className="text-[9px] text-slate-400 font-serif italic block mt-0.5 truncate">{card.meaning}</span>
+            {/* Cartouche Nom de l'Arcane avec double filet */}
+            <div className="h-16 border-t-[3px] border-[#c8242a] bg-white/60 flex flex-col items-center justify-center relative">
+               <div className="absolute inset-1 border border-[#c8242a]/20"></div>
+               <span className="text-lg md:text-xl font-serif-ornate font-black uppercase tracking-tighter text-[#c8242a] leading-tight">
+                 {card.name}
+               </span>
+               <div className="flex gap-4 mt-1">
+                 <div className="w-8 h-[2px] bg-[#ebb624]"></div>
+                 <div className="w-2 h-2 rounded-full bg-[#2b427b]"></div>
+                 <div className="w-8 h-[2px] bg-[#ebb624]"></div>
                </div>
             </div>
             
-            {/* Décoration de bordure interne typique */}
-            <div className="absolute inset-1 border border-[#2b427b]/10 pointer-events-none"></div>
+            {/* Effet d'usure des bords de la plaque de bois */}
+            <div className="absolute inset-0 border-[1px] border-black/5 pointer-events-none"></div>
           </div>
         )}
       </div>
