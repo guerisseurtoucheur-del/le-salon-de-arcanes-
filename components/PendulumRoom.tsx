@@ -2,6 +2,42 @@
 import React, { useState, useEffect } from 'react';
 import { getPendulumResponse } from '../services/geminiService';
 
+const DecorativeCardBack: React.FC<{ className?: string, symbol?: string, delay?: string }> = ({ className, symbol = "👁️", delay = "0s" }) => (
+  <div className={`relative overflow-hidden rounded-sm border-[3px] border-gold-muted/50 bg-velvet-deep shadow-[0_10px_40px_rgba(0,0,0,0.8)] ${className}`}>
+    {/* Ornate Frame */}
+    <div className="absolute inset-2 border border-gold-bright/30 flex flex-col items-center justify-center">
+       {/* Filigree corners */}
+       <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-gold-bright/60"></div>
+       <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-gold-bright/60"></div>
+       <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-gold-bright/60"></div>
+       <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-gold-bright/60"></div>
+       
+       {/* Central Symbol */}
+       <div className="relative">
+         <span className="text-5xl text-gold-bright drop-shadow-[0_0_15px_rgba(255,215,0,0.8)]">{symbol}</span>
+         <div 
+          className="absolute inset-0 scale-[1.8] border border-dashed border-gold-bright/40 rounded-full animate-[spin_15s_linear_infinite]"
+          style={{ animationDelay: delay }}
+         ></div>
+         <div 
+          className="absolute inset-0 scale-[2.2] border border-dotted border-gold-muted/20 rounded-full animate-[spin_25s_linear_infinite_reverse]"
+          style={{ animationDelay: delay }}
+         ></div>
+       </div>
+
+       {/* Mystical Textures */}
+       <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,215,0,0.15)_0%,transparent_70%)]"></div>
+       <div className="w-1/2 h-[1px] bg-gradient-to-r from-transparent via-gold-bright/40 to-transparent my-6"></div>
+       <div className="text-[10px] font-mystic text-gold-bright/40 tracking-[0.2em] uppercase text-center px-4 leading-tight">
+         Arcana Mundi • Veritas Invenietur • Fati Constans
+       </div>
+    </div>
+    
+    {/* Subtle aging texture */}
+    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/pinstriped-dark.png')] opacity-20 mix-blend-overlay"></div>
+  </div>
+);
+
 const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
   const [question, setQuestion] = useState('');
   const [result, setResult] = useState<{answer: string, reason: string} | null>(null);
@@ -49,6 +85,48 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
 
   return (
     <div className="flex flex-col items-center gap-12 py-10 overflow-hidden min-h-[90vh] relative">
+      {/* Cinematic Table Background Layer */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Dark Velvet Texture */}
+        <div className="absolute inset-0 bg-[#0a050d] opacity-90 shadow-inner">
+           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] mix-blend-overlay opacity-30"></div>
+           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80"></div>
+        </div>
+        
+        {/* Scattered Tarot Cards (Decorative and Cluster on the right) */}
+        {/* Left Side */}
+        <DecorativeCardBack 
+          symbol="🌙"
+          className="absolute top-20 left-[-40px] w-48 h-80 rotate-[-15deg] opacity-20 blur-[2px] scale-90" 
+        />
+        
+        {/* Right Side Cluster - More visible and detailed */}
+        <DecorativeCardBack 
+          symbol="🔯"
+          className="absolute top-10 right-10 w-52 h-84 rotate-[10deg] opacity-40 blur-[0.5px] scale-100 z-10" 
+          delay="-2s"
+        />
+        <DecorativeCardBack 
+          symbol="🪐"
+          className="absolute top-40 right-[-30px] w-48 h-80 rotate-[-5deg] opacity-35 blur-[1px] scale-95" 
+          delay="-5s"
+        />
+        <DecorativeCardBack 
+          symbol="🗝️"
+          className="absolute bottom-20 right-[-20px] w-52 h-84 rotate-[15deg] opacity-50 blur-0 scale-105 z-10" 
+          delay="-8s"
+        />
+        <DecorativeCardBack 
+          symbol="⚖️"
+          className="absolute bottom-[-60px] right-[150px] w-48 h-80 rotate-[-12deg] opacity-30 blur-[1px] scale-90" 
+          delay="-12s"
+        />
+        
+        {/* Candlelight Warmth (Glows) */}
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-orange-900/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-amber-900/10 rounded-full blur-[150px] animate-pulse [animation-delay:1s]"></div>
+      </div>
+
       <div className="text-center max-w-lg space-y-4 animate-fade z-50">
         <h2 className="text-4xl md:text-5xl font-mystic text-gold-bright tracking-[0.3em] uppercase drop-shadow-lg">Le Sanctuaire des Vérités</h2>
         <p className="text-gold-muted font-serif italic text-xl">Le cristal capte les échos de votre destinée.</p>
