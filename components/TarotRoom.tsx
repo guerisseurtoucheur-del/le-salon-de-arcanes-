@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 
-const TAROT_CARDS = [
+const TAROT_MARSEILLE = [
   { name: "Le Bateleur", image: "🧙", meaning: "Potentiel infini, nouveaux départs." },
   { name: "La Papesse", image: "📖", meaning: "Intuition profonde, mystères cachés." },
   { name: "L'Amoureux", image: "❤️", meaning: "Choix de l'âme, unions sacrées." },
@@ -11,28 +12,59 @@ const TAROT_CARDS = [
   { name: "L'Ermite", image: "🕯️", meaning: "Sagesse intérieure, introspection." },
 ];
 
+const RIDER_WAITE = [
+  { name: "Le Magicien", image: "✨", meaning: "Action, volonté, manifestation." },
+  { name: "La Grande Prêtresse", image: "🌙", meaning: "Sagesse, inconscient, mystère." },
+  { name: "L'Impératrice", image: "🌿", meaning: "Abondance, nature, créativité." },
+  { name: "L'Empereur", image: "🛡️", meaning: "Autorité, structure, protection." },
+  { name: "Le Hiérophante", image: "🛐", meaning: "Tradition, apprentissage, mentor." },
+  { name: "Les Amants", image: "🕊️", meaning: "Harmonie, valeurs, alignement." },
+  { name: "La Force", image: "🦁", meaning: "Courage, compassion, maîtrise." },
+  { name: "L'Étoile", image: "⭐", meaning: "Espoir, inspiration, sérénité." },
+];
+
+const ORACLE_CARDS = [
+  { name: "La Destinée", image: "🗝️", meaning: "Une porte s'ouvre, le destin s'accomplit." },
+  { name: "L'Élévation", image: "🧗", meaning: "Progrès spirituel ou social, succès." },
+  { name: "La Réussite", image: "🏆", meaning: "Triomphe après l'effort, récompense." },
+  { name: "L'Inconstance", image: "🌪️", meaning: "Changements rapides, incertitude passagère." },
+  { name: "La Pensée", image: "💭", meaning: "Réflexion nécessaire, projets en gestation." },
+  { name: "Le Cadeau", image: "🎁", meaning: "Une surprise arrive, générosité du sort." },
+  { name: "La Fidélité", image: "🐕", meaning: "Soutien sincère, amitié durable." },
+  { name: "L'Union", image: "💍", meaning: "Alliance, contrat ou rencontre marquante." },
+];
+
 const TarotRoom: React.FC<{ onBack: () => void }> = () => {
-  const [deckType, setDeckType] = useState<'MARSEILLE' | 'RIDER_WAITE'>('MARSEILLE');
+  const [deckType, setDeckType] = useState<'MARSEILLE' | 'RIDER_WAITE' | 'ORACLE'>('MARSEILLE');
   const [selectedCards, setSelectedCards] = useState<any[]>([]);
   const [isReading, setIsReading] = useState(false);
 
   const drawCards = () => {
-    const shuffled = [...TAROT_CARDS].sort(() => 0.5 - Math.random());
+    let sourceDeck;
+    if (deckType === 'MARSEILLE') sourceDeck = TAROT_MARSEILLE;
+    else if (deckType === 'RIDER_WAITE') sourceDeck = RIDER_WAITE;
+    else sourceDeck = ORACLE_CARDS;
+
+    const shuffled = [...sourceDeck].sort(() => 0.5 - Math.random());
     setSelectedCards(shuffled.slice(0, 3));
     setIsReading(true);
   };
 
   return (
     <div className="space-y-16 py-6">
-      <div className="flex justify-center gap-10">
+      <div className="flex justify-center flex-wrap gap-6 md:gap-10">
         <button 
-          onClick={() => setDeckType('MARSEILLE')}
-          className={`px-8 py-3 font-mystic tracking-widest transition-all rounded-sm border-2 ${deckType === 'MARSEILLE' ? 'bg-gold-bright text-purple-950 border-gold-bright shadow-[0_0_20px_rgba(255,215,0,0.4)]' : 'border-gold-muted text-gold-muted hover:border-gold-bright'}`}
+          onClick={() => { setDeckType('MARSEILLE'); setIsReading(false); }}
+          className={`px-6 md:px-8 py-3 font-mystic tracking-widest transition-all rounded-sm border-2 ${deckType === 'MARSEILLE' ? 'bg-gold-bright text-purple-950 border-gold-bright shadow-[0_0_20px_rgba(255,215,0,0.4)]' : 'border-gold-muted/40 text-gold-muted hover:border-gold-bright'}`}
         >TAROT DE MARSEILLE</button>
         <button 
-          onClick={() => setDeckType('RIDER_WAITE')}
-          className={`px-8 py-3 font-mystic tracking-widest transition-all rounded-sm border-2 ${deckType === 'RIDER_WAITE' ? 'bg-gold-bright text-purple-950 border-gold-bright shadow-[0_0_20px_rgba(255,215,0,0.4)]' : 'border-gold-muted text-gold-muted hover:border-gold-bright'}`}
+          onClick={() => { setDeckType('RIDER_WAITE'); setIsReading(false); }}
+          className={`px-6 md:px-8 py-3 font-mystic tracking-widest transition-all rounded-sm border-2 ${deckType === 'RIDER_WAITE' ? 'bg-gold-bright text-purple-950 border-gold-bright shadow-[0_0_20px_rgba(255,215,0,0.4)]' : 'border-gold-muted/40 text-gold-muted hover:border-gold-bright'}`}
         >RIDER-WAITE</button>
+        <button 
+          onClick={() => { setDeckType('ORACLE'); setIsReading(false); }}
+          className={`px-6 md:px-8 py-3 font-mystic tracking-widest transition-all rounded-sm border-2 ${deckType === 'ORACLE' ? 'bg-gold-bright text-purple-950 border-gold-bright shadow-[0_0_20px_rgba(255,215,0,0.4)]' : 'border-gold-muted/40 text-gold-muted hover:border-gold-bright'}`}
+        >ORACLE MYSTIQUE</button>
       </div>
 
       {!isReading ? (
@@ -48,6 +80,9 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
           >
             Mélanger les Arcanes
           </button>
+          <p className="mt-8 text-gold-muted italic font-serif">
+            {deckType === 'ORACLE' ? "L'Oracle vous parlera des événements concrets de votre vie." : "Le Tarot vous révélera les profondeurs de votre âme."}
+          </p>
         </div>
       ) : (
         <div className="space-y-16 animate-in fade-in duration-1000">
@@ -57,7 +92,9 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
                 <span className="text-xs font-mystic uppercase tracking-[0.4em] text-gold-muted/60">{i === 0 ? 'Passé' : i === 1 ? 'Présent' : 'Futur'}</span>
                 <div className="w-56 h-88 bg-[#fdf6e3] p-1 border-4 border-gold-muted shadow-[0_20px_50px_rgba(0,0,0,0.7)] transform transition-transform hover:-translate-y-4 rounded-sm">
                    <div className="h-full w-full border-2 border-gold-muted/20 flex flex-col items-center justify-between p-4">
-                      <div className="text-xs font-bold text-amber-900 opacity-40 uppercase tracking-tighter">Arcane Majeur</div>
+                      <div className="text-xs font-bold text-amber-900 opacity-40 uppercase tracking-tighter">
+                        {deckType === 'ORACLE' ? 'Oracle des Destins' : 'Arcane Majeur'}
+                      </div>
                       <span className="text-8xl drop-shadow-md my-6">{card.image}</span>
                       <h4 className="font-mystic text-amber-950 text-xl text-center leading-none border-t border-gold-muted/30 pt-4 w-full uppercase">{card.name}</h4>
                    </div>
@@ -68,7 +105,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
           
           <div className="p-10 glass-mystic gold-border rounded-3xl text-center max-w-3xl mx-auto shadow-2xl relative">
             <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-8 bg-purple-950 border-2 border-gold-muted font-mystic text-gold-bright text-xl uppercase tracking-widest">Vision de l'Oracle</div>
-            <p className="italic text-3xl font-cursive text-gold-bright leading-relaxed px-6">
+            <p className="italic text-2xl md:text-3xl font-cursive text-gold-bright leading-relaxed px-6">
               "Les fils de votre destin s'entrelacent : {selectedCards.map(c => c.meaning).join(' ')}"
             </p>
           </div>
