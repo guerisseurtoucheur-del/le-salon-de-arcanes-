@@ -13,7 +13,7 @@ const MARSEILLE_CARDS: TarotCard[] = [
   { romanNumeral: "I", name: "Le Bateleur", image: "🧙", meaning: "Nouveau départ, potentiel, habileté." },
   { romanNumeral: "II", name: "La Papesse", image: "📖", meaning: "Intuition, sagesse cachée, mystère." },
   { romanNumeral: "III", name: "L'Impératrice", image: "👑", meaning: "Créativité, fertilité, abundance." },
-  { romanNumeral: "IIII", name: "L'Empereur", image: "🏛️", meaning: "Autorité, structure, stabilité." },
+  { romanNumeral: "IIII", name: "L'Empereur", image: "🏛️", meaning: "Autorité, structure, stability." },
   { romanNumeral: "V", name: "Le Pape", image: "🕊️", meaning: "Tradition, conseil, spiritualité." },
   { romanNumeral: "VI", name: "L'Amoureux", image: "❤️", meaning: "Choix, relations, harmonie." },
   { romanNumeral: "VII", name: "Le Chariot", image: "🚜", meaning: "Victoire, détermination, voyage." },
@@ -173,6 +173,9 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
     setStatus('repos');
   };
 
+  const getDeckBackClass = () => deckType === 'MARSEILLE' ? 'back-marseille' : 'back-oracle';
+  const getDeckBackIcon = () => deckType === 'MARSEILLE' ? '☀️' : '👁️';
+
   if (step === 'selection') {
     return (
       <div className="max-w-4xl mx-auto py-12 text-center space-y-12">
@@ -219,9 +222,8 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
                 <p className="text-3xl text-amber-100/60 font-cursive italic">Concentrez-vous... Écoutez l'appel des Arcanes.</p>
                 <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
                   {[...Array(12)].map((_, i) => (
-                    <button key={i} onClick={drawCard} className="w-24 h-40 card-back-pattern border-gold/30 rounded shadow-2xl transition-all hover:-translate-y-6 flex flex-col items-center justify-between py-4">
-                       <span className="text-[10px] text-gold-muted">☾</span>
-                       <span className="text-[10px] text-gold-muted">☽</span>
+                    <button key={i} onClick={drawCard} className={`w-24 h-40 card-back-pattern ${getDeckBackClass()} border-gold/30 rounded shadow-2xl transition-all hover:-translate-y-6 flex flex-col items-center justify-center`}>
+                       <span className="text-3xl drop-shadow-md">{getDeckBackIcon()}</span>
                     </button>
                   ))}
                 </div>
@@ -230,7 +232,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
               <div className="w-full flex flex-col items-center gap-16">
                 <div className="flex flex-wrap justify-center gap-12 lg:gap-24">
                   {selectedCards.map((card, i) => (
-                    <TarotCardComponent key={i} card={card} isFlipped={isFlipped[i]} onClick={() => flipCard(i)} deckType={deckType!} />
+                    <TarotCardComponent key={i} card={card} isFlipped={isFlipped[i]} onClick={() => flipCard(i)} backClass={getDeckBackClass()} backIcon={getDeckBackIcon()} />
                   ))}
                 </div>
 
@@ -261,19 +263,18 @@ const DeckSelectionCard: React.FC<{ title: string; desc: string; img: string; on
   </button>
 );
 
-const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void; deckType: DeckType }> = ({ card, isFlipped, onClick, deckType }) => (
+const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void; backClass: string; backIcon: string }> = ({ card, isFlipped, onClick, backClass, backIcon }) => (
   <div onClick={onClick} className={`w-52 h-80 cursor-pointer perspective-1000 ${isFlipped ? '' : 'hover:-translate-y-8'}`}>
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-      <div className="absolute inset-0 card-back-pattern rounded shadow-2xl backface-hidden bg-purple-900 flex items-center justify-center">
-         <div className="card-verso-icon">
-            <span>✨</span>
-            <span className="text-3xl">👁️</span>
-            <span>✨</span>
-         </div>
+      <div className={`absolute inset-0 card-back-pattern ${backClass} rounded shadow-2xl backface-hidden flex items-center justify-center`}>
+         <span className="card-back-icon">{backIcon}</span>
       </div>
-      <div className="absolute inset-0 rounded rotate-y-180 backface-hidden card-antique-container p-4">
-        <div className="text-8xl flex items-center justify-center h-full">{card.image}</div>
-        <div className="text-center font-bold text-amber-950 mt-2">{card.name}</div>
+      <div className="absolute inset-0 rounded rotate-y-180 backface-hidden card-antique-container p-4 bg-[#fdf6e3]">
+        <div className="h-full w-full border-2 border-gold-muted/20 flex flex-col items-center justify-between py-2">
+          <div className="text-xs font-bold text-amber-900 opacity-40 uppercase">{card.romanNumeral || 'Oracle'}</div>
+          <div className="text-8xl flex items-center justify-center my-auto">{card.image}</div>
+          <div className="text-center font-bold text-amber-950 font-mystic uppercase tracking-widest border-t border-gold-muted/30 pt-2 w-full">{card.name}</div>
+        </div>
       </div>
     </div>
   </div>

@@ -50,6 +50,18 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
     setIsReading(true);
   };
 
+  const getDeckBackClass = () => {
+    if (deckType === 'MARSEILLE') return 'back-marseille';
+    if (deckType === 'RIDER_WAITE') return 'back-rider';
+    return 'back-oracle';
+  };
+
+  const getDeckBackIcon = () => {
+    if (deckType === 'MARSEILLE') return '☀️';
+    if (deckType === 'RIDER_WAITE') return '☸️';
+    return '👁️';
+  };
+
   return (
     <div className="space-y-16 py-6">
       <div className="flex justify-center flex-wrap gap-6 md:gap-10">
@@ -69,13 +81,13 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
 
       {!isReading ? (
         <div className="text-center py-12">
-          <div className="mb-12 flex justify-center gap-4 opacity-30">
+          <div className="mb-12 flex justify-center gap-6 py-10 overflow-hidden">
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="w-24 h-36 border-2 border-gold-muted/50 rounded-lg bg-purple-950/40 transform rotate-[-5deg] flex flex-col items-center justify-between py-4 relative overflow-hidden">
-                <span className="text-xs verso-moon-symbol">☾</span>
-                <span className="text-3xl verso-placeholder-symbol">👁️</span>
-                <span className="text-xs verso-moon-symbol">☽</span>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,215,0,0.1)_0%,transparent_70%)] animate-pulse"></div>
+              <div 
+                key={i} 
+                className={`w-32 h-52 card-back-pattern ${getDeckBackClass()} shadow-2xl transition-all duration-500 hover:-translate-y-6 hover:rotate-3 flex items-center justify-center`}
+              >
+                <span className="card-back-icon">{getDeckBackIcon()}</span>
               </div>
             ))}
           </div>
