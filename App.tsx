@@ -9,6 +9,26 @@ import PendulumRoom from './components/PendulumRoom';
 import CecileDeepRoom from './components/CecileDeepRoom';
 import NexusRoom from './components/NexusRoom';
 
+const Candle: React.FC<{ className?: string }> = ({ className }) => (
+  <div className={`relative flex flex-col items-center ${className}`}>
+    {/* Flamme */}
+    <div className="relative mb-1">
+      <div className="flame-glow w-16 h-16 bg-amber-500/20 rounded-full absolute -top-8 left-1/2 -translate-x-1/2 blur-xl animate-glow-pulse"></div>
+      <div className="flame w-4 h-8 bg-gradient-to-t from-orange-600 via-amber-400 to-yellow-100 rounded-full blur-[1px] animate-flame-flicker origin-bottom shadow-[0_0_20px_rgba(251,191,36,0.6)]"></div>
+    </div>
+    {/* Corps de la bougie */}
+    <div className="w-6 h-32 bg-gradient-to-b from-[#2a1a0a] via-[#4d3319] to-[#1a0f05] rounded-t-sm shadow-inner relative border-x border-gold-muted/20">
+      <div className="absolute top-0 left-0 w-full h-2 bg-black/40 blur-[1px]"></div>
+      {/* Coulures de cire */}
+      <div className="absolute top-1 left-1 w-1 h-6 bg-[#4d3319] rounded-full opacity-60"></div>
+      <div className="absolute top-2 right-2 w-1 h-4 bg-[#4d3319] rounded-full opacity-40"></div>
+    </div>
+    {/* Support/Bougeoir */}
+    <div className="w-12 h-2 bg-gold-muted/40 rounded-full -mt-1 shadow-lg border-b border-gold-bright/10"></div>
+    <div className="w-16 h-1 bg-black/60 rounded-full mt-0.5"></div>
+  </div>
+);
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>(ViewType.DASHBOARD);
   const [time, setTime] = useState(new Date());
@@ -30,14 +50,12 @@ const App: React.FC = () => {
   };
 
   const enterSalon = async () => {
-    // 1. Déverrouiller l'AudioContext pour tout le site
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (AudioCtx) {
       const ctx = new AudioCtx();
       if (ctx.state === 'suspended') await ctx.resume();
     }
 
-    // 2. Jouer le son de cristal immédiatement
     const chime = new Audio();
     chime.src = 'https://assets.mixkit.co/active_storage/sfx/2367/2367-preview.mp3';
     chime.volume = 0.7;
@@ -51,7 +69,6 @@ const App: React.FC = () => {
 
     setIsEntering(true);
 
-    // 3. Préparer la musique d'ambiance (reste en mémoire même sans contrôleur UI)
     const backgroundMusic = new Audio();
     backgroundMusic.loop = true;
     backgroundMusic.src = AUDIO_THEMES[ViewType.DASHBOARD];
@@ -78,8 +95,15 @@ const App: React.FC = () => {
 
   if (!hasEntered) {
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95">
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.15)_0%,transparent_70%)]"></div>
+        
+        {/* Bougies décoratives */}
+        <div className={`absolute inset-0 flex items-center justify-between px-10 md:px-20 lg:px-40 pointer-events-none transition-all duration-1000 ${isEntering ? 'opacity-0 scale-90' : 'animate-in fade-in duration-1000'}`}>
+          <Candle className="mb-20" />
+          <Candle className="mb-20" />
+        </div>
+
         <div className={`text-center space-y-12 transition-all duration-1000 relative z-10 ${isEntering ? 'opacity-0 scale-110' : 'animate-in fade-in zoom-in duration-1000'}`}>
           <div className="space-y-4">
             <h1 className="text-7xl font-mystic text-gold-bright tracking-[0.2em] uppercase drop-shadow-[0_0_20px_rgba(255,215,0,0.5)]">Le Salon de Cécile</h1>
@@ -121,6 +145,25 @@ const App: React.FC = () => {
             <span className="text-xl">🎧</span> Activez vos sens pour l'expérience complète
           </p>
         </div>
+
+        <style>{`
+          @keyframes flame-flicker {
+            0%, 100% { transform: scaleY(1) scaleX(1) rotate(0deg); }
+            25% { transform: scaleY(1.1) scaleX(0.9) rotate(1deg); }
+            50% { transform: scaleY(0.95) scaleX(1.05) rotate(-1.5deg); }
+            75% { transform: scaleY(1.05) scaleX(0.95) rotate(0.5deg); }
+          }
+          @keyframes glow-pulse {
+            0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.15); }
+          }
+          .animate-flame-flicker {
+            animation: flame-flicker 0.15s ease-in-out infinite;
+          }
+          .animate-glow-pulse {
+            animation: glow-pulse 3s ease-in-out infinite;
+          }
+        `}</style>
       </div>
     );
   }
