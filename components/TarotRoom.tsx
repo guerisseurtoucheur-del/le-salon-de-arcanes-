@@ -18,7 +18,7 @@ const RIDER_WAITE = [
   { name: "L'Impératrice", image: "🌿", meaning: "Abondance, nature, créativité." },
   { name: "L'Empereur", image: "🛡️", meaning: "Autorité, structure, protection." },
   { name: "Le Hiérophante", image: "🛐", meaning: "Tradition, apprentissage, mentor." },
-  { name: "Les Amants", image: "🕊️", meaning: "Harmonie, valeurs, alignement." },
+  { name: "Les Amants", image: "🕊️", meaning: "Harmonie, values, alignement." },
   { name: "La Force", image: "🦁", meaning: "Courage, compassion, maîtrise." },
   { name: "L'Étoile", image: "⭐", meaning: "Espoir, inspiration, sérénité." },
 ];
@@ -71,7 +71,12 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
         <div className="text-center py-12">
           <div className="mb-12 flex justify-center gap-4 opacity-30">
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="w-20 h-32 border-2 border-gold-muted rounded-lg bg-purple-950/40 transform rotate-[-5deg]"></div>
+              <div key={i} className="w-24 h-36 border-2 border-gold-muted/50 rounded-lg bg-purple-950/40 transform rotate-[-5deg] flex flex-col items-center justify-between py-4 relative overflow-hidden">
+                <span className="text-xs">☾</span>
+                <span className="text-2xl">👁️</span>
+                <span className="text-xs">☽</span>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,215,0,0.05)_0%,transparent_70%)]"></div>
+              </div>
             ))}
           </div>
           <button 

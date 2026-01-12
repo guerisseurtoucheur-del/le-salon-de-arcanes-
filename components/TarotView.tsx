@@ -219,7 +219,10 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
                 <p className="text-3xl text-amber-100/60 font-cursive italic">Concentrez-vous... Écoutez l'appel des Arcanes.</p>
                 <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
                   {[...Array(12)].map((_, i) => (
-                    <button key={i} onClick={drawCard} className="w-24 h-40 card-back-pattern border-gold/30 rounded shadow-2xl transition-all hover:-translate-y-6"></button>
+                    <button key={i} onClick={drawCard} className="w-24 h-40 card-back-pattern border-gold/30 rounded shadow-2xl transition-all hover:-translate-y-6 flex flex-col items-center justify-between py-4">
+                       <span className="text-[10px] text-gold-muted">☾</span>
+                       <span className="text-[10px] text-gold-muted">☽</span>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -261,7 +264,13 @@ const DeckSelectionCard: React.FC<{ title: string; desc: string; img: string; on
 const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void; deckType: DeckType }> = ({ card, isFlipped, onClick, deckType }) => (
   <div onClick={onClick} className={`w-52 h-80 cursor-pointer perspective-1000 ${isFlipped ? '' : 'hover:-translate-y-8'}`}>
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-      <div className="absolute inset-0 card-back-pattern rounded shadow-2xl backface-hidden bg-purple-900"></div>
+      <div className="absolute inset-0 card-back-pattern rounded shadow-2xl backface-hidden bg-purple-900 flex items-center justify-center">
+         <div className="card-verso-icon">
+            <span>✨</span>
+            <span className="text-3xl">👁️</span>
+            <span>✨</span>
+         </div>
+      </div>
       <div className="absolute inset-0 rounded rotate-y-180 backface-hidden card-antique-container p-4">
         <div className="text-8xl flex items-center justify-center h-full">{card.image}</div>
         <div className="text-center font-bold text-amber-950 mt-2">{card.name}</div>
