@@ -31,28 +31,34 @@ const App: React.FC = () => {
   };
 
   const enterSalon = async () => {
-    // 1. Déverrouiller l'AudioContext pour tout le site (essentiel pour la voix TTS plus tard)
+    // 1. Déverrouiller l'AudioContext pour tout le site
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (AudioCtx) {
       const ctx = new AudioCtx();
       if (ctx.state === 'suspended') await ctx.resume();
     }
 
-    // 2. Jouer le son de cristal immédiatement (Interaction utilisateur directe)
-    // Utilisation d'un lien plus robuste
-    const chime = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-magical-glitter-shimmer-2364.mp3');
+    // 2. Jouer le son de cristal immédiatement avec une URL de secours plus robuste
+    const chime = new Audio();
+    // Utilisation d'une source alternative de haute disponibilité pour éviter les blocages de certains CDN
+    chime.src = 'https://assets.mixkit.co/active_storage/sfx/2367/2367-preview.mp3';
     chime.volume = 0.7;
-    chime.play().catch(e => console.error("Le navigateur a bloqué le son de cristal:", e));
+    chime.load(); // Forcer le chargement de la source
+    
+    chime.play().catch(() => {
+      // Fallback si la première URL échoue (source non supportée ou bloquée)
+      chime.src = 'https://www.soundjay.com/magic/sounds/magic-chime-01.mp3';
+      chime.load();
+      chime.play().catch(e => console.error("Échec définitif du son d'entrée:", e));
+    });
 
     setIsEntering(true);
 
-    // 3. Préparer la musique d'ambiance pendant l'animation
+    // 3. Préparer la musique d'ambiance
     const backgroundMusic = new Audio();
     backgroundMusic.loop = true;
     backgroundMusic.src = AUDIO_THEMES[ViewType.DASHBOARD];
-    backgroundMusic.volume = 0; // On commence à 0 pour le fondu dans AudioController
-    
-    // On la charge déjà
+    backgroundMusic.volume = 0;
     backgroundMusic.load();
 
     setTimeout(() => {
@@ -95,7 +101,6 @@ const App: React.FC = () => {
               <div className="absolute inset-0 bg-gold-bright/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
             </button>
 
-            {/* Particules de jaillissement */}
             {isEntering && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-visible">
                 {[...Array(20)].map((_, i) => (

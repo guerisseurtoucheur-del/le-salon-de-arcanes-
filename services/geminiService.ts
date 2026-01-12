@@ -52,7 +52,23 @@ export const generateSpeech = async (text: string) => {
       responseModalities: [Modality.AUDIO],
       speechConfig: {
         voiceConfig: {
-          prebuiltVoiceConfig: { voiceName: 'Kore' }, // Kore a une voix très adaptée à l'oracle
+          prebuiltVoiceConfig: { voiceName: 'Kore' }, 
+        },
+      },
+    },
+  });
+  return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+};
+
+export const generateNostradamusSpeech = async (text: string) => {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash-preview-tts",
+    contents: [{ parts: [{ text: `Tu es Nostradamus, le grand prophète. Lis cet horoscope avec une voix d'outre-tombe, très lente, solennelle, chargée de mystère et d'autorité ancienne : ${text}` }] }],
+    config: {
+      responseModalities: [Modality.AUDIO],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: { voiceName: 'Charon' }, 
         },
       },
     },

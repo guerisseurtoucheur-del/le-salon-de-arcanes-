@@ -1,30 +1,110 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ZODIAC_SIGNS } from '../types';
-import { getHoroscope } from '../services/geminiService';
+import { getHoroscope, generateNostradamusSpeech, decodeAudio, decodeAudioData } from '../services/geminiService';
 
 const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
   const [horoscope, setHoroscope] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [time, setTime] = useState(new Date());
+
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Assurer l'arrêt de l'audio si on quitte la pièce
+  useEffect(() => {
+    return () => {
+      if (sourceRef.current) {
+        try { sourceRef.current.stop(); } catch(e) {}
+      }
+    };
+  }, []);
+
   const fetchHoroscope = async (sign: string) => {
+    // Si une lecture est en cours, on l'arrête avant d'en lancer une nouvelle
+    if (sourceRef.current) {
+      try { sourceRef.current.stop(); } catch(e) {}
+    }
+    setIsSpeaking(false);
+
     setSelectedSign(sign);
     setLoading(true);
     setHoroscope('');
     try {
       const res = await getHoroscope(sign);
       setHoroscope(res || '');
+      
+      // DÉCLENCHEMENT AUTOMATIQUE : La voix de Nostradamus s'élève dès que les astres ont parlé
+      if (res) {
+        // On passe directement le texte pour éviter d'attendre la mise à jour asynchrone du State
+        playNostradamus(res);
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Erreur lors de la lecture des astres:", e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const playNostradamus = async (textOverride?: string) => {
+    const textToRead = textOverride || horoscope;
+    
+    // Si l'utilisateur clique sur le bouton alors que ça parle déjà, on arrête (Toggle manuel)
+    if (isSpeaking && !textOverride) {
+      if (sourceRef.current) {
+        try { sourceRef.current.stop(); } catch(e) {}
+      }
+      setIsSpeaking(false);
+      return;
+    }
+
+    if (!textToRead) return;
+
+    setIsAudioLoading(true);
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      }
+      
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+
+      // Nettoyage avant nouvelle lecture
+      if (sourceRef.current) {
+        try { sourceRef.current.stop(); } catch(e) {}
+      }
+
+      const audioData = await generateNostradamusSpeech(textToRead);
+      if (audioData) {
+        const buffer = await decodeAudioData(
+          decodeAudio(audioData),
+          audioContextRef.current,
+          24000,
+          1
+        );
+        
+        const source = audioContextRef.current.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContextRef.current.destination);
+        source.onended = () => setIsSpeaking(false);
+        
+        sourceRef.current = source;
+        source.start();
+        setIsSpeaking(true);
+      }
+    } catch (e) {
+      console.error("L'Oracle Nostradamus est resté muet :", e);
+    } finally {
+      setIsAudioLoading(false);
     }
   };
 
@@ -76,12 +156,37 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
                </span>
                <h2 className="text-5xl font-mystic text-gold-bright drop-shadow-lg uppercase tracking-wider">Vision du {selectedSign}</h2>
             </div>
-            <button 
-              onClick={() => setSelectedSign(null)} 
-              className="px-6 py-2 border border-gold-muted/40 text-gold-muted hover:text-gold-bright hover:border-gold-bright transition-all font-mystic text-xs uppercase tracking-widest"
-            >
-              Retour au Cercle
-            </button>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => playNostradamus()}
+                disabled={loading || !horoscope || isAudioLoading}
+                className={`flex items-center gap-3 px-6 py-2 border-2 transition-all font-mystic text-xs uppercase tracking-widest rounded-lg ${
+                  isSpeaking 
+                  ? 'bg-red-900/20 border-red-500 text-red-500 animate-pulse' 
+                  : 'bg-gold-bright/10 border-gold-bright/40 text-gold-bright hover:bg-gold-bright/20'
+                }`}
+              >
+                {isAudioLoading ? (
+                  <div className="w-4 h-4 border-2 border-gold-bright/20 border-t-gold-bright rounded-full animate-spin"></div>
+                ) : isSpeaking ? (
+                  <><span>⏹</span> Nostradamus parle</>
+                ) : (
+                  <><span>👁️</span> Écouter Nostradamus</>
+                )}
+              </button>
+              <button 
+                onClick={() => {
+                  if (sourceRef.current) {
+                    try { sourceRef.current.stop(); } catch(e) {}
+                  }
+                  setIsSpeaking(false);
+                  setSelectedSign(null);
+                }} 
+                className="px-6 py-2 border border-gold-muted/40 text-gold-muted hover:text-gold-bright hover:border-gold-bright transition-all font-mystic text-xs uppercase tracking-widest"
+              >
+                Retour au Cercle
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -95,10 +200,22 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
             </div>
           ) : (
             <div className="glass-mystic gold-border p-12 rounded-[3rem] shadow-3xl relative overflow-hidden min-h-[400px]">
+               {isSpeaking && (
+                 <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-end gap-1 h-8 opacity-40">
+                    {[...Array(12)].map((_, i) => (
+                      <div 
+                        key={i} 
+                        className="w-1 bg-gold-bright rounded-full animate-wave" 
+                        style={{ height: `${20 + Math.random() * 80}%`, animationDelay: `${i * 0.1}s` }}
+                      ></div>
+                    ))}
+                 </div>
+               )}
+               
                <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none text-9xl">✨</div>
                <div className="absolute bottom-0 left-0 p-10 opacity-5 pointer-events-none text-9xl rotate-180">✨</div>
                
-               <div className="prose prose-invert max-w-none prose-headings:text-gold-bright prose-p:text-gold-muted text-3xl leading-relaxed whitespace-pre-wrap italic font-serif-elegant">
+               <div className="prose prose-invert max-w-none prose-headings:text-gold-bright prose-p:text-gold-muted text-3xl leading-relaxed whitespace-pre-wrap italic font-serif-elegant mt-8">
                  {horoscope}
                </div>
                
@@ -118,8 +235,15 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
           50% { transform: translateY(-10px); }
           100% { transform: translateY(0px); }
         }
+        @keyframes wave {
+          0%, 100% { height: 30%; }
+          50% { height: 100%; }
+        }
         .animate-float {
           animation: float 6s ease-in-out infinite;
+        }
+        .animate-wave {
+          animation: wave 1s ease-in-out infinite;
         }
       `}</style>
     </div>
