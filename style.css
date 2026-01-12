@@ -74,6 +74,24 @@ body {
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
 }
 
+/* Animations Mystiques */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes pulse-mystic {
+  0% { transform: scale(1); filter: drop-shadow(0 0 5px var(--gold-bright)); opacity: 0.6; }
+  50% { transform: scale(1.2); filter: drop-shadow(0 0 20px var(--gold-bright)); opacity: 1; }
+  100% { transform: scale(1); filter: drop-shadow(0 0 5px var(--gold-bright)); opacity: 0.6; }
+}
+
+@keyframes float-subtle {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
 /* Card Back Pattern & Symbols */
 .card-back-pattern {
   background: #1a061c;
@@ -92,8 +110,9 @@ body {
   content: '✨';
   font-size: 3rem;
   color: var(--gold-muted);
-  opacity: 0.3;
+  opacity: 0.7; /* Plus voyant */
   filter: drop-shadow(0 0 10px var(--gold-bright));
+  animation: twinkle 3s infinite ease-in-out;
 }
 
 .card-back-pattern::after {
@@ -113,9 +132,30 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  opacity: 0.2;
+  opacity: 0.8; /* Plus voyant */
   color: var(--gold-bright);
   font-size: 1.5rem;
+  z-index: 5;
+}
+
+.card-verso-icon span:nth-child(2) {
+  animation: pulse-mystic 4s infinite ease-in-out;
+}
+
+.card-verso-icon span:first-child, 
+.card-verso-icon span:last-child {
+  animation: twinkle 2.5s infinite ease-in-out;
+}
+
+/* Styles pour les placeholders dans TarotRoom */
+.verso-placeholder-symbol {
+  animation: pulse-mystic 3s infinite ease-in-out;
+  opacity: 0.8;
+}
+
+.verso-moon-symbol {
+  animation: float-subtle 4s infinite ease-in-out;
+  opacity: 0.6;
 }
 
 /* Custom Scrollbar */
