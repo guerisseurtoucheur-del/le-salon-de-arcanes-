@@ -8,6 +8,7 @@ import AstrologyRoom from './components/AstrologyRoom';
 import PendulumRoom from './components/PendulumRoom';
 import CecileDeepRoom from './components/CecileDeepRoom';
 import NexusRoom from './components/NexusRoom';
+import AudioController from './components/AudioController';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>(ViewType.DASHBOARD);
@@ -40,6 +41,8 @@ const App: React.FC = () => {
 
   return (
     <div className="salon-container relative">
+      <AudioController currentView={currentView} />
+      
       <div className="fixed top-0 left-0 w-full z-50 pointer-events-none">
         <div className="max-w-screen-xl mx-auto px-6 py-2 flex justify-center">
           <div className="bg-black/40 backdrop-blur-md border-x border-b border-gold-muted/30 px-6 py-1 rounded-b-2xl shadow-[0_0_20px_rgba(184,134,11,0.2)]">

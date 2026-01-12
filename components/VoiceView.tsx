@@ -44,8 +44,9 @@ const VoiceView: React.FC = () => {
             const source = audioContextRef.current!.createMediaStreamSource(stream);
             const scriptProcessor = audioContextRef.current!.createScriptProcessor(4096, 1, 1);
             
-            scriptProcessor.onaudioprocess = (e) => {
-              const inputData = e.inputBuffer.getChannelData(0);
+            scriptProcessor.onaudioprocess = (audioProcessingEvent) => {
+              if (!audioContextRef.current || audioContextRef.current.state === 'closed') return;
+              const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
               const l = inputData.length;
               const int16 = new Int16Array(l);
               for (let i = 0; i < l; i++) {
@@ -86,7 +87,7 @@ const VoiceView: React.FC = () => {
             }
 
             const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (audioData && outputContextRef.current) {
+            if (audioData && outputContextRef.current && outputContextRef.current.state !== 'closed') {
               setStatus('speaking');
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContextRef.current.currentTime);
               
@@ -113,13 +114,16 @@ const VoiceView: React.FC = () => {
             }
 
             if (message.serverContent?.interrupted) {
-              sourcesRef.current.forEach(s => s.stop());
+              for (const source of sourcesRef.current.values()) {
+                try { source.stop(); } catch {}
+              }
               sourcesRef.current.clear();
               nextStartTimeRef.current = 0;
             }
 
             if (message.serverContent?.turnComplete) {
-               if (status !== 'speaking') setStatus('listening');
+               // Use functional update to avoid stale closure of 'status' state
+               setStatus(prev => prev !== 'speaking' ? 'listening' : prev);
             }
           },
           onerror: (err) => {
@@ -149,31 +153,45 @@ const VoiceView: React.FC = () => {
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!textInput.trim() || !sessionRef.current) return;
-
-    const msg = textInput.trim();
-    setTranscript(prev => [...prev, { role: 'user', text: msg }]);
-    setStatus('thinking');
-    
-    sessionRef.current.sendRealtimeInput({
-      parts: [{ text: msg }]
-    });
-
-    setTextInput('');
-  };
-
   const stopSession = () => {
     sessionRef.current?.close();
     sessionRef.current = null;
     streamRef.current?.getTracks().forEach(track => track.stop());
     streamRef.current = null;
-    audioContextRef.current?.close();
-    outputContextRef.current?.close();
+    
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close().catch(() => {});
+    }
+    if (outputContextRef.current && outputContextRef.current.state !== 'closed') {
+      outputContextRef.current.close().catch(() => {});
+    }
+    
     setIsActive(false);
     setStatus('idle');
     setTranscript([]);
+  };
+
+  // Fix: Added handleSendMessage to handle the form submission for text input
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!textInput.trim() || !sessionRef.current) return;
+
+    const message = textInput;
+    setTextInput('');
+    
+    // Add to transcript for UI feedback immediately
+    setTranscript(prev => [...prev, { role: 'user', text: message }]);
+    setStatus('thinking');
+
+    // Send the text content as parts via the Live API session
+    try {
+      sessionRef.current.sendRealtimeInput({
+        parts: [{ text: message }]
+      });
+    } catch (err) {
+      console.error('Failed to send text input:', err);
+      setStatus('listening');
+    }
   };
 
   return (

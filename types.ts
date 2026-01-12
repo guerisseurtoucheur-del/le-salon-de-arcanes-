@@ -57,3 +57,15 @@ export const ZODIAC_SIGNS: AstrologySign[] = [
   { name: 'Verseau', dates: '20 Janvier - 18 Février', element: 'Air', symbol: '♒' },
   { name: 'Poissons', dates: '19 Février - 20 Mars', element: 'Eau', symbol: '♓' }
 ];
+
+// Utilisation de sons d'ambiance Google très stables
+export const AUDIO_THEMES: Record<ViewType, string> = {
+  [ViewType.DASHBOARD]: 'https://actions.google.com/sounds/v1/ambiences/night_ambience.ogg',
+  [ViewType.TAROT]: 'https://actions.google.com/sounds/v1/ambiences/wind_chimes_and_birds.ogg',
+  [ViewType.CRYSTAL_BALL]: 'https://actions.google.com/sounds/v1/ambiences/glitchy_waves.ogg',
+  [ViewType.ASTROLOGY]: 'https://actions.google.com/sounds/v1/ambiences/crystal_bowl_vibrations.ogg',
+  [ViewType.PENDULUM]: 'https://actions.google.com/sounds/v1/ambiences/mystical_white_noise.ogg',
+  [ViewType.CECIL_DEEP]: 'https://actions.google.com/sounds/v1/ambiences/deep_space.ogg',
+  [ViewType.NEXUS]: 'https://actions.google.com/sounds/v1/ambiences/static_hum.ogg',
+  [ViewType.CHAT]: 'https://actions.google.com/sounds/v1/ambiences/night_ambience.ogg'
+};
