@@ -90,7 +90,7 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = () => {
             if (isInitialGreeting) {
               sessionPromise.then((session) => {
                 session.sendRealtimeInput({
-                  parts: [{ text: "Bonjour. Accueille-moi avec ta voix jeune et distincte, et demande-moi : 'Qu'est-ce qui vous amène ici ?'" }]
+                  parts: [{ text: "Bonjour. Accueille-moi EN FRANÇAIS avec ta voix jeune, et demande-moi : 'Qu'est-ce qui vous amène ici ?'" }]
                 });
               });
             }
@@ -126,7 +126,7 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile. Tu as une voix jeune, fraîche, très claire et parfaitement articulée. Ta diction est distincte. Tu es une guide spirituelle lumineuse.",
+          systemInstruction: "RÈGLE ABSOLUE : RÉPONDS EXCLUSIVEMENT EN FRANÇAIS. Tu es Cécile. Tu as une voix jeune, fraîche, très claire et parfaitement articulée. Ta diction est distincte. Tu es une guide spirituelle lumineuse.",
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
           }

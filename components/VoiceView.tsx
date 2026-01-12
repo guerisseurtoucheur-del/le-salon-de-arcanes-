@@ -122,7 +122,6 @@ const VoiceView: React.FC = () => {
             }
 
             if (message.serverContent?.turnComplete) {
-               // Use functional update to avoid stale closure of 'status' state
                setStatus(prev => prev !== 'speaking' ? 'listening' : prev);
             }
           },
@@ -136,7 +135,7 @@ const VoiceView: React.FC = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile. Tu as une voix jeune, vive et une diction parfaitement distincte et claire. Tu es une cartomancienne lumineuse. IMPORTANT : Réponds avec clarté, en articulant chaque mot. Ton ton est poétique mais toujours parfaitement compréhensible. Tu parles uniquement en Français.",
+          systemInstruction: "RÈGLE ABSOLUE : RÉPONDS EXCLUSIVEMENT EN FRANÇAIS. Tu es Cécile. Tu as une voix jeune, vive et une diction parfaitement distincte et claire. Tu es une cartomancienne lumineuse. IMPORTANT : Réponds avec clarté, en articulant chaque mot. Ton ton est poétique mais toujours parfaitement compréhensible.",
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
           },
@@ -171,7 +170,6 @@ const VoiceView: React.FC = () => {
     setTranscript([]);
   };
 
-  // Fix: Added handleSendMessage to handle the form submission for text input
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!textInput.trim() || !sessionRef.current) return;
@@ -179,11 +177,9 @@ const VoiceView: React.FC = () => {
     const message = textInput;
     setTextInput('');
     
-    // Add to transcript for UI feedback immediately
     setTranscript(prev => [...prev, { role: 'user', text: message }]);
     setStatus('thinking');
 
-    // Send the text content as parts via the Live API session
     try {
       sessionRef.current.sendRealtimeInput({
         parts: [{ text: message }]
