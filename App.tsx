@@ -8,7 +8,6 @@ import AstrologyRoom from './components/AstrologyRoom';
 import PendulumRoom from './components/PendulumRoom';
 import CecileDeepRoom from './components/CecileDeepRoom';
 import NexusRoom from './components/NexusRoom';
-import AudioController from './components/AudioController';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>(ViewType.DASHBOARD);
@@ -38,15 +37,13 @@ const App: React.FC = () => {
       if (ctx.state === 'suspended') await ctx.resume();
     }
 
-    // 2. Jouer le son de cristal immédiatement avec une URL de secours plus robuste
+    // 2. Jouer le son de cristal immédiatement
     const chime = new Audio();
-    // Utilisation d'une source alternative de haute disponibilité pour éviter les blocages de certains CDN
     chime.src = 'https://assets.mixkit.co/active_storage/sfx/2367/2367-preview.mp3';
     chime.volume = 0.7;
-    chime.load(); // Forcer le chargement de la source
+    chime.load();
     
     chime.play().catch(() => {
-      // Fallback si la première URL échoue (source non supportée ou bloquée)
       chime.src = 'https://www.soundjay.com/magic/sounds/magic-chime-01.mp3';
       chime.load();
       chime.play().catch(e => console.error("Échec définitif du son d'entrée:", e));
@@ -54,7 +51,7 @@ const App: React.FC = () => {
 
     setIsEntering(true);
 
-    // 3. Préparer la musique d'ambiance
+    // 3. Préparer la musique d'ambiance (reste en mémoire même sans contrôleur UI)
     const backgroundMusic = new Audio();
     backgroundMusic.loop = true;
     backgroundMusic.src = AUDIO_THEMES[ViewType.DASHBOARD];
@@ -130,7 +127,6 @@ const App: React.FC = () => {
 
   return (
     <div className="salon-container relative animate-in fade-in duration-1000">
-      <AudioController currentView={currentView} sharedAudio={globalAudioRef.current} />
       
       <div className="fixed top-0 left-0 w-full z-50 pointer-events-none">
         <div className="max-w-screen-xl mx-auto px-6 py-2 flex justify-center">

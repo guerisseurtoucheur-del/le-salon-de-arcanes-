@@ -16,19 +16,16 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
 
-  // Accueil de la sorcière dès l'entrée
+  // Accueil de la sorcière instantané dès l'entrée
   useEffect(() => {
     if (!hasGreeted) {
-      const timer = setTimeout(() => {
-        playGreeting();
-        setHasGreeted(true);
-      }, 1000);
-      return () => clearTimeout(timer);
+      playGreeting();
+      setHasGreeted(true);
     }
   }, [hasGreeted]);
 
   const playGreeting = async () => {
-    const greetingText = "Bonjour mes chers amis... Que puis-je faire pour vous aujourd'hui dans le miroir des âmes ?";
+    const greetingText = "Approchez, n'ayez crainte. Le miroir de l'âme est prêt. Dites-moi votre âge et votre date de naissance pour que les brumes se dissipent.";
     await playSpeech(greetingText);
   };
 
@@ -83,128 +80,159 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
     setIsSpeaking(false);
 
     try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      }
-      if (audioContextRef.current.state === 'suspended') {
-        await audioContextRef.current.resume();
-      }
-
+      // 1. Obtenir la prédiction (très rapide avec flash)
       const p = await getPrediction(query, { age, birthDate });
       setPrediction(p || '');
+      setLoading(false); // On enlève le loader dès qu'on a le texte
+
+      // 2. Lancer la voix et l'image en parallèle, mais sans bloquer l'affichage
+      playSpeech(p || '');
+      generateVisionImage(p || '').then(img => setVisionUrl(img));
       
-      const [img] = await Promise.all([
-        generateVisionImage(p || ''),
-        playSpeech(p || '')
-      ]);
-      
-      setVisionUrl(img);
     } catch (e) {
       console.error(e);
-    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center gap-12 py-8 animate-in fade-in duration-1000">
-      <div className="text-center space-y-2 mb-4">
+    <div className="flex flex-col items-center gap-8 py-4 animate-in fade-in duration-700">
+      <div className="text-center space-y-2 mb-2">
         <h2 className="text-4xl font-mystic text-gold-bright uppercase tracking-widest">Le Miroir de l'Âme</h2>
         <p className="text-gold-muted font-sensual text-3xl italic">L'avenir n'est qu'un reflet qui attend d'être révélé.</p>
       </div>
 
       <div className="relative group perspective-1000">
-        <div className="relative w-80 h-80 md:w-96 md:h-96 rounded-full crystal-container shadow-[0_0_100px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_150px_rgba(139,92,246,0.5)] transition-all duration-1000 z-10">
+        <div className="relative w-72 h-72 md:w-80 md:h-80 rounded-full crystal-container shadow-[0_0_80px_rgba(139,92,246,0.3)] z-10 flex items-center justify-center overflow-hidden border-4 border-gold-muted/20">
           
-          <div className="absolute inset-0 rounded-full border-[1px] border-white/20 z-30 pointer-events-none overflow-hidden">
-            <div className="absolute top-[10%] left-[20%] w-[30%] h-[20%] bg-gradient-to-br from-white/40 to-transparent rounded-full blur-md rotate-[-30deg]"></div>
-            <div className="absolute bottom-[5%] right-[20%] w-[40%] h-[10%] bg-white/10 rounded-full blur-xl"></div>
+          {/* Reflets de surface */}
+          <div className="absolute inset-0 rounded-full border-[1px] border-white/10 z-30 pointer-events-none overflow-hidden">
+            <div className="absolute top-[10%] left-[20%] w-[30%] h-[20%] bg-gradient-to-br from-white/20 to-transparent rounded-full blur-md rotate-[-30deg]"></div>
           </div>
 
-          <div className="absolute inset-2 rounded-full overflow-hidden bg-black z-10">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(126,34,206,0.4)_0%,transparent_70%)] animate-swirl-slow"></div>
+          <div className="absolute inset-0 bg-black z-10 flex items-center justify-center">
+            {/* Swirl de fond */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(126,34,206,0.3)_0%,transparent_70%)] animate-swirl-slow"></div>
             
-            {/* Visage de la sorcière spectrale qui apparaît quand elle parle ou par intermittence */}
-            <div className={`absolute inset-0 flex items-center justify-center transition-all duration-[3000ms] mix-blend-screen pointer-events-none z-20 ${isSpeaking || loading ? 'opacity-40 scale-110' : 'opacity-10 scale-95 blur-sm'}`}>
-              <svg viewBox="0 0 200 200" className="w-full h-full text-purple-300 fill-current filter blur-[1px]">
-                 <path d="M100 30c-40 0-60 40-60 70 0 40 25 70 60 70s60-30 60-70c0-30-20-70-60-70zm-25 60c5 0 10 5 10 10s-5 10-10 10-10-5-10-10 5-10 10-10zm50 0c5 0 10 5 10 10s-5 10-10 10-10-5-10-10 5-10 10-10zm-25 60c-15 0-25-10-25-10s10-5 25-5 25 5 25 5-10 10-25 10z" opacity="0.6"/>
-                 <path d="M40 100c0-20 20-30 60-30s60 10 60 30" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="5,5" className="animate-pulse"/>
+            {/* VISAGE DE LA SORCIÈRE - PARFAITEMENT CENTRÉ AVEC CHEVEUX */}
+            <div className={`absolute inset-0 flex items-center justify-center transition-all duration-[1000ms] mix-blend-screen pointer-events-none z-20 ${isSpeaking || loading ? 'opacity-90 scale-105' : 'opacity-20 scale-100 blur-[2px]'}`}>
+              <svg viewBox="-100 -100 200 200" className="w-full h-full text-purple-100 fill-current filter drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
+                 <defs>
+                    <radialGradient id="witchGlow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="rgba(216, 180, 254, 0.6)" />
+                      <stop offset="100%" stopColor="transparent" />
+                    </radialGradient>
+                 </defs>
+                 
+                 <g className="animate-witch-float">
+                   {/* Aura centrale */}
+                   <circle cx="0" cy="0" r="70" fill="url(#witchGlow)" className="animate-pulse opacity-20" />
+                   
+                   {/* CHEVELURE SPECTRALE (Statique mais vaporeuse) */}
+                   <g opacity="0.4" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round">
+                     {/* Mèches gauche */}
+                     <path d="M-35 -50 C-80 -40 -90 20 -70 80" />
+                     <path d="M-40 -40 C-70 -30 -80 10 -60 60" />
+                     <path d="M-30 -60 C-50 -80 -70 -50 -75 -20" />
+                     {/* Mèches droite */}
+                     <path d="M35 -50 C80 -40 90 20 70 80" />
+                     <path d="M40 -40 C70 -30 80 10 60 60" />
+                     <path d="M30 -60 C50 -80 70 -50 75 -20" />
+                     {/* Sommet */}
+                     <path d="M-20 -65 Q0 -90 20 -65" />
+                   </g>
+
+                   {/* VISAGE (Bouche statique) */}
+                   <path d="M-35 -40 C-50 -15 -45 50 0 65 C45 50 50 -15 35 -40 C25 -70 -25 -70 -35 -40 Z" 
+                         fill="rgba(147, 51, 234, 0.15)" stroke="rgba(216, 180, 254, 0.4)" strokeWidth="0.8" />
+                   
+                   {/* Yeux d'or fixes */}
+                   <g>
+                     <ellipse cx="-16" cy="-15" rx="9" ry="12" fill="rgba(0,0,0,0.6)" />
+                     <ellipse cx="16" cy="-15" rx="9" ry="12" fill="rgba(0,0,0,0.6)" />
+                     <circle cx="-16" cy="-15" r="2.5" fill="#ffd700" className="blur-[1px] opacity-80" />
+                     <circle cx="16" cy="-15" r="2.5" fill="#ffd700" className="blur-[1px] opacity-80" />
+                   </g>
+                   
+                   {/* Nez crochu */}
+                   <path d="M0 -10 Q15 8 0 22" fill="none" stroke="rgba(216, 180, 254, 0.6)" strokeWidth="2" strokeLinecap="round" />
+                   
+                   {/* Bouche statique (Simple trait mystérieux) */}
+                   <path d="M-12 42 Q0 48 12 42" fill="none" stroke="rgba(216, 180, 254, 0.7)" strokeWidth="2" strokeLinecap="round" />
+                 </g>
               </svg>
             </div>
 
+            {/* Vision Image */}
             {visionUrl && (
               <img 
                 src={visionUrl} 
-                className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-lighten animate-in zoom-in duration-[2000ms]" 
+                className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-lighten animate-in zoom-in duration-[1500ms]" 
                 alt="Vision"
               />
             )}
             
-            <div className="absolute inset-0 rounded-full shadow-[inset_0_0_80px_rgba(0,0,0,0.9)] z-20 pointer-events-none"></div>
+            <div className="absolute inset-0 rounded-full shadow-[inset_0_0_60px_rgba(0,0,0,0.9)] z-20 pointer-events-none"></div>
           </div>
           
           {loading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/40 backdrop-blur-md z-40 animate-fade">
-               <div className="relative w-32 h-32">
-                 <div className="absolute inset-0 border-4 border-gold-muted/20 rounded-full"></div>
-                 <div className="absolute inset-0 border-4 border-t-gold-bright rounded-full animate-spin"></div>
-                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-4xl animate-pulse">✨</span>
-                 </div>
-               </div>
-               <span className="font-mystic text-gold-bright text-xl tracking-[0.3em] mt-6 animate-pulse">INCANTATION...</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/60 backdrop-blur-sm z-40 animate-fade">
+               <div className="w-12 h-12 border-4 border-gold-muted/20 border-t-gold-bright rounded-full animate-spin"></div>
+               <span className="font-mystic text-gold-bright text-xs tracking-[0.2em] mt-4 animate-pulse">VISION...</span>
             </div>
           )}
         </div>
       </div>
 
       {step === 'identity' ? (
-        <form onSubmit={handleIdentitySubmit} className="w-full max-w-md space-y-8 glass-mystic p-10 rounded-[2rem] border-2 border-gold-muted/30 shadow-2xl">
-          <div className="space-y-6">
+        <form onSubmit={handleIdentitySubmit} className="w-full max-w-sm space-y-6 glass-mystic p-8 rounded-3xl border border-gold-muted/30 shadow-2xl">
+          <div className="space-y-4">
             <div className="group">
-              <label className="block text-xs font-mystic text-gold-muted uppercase tracking-[0.3em] mb-3 ml-2">Âge terrestre</label>
+              <label className="block text-[10px] font-mystic text-gold-muted uppercase tracking-[0.3em] mb-1">Âge</label>
               <input 
                 type="number" 
                 required
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                placeholder="Nombre d'étés vécus..."
-                className="w-full bg-black/60 border-2 border-gold-muted/20 p-4 rounded-xl text-gold-bright font-serif focus:outline-none focus:border-gold-bright transition-all placeholder:text-gold-muted/20"
+                placeholder="..."
+                className="w-full bg-black/40 border border-gold-muted/20 p-3 rounded-xl text-gold-bright font-serif focus:border-gold-bright transition-all"
               />
             </div>
             <div className="group">
-              <label className="block text-xs font-mystic text-gold-muted uppercase tracking-[0.3em] mb-3 ml-2">Moment d'Incarnation</label>
+              <label className="block text-[10px] font-mystic text-gold-muted uppercase tracking-[0.3em] mb-1">Naissance</label>
               <input 
                 type="date" 
                 required
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
-                className="w-full bg-black/60 border-2 border-gold-muted/20 p-4 rounded-xl text-gold-bright font-serif focus:outline-none focus:border-gold-bright transition-all color-scheme-dark"
+                className="w-full bg-black/40 border border-gold-muted/20 p-3 rounded-xl text-gold-bright font-serif focus:border-gold-bright transition-all color-scheme-dark"
               />
             </div>
           </div>
-          <button type="submit" className="w-full py-5 bg-gradient-to-r from-purple-950 to-purple-800 border-2 border-gold-muted text-gold-bright font-mystic text-xl tracking-[0.4em] hover:scale-[1.03] transition-all rounded-xl uppercase">S'aligner sur les Astres</button>
+          <button type="submit" className="w-full py-4 bg-purple-900/40 border border-gold-muted text-gold-bright font-mystic text-sm tracking-[0.3em] hover:bg-purple-800/60 transition-all rounded-xl uppercase">Entrer dans le Cercle</button>
         </form>
       ) : (
-        <div className="w-full max-w-xl space-y-6 z-10 px-4 mt-12">
-          <textarea 
-            placeholder="De quoi s'inquiète votre âme ? Murmurez-le ici..."
-            className="w-full bg-black/60 border-2 border-gold-muted/30 p-6 rounded-2xl text-gold-bright text-2xl font-serif-elegant italic placeholder:text-gold-muted/20 focus:outline-none focus:border-gold-bright focus:shadow-[0_0_30px_rgba(184,134,11,0.2)] transition-all resize-none shadow-inner"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            rows={3}
-          />
+        <div className="w-full max-w-lg space-y-4 z-10 px-4">
+          <div className="relative">
+            <textarea 
+              placeholder="Quelle ombre vous tourmente ?"
+              className="w-full bg-black/40 border border-gold-muted/20 p-5 rounded-2xl text-gold-bright text-xl font-serif-elegant italic focus:border-gold-bright transition-all resize-none shadow-inner"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              rows={2}
+            />
+          </div>
           <button 
             onClick={handleVision}
             disabled={loading || !query.trim()}
-            className="w-full py-6 bg-gradient-to-r from-purple-950 to-purple-800 border-2 border-gold-muted text-gold-bright font-mystic text-2xl tracking-widest hover:scale-[1.03] hover:from-purple-800 hover:to-purple-700 disabled:opacity-30 transition-all shadow-2xl rounded-xl uppercase"
+            className="w-full py-4 bg-gradient-to-r from-purple-950 to-purple-800 border border-gold-muted text-gold-bright font-mystic text-lg tracking-[0.2em] hover:scale-[1.02] disabled:opacity-30 transition-all shadow-xl rounded-xl uppercase"
           >
             Fixer l'Abîme
           </button>
           
           {prediction && (
-            <div className="max-w-3xl p-10 glass-mystic gold-border rounded-[2rem] animate-in fade-in slide-in-from-top-8 duration-1000 mt-4">
-              <p className="italic text-4xl md:text-5xl text-gold-bright font-sensual leading-relaxed text-center drop-shadow-md">
+            <div className="p-8 glass-mystic gold-border rounded-3xl animate-in fade-in slide-in-from-top-4 duration-700">
+              <p className="italic text-2xl md:text-3xl text-gold-bright font-sensual leading-relaxed text-center drop-shadow-sm">
                 "{prediction}"
               </p>
             </div>
@@ -214,15 +242,21 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
 
       <style>{`
         @keyframes swirl-slow {
-          0% { transform: rotate(0deg) scale(1); }
-          50% { transform: rotate(180deg) scale(1.2); }
-          100% { transform: rotate(360deg) scale(1); }
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes witch-float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-5px) rotate(0.3deg); }
         }
         .animate-swirl-slow {
-          animation: swirl-slow 20s linear infinite;
+          animation: swirl-slow 40s linear infinite;
+        }
+        .animate-witch-float {
+          animation: witch-float 8s ease-in-out infinite;
         }
         .crystal-container {
-          background: radial-gradient(circle at 30% 30%, #4a0e4e, #1a1510);
+          background: radial-gradient(circle at 30% 30%, #3a1e4e, #0a0a0a);
         }
       `}</style>
     </div>

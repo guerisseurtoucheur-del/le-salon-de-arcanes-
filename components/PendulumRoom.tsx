@@ -29,17 +29,20 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
   
   const tickAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Gestion du son Tik-Tak
+  // Gestion du son Tik-Tak synchronisé avec le balancement
   useEffect(() => {
     if (!tickAudioRef.current) {
+      // Utilisation d'un son de métronome mécanique ou tik-tak
       tickAudioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/1070/1070-preview.mp3');
       tickAudioRef.current.loop = true;
-      tickAudioRef.current.volume = 0.3;
+      tickAudioRef.current.volume = 0.25;
     }
 
     if (isSwinging) {
-      tickAudioRef.current.play().catch(e => console.warn("Audio bloqué:", e));
+      // On essaye de jouer le son quand le pendule cherche
+      tickAudioRef.current.play().catch(e => console.warn("Audio bloqué par le navigateur:", e));
     } else {
+      // On arrête le son dès que le pendule se fixe
       tickAudioRef.current.pause();
       tickAudioRef.current.currentTime = 0;
     }
@@ -164,7 +167,7 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
             <button 
               onClick={askPendulum}
               disabled={!question.trim()}
-              className="w-full py-8 px-10 bg-gradient-to-r from-purple-950 via-purple-900 to-black border-2 border-gold-muted text-gold-bright font-mystic text-xl tracking-[0.3em] hover:scale-[1.05] transition-all rounded-xl uppercase"
+              className="w-full py-8 px-10 bg-gradient-to-r from-purple-950 via-purple-900 to-black border-2 border-gold-muted text-gold-bright font-mystic text-xl tracking-[0.3em] hover:scale-[1.05] transition-all rounded-xl uppercase shadow-xl"
             >
               Interroger le Pendule
             </button>
@@ -178,7 +181,7 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
         )}
 
         {result && (
-          <div className="text-center space-y-10 animate-in zoom-in-95 duration-700 p-14 glass-mystic gold-border rounded-[4rem] relative overflow-hidden">
+          <div className="text-center space-y-10 animate-in zoom-in-95 duration-700 p-14 glass-mystic gold-border rounded-[4rem] relative overflow-hidden shadow-2xl">
             <h3 className={`text-8xl md:text-9xl font-mystic mb-4 tracking-[0.6em] ${
               result.answer.includes('OUI') ? 'text-green-500' : result.answer.includes('NON') ? 'text-red-500' : 'text-gold-bright'
             }`}>
