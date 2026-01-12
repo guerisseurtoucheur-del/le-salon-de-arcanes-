@@ -1,99 +1,106 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ViewType, AUDIO_THEMES } from '../types';
 
 interface AudioControllerProps {
   currentView: ViewType;
+  sharedAudio: HTMLAudioElement | null;
 }
 
-const AudioController: React.FC<AudioControllerProps> = ({ currentView }) => {
+const AudioController: React.FC<AudioControllerProps> = ({ currentView, sharedAudio }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [volume, setVolume] = useState(0.4);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const playPromiseRef = useRef<Promise<void> | null>(null);
+  const audioStartedRef = useRef(false);
 
+  // Activation automatique une fois que l'audio partagé est disponible
   useEffect(() => {
-    const audio = new Audio();
-    audio.loop = true;
-    audio.crossOrigin = "anonymous";
-    audio.volume = 0;
-    audioRef.current = audio;
+    if (sharedAudio && !audioStartedRef.current) {
+      startPlayback();
+    }
+  }, [sharedAudio]);
 
-    return () => {
-      audio.pause();
-      audio.src = "";
-    };
-  }, []);
-
-  const safePlay = async () => {
-    if (!audioRef.current) return;
+  const startPlayback = async () => {
+    if (!sharedAudio) return;
+    setIsLoading(true);
+    
     try {
-      playPromiseRef.current = audioRef.current.play();
-      await playPromiseRef.current;
-    } catch (err: any) {
-      if (err.name !== 'AbortError') console.error("Erreur de lecture:", err);
+      // S'assurer que le volume est à 0 pour le fondu
+      sharedAudio.volume = 0;
+      const playPromise = sharedAudio.play();
+      
+      if (playPromise !== undefined) {
+        await playPromise;
+        setIsPlaying(true);
+        audioStartedRef.current = true;
+        
+        // Fondu d'entrée doux (Fade-in)
+        let v = 0;
+        const interval = setInterval(() => {
+          v += 0.02;
+          if (v >= volume) {
+            sharedAudio.volume = volume;
+            clearInterval(interval);
+          } else {
+            sharedAudio.volume = v;
+          }
+        }, 50);
+      }
+    } catch (err) {
+      console.warn("Échec lecture d'ambiance automatique. L'utilisateur doit cliquer sur Play.", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const togglePlay = async () => {
-    if (!audioRef.current) return;
+    if (!sharedAudio) return;
 
     if (!isPlaying) {
-      setIsLoading(true);
-      audioRef.current.src = AUDIO_THEMES[currentView];
-      await safePlay();
-      
-      // Fade in
-      let v = 0;
-      const interval = setInterval(() => {
-        v += 0.05;
-        if (v >= volume) {
-          if (audioRef.current) audioRef.current.volume = volume;
-          clearInterval(interval);
-        } else {
-          if (audioRef.current) audioRef.current.volume = v;
-        }
-      }, 50);
-      
-      setIsPlaying(true);
-      setIsLoading(false);
+      try {
+        await sharedAudio.play();
+        sharedAudio.volume = volume;
+        setIsPlaying(true);
+        audioStartedRef.current = true;
+      } catch (e) {
+        console.error("Erreur manuelle Play:", e);
+      }
     } else {
-      audioRef.current.pause();
+      sharedAudio.pause();
       setIsPlaying(false);
     }
   };
 
-  // Changement de source avec protection contre l'interruption
+  // Changement de pièce (Thème musical)
   useEffect(() => {
-    const updateSource = async () => {
-      if (!audioRef.current || !isPlaying) return;
+    const updateTheme = async () => {
+      if (!sharedAudio || !audioStartedRef.current || !isPlaying) return;
       
-      const newSrc = AUDIO_THEMES[currentView];
-      if (audioRef.current.src === newSrc) return;
+      const nextSrc = AUDIO_THEMES[currentView];
+      if (sharedAudio.src.includes(nextSrc)) return;
 
       setIsLoading(true);
-
-      // Si une lecture est en cours, on attend qu'elle soit stable avant de changer
-      if (playPromiseRef.current) {
-        try { await playPromiseRef.current; } catch {}
+      try {
+        sharedAudio.pause();
+        sharedAudio.src = nextSrc;
+        sharedAudio.load();
+        await sharedAudio.play();
+        sharedAudio.volume = volume;
+      } catch (e) {
+        console.error("Erreur changement de thème musical:", e);
+      } finally {
+        setIsLoading(false);
       }
-
-      // Fondu rapide vers le nouveau son
-      audioRef.current.src = newSrc;
-      await safePlay();
-      audioRef.current.volume = volume;
-      setIsLoading(false);
     };
 
-    updateSource();
-  }, [currentView, isPlaying]);
+    updateTheme();
+  }, [currentView, isPlaying, sharedAudio, volume]);
 
   useEffect(() => {
-    if (audioRef.current && isPlaying) {
-      audioRef.current.volume = volume;
+    if (sharedAudio && isPlaying) {
+      sharedAudio.volume = volume;
     }
-  }, [volume, isPlaying]);
+  }, [volume, isPlaying, sharedAudio]);
 
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex items-center gap-3">
@@ -111,10 +118,10 @@ const AudioController: React.FC<AudioControllerProps> = ({ currentView }) => {
       <button 
         onClick={togglePlay}
         disabled={isLoading && !isPlaying}
-        className={`w-16 h-16 rounded-full border-2 flex items-center justify-center transition-all duration-500 shadow-2xl relative ${
+        className={`w-14 h-14 md:w-16 md:h-16 rounded-full border-2 flex items-center justify-center transition-all duration-500 shadow-2xl relative ${
           isPlaying 
             ? 'bg-gold-bright/10 text-gold-bright border-gold-bright shadow-[0_0_30px_rgba(255,215,0,0.4)]' 
-            : 'bg-black/90 text-gold-muted border-gold-muted/40 hover:border-gold-bright'
+            : 'bg-black/90 text-gold-muted border-gold-muted/40 hover:border-gold-bright hover:scale-110'
         }`}
       >
         {isLoading ? (
@@ -128,7 +135,7 @@ const AudioController: React.FC<AudioControllerProps> = ({ currentView }) => {
              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
           </svg>
         )}
-        {!isPlaying && <div className="absolute -top-1 -right-1 w-3 h-3 bg-gold-bright rounded-full animate-ping"></div>}
+        {!isPlaying && !isLoading && <div className="absolute -top-1 -right-1 w-3 h-3 bg-gold-bright rounded-full animate-ping"></div>}
       </button>
     </div>
   );

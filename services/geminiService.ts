@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, Modality } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -44,14 +44,30 @@ export async function decodeAudioData(
   return buffer;
 }
 
+export const generateSpeech = async (text: string) => {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash-preview-tts",
+    contents: [{ parts: [{ text: `Lis cette prophétie avec une voix mystérieuse et lente : ${text}` }] }],
+    config: {
+      responseModalities: [Modality.AUDIO],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: { voiceName: 'Kore' }, // Kore a une voix très adaptée à l'oracle
+        },
+      },
+    },
+  });
+  return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+};
+
 export const getPrediction = async (userConcern: string, userInfo?: { age?: string, birthDate?: string }) => {
   const context = userInfo ? `L'utilisateur a ${userInfo.age} ans et est né le ${userInfo.birthDate}. ` : '';
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Tu es Cécile, une voyante mystérieuse. ${context}L'utilisateur te confie : "${userConcern}". 
-    Donne une prédiction poétique et un peu ambiguë en 3-4 phrases. 
+    Donne une prédiction poétique et un peu ambiguë en 3-4 courtes phrases. 
     Utilise les informations de sa naissance pour personnaliser subtilement la vision.
-    Utilise un ton solennel et bienveillant.`,
+    Utilise un ton solennel et bienveillant. Réponds en FRANÇAIS.`,
   });
   return response.text;
 };

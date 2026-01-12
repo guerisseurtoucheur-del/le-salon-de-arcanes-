@@ -67,6 +67,10 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const transcriptRef = useRef<HTMLDivElement>(null);
 
+  const MAX_ADDITIONAL_CARDS = 3;
+  const INITIAL_CARDS_COUNT = 3;
+  const MAX_TOTAL_CARDS = INITIAL_CARDS_COUNT + MAX_ADDITIONAL_CARDS;
+
   useEffect(() => {
     if (transcriptRef.current) {
       transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
@@ -89,10 +93,33 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
     setIsReading(true);
     setTranscript('');
     
-    // Attendre la fin du rendu des cartes pour lancer la voix
     setTimeout(() => {
       startVoiceSession(drawn);
     }, 600);
+  };
+
+  const deepenReading = () => {
+    if (selectedCards.length >= MAX_TOTAL_CARDS) return;
+
+    let sourceDeck;
+    if (deckType === 'MARSEILLE') sourceDeck = TAROT_MARSEILLE;
+    else if (deckType === 'RIDER_WAITE') sourceDeck = RIDER_WAITE;
+    else sourceDeck = ORACLE_CARDS;
+
+    const available = sourceDeck.filter(card => !selectedCards.find(sc => sc.name === card.name));
+    if (available.length === 0) return;
+
+    const extraCard = available[Math.floor(Math.random() * available.length)];
+    const newSelection = [...selectedCards, extraCard];
+    setSelectedCards(newSelection);
+    
+    if (sessionRef.current) {
+        sessionRef.current.sendRealtimeInput({
+          parts: [{ text: `Cécile, j'ai ajouté une carte d'approfondissement : ${extraCard.name}. Peux-tu l'interpréter en lien avec les autres cartes ? C'est ma ${newSelection.length - INITIAL_CARDS_COUNT}ème carte supplémentaire.` }]
+        });
+    } else {
+        startVoiceSession(newSelection);
+    }
   };
 
   const startVoiceSession = async (cardsForContext?: any[]) => {
@@ -115,7 +142,11 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const cardNames = activeCards.map((c, i) => `${i === 0 ? 'Passé' : i === 1 ? 'Présent' : 'Futur'} : ${c.name}`).join(', ');
+      const cardNames = activeCards.map((c, i) => {
+          let pos = i === 0 ? "Passé" : i === 1 ? "Présent" : i === 2 ? "Futur" : `Approfondissement ${i - 2}`;
+          return `${pos} : ${c.name}`;
+      }).join(', ');
+      
       const deckName = deckType === 'MARSEILLE' ? 'Tarot de Marseille' : deckType === 'RIDER_WAITE' ? 'Rider-Waite' : 'Oracle Mystique';
 
       const sessionPromise = ai.live.connect({
@@ -143,9 +174,8 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
             source.connect(scriptProcessor);
             scriptProcessor.connect(audioContextRef.current!.destination);
 
-            // Message initial plus direct pour forcer l'IA à parler
             sessionPromise.then((session) => {
-              const prompt = `Cécile, voici un tirage de l'${deckName}. Les cartes sorties sont : ${cardNames}. Offre immédiatement une interprétation mystique et poétique de ce message en FRANÇAIS. Ne pose pas de question au début, commence directement la lecture.`;
+              const prompt = `Cécile, voici un tirage de l'${deckName}. Les cartes sont : ${cardNames}. Interprète ce message avec ta sagesse. À la fin, si le tirage comporte moins de 6 cartes, propose toujours à la personne de tirer une carte supplémentaire (jusqu'à 3 maximum) dans les cases d'approfondissement pour éclairer davantage sa destinée.`;
               session.sendRealtimeInput({
                 parts: [{ text: prompt }]
               });
@@ -203,13 +233,9 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: `RÈGLE ABSOLUE : RÉPONDS EXCLUSIVEMENT EN FRANÇAIS.
-          Tu es Cécile, une cartomancienne experte. Ta voix est jeune, lumineuse et parfaitement articulée. 
-          Tu es spécialisée dans le Tarot de Marseille, le Rider-Waite et l'Oracle Mystique (un jeu de cartes symboliques).
-          CONTEXTE DU TIRAGE : Un tirage de l'${deckName} a été effectué. 
-          CARTES : ${cardNames}. 
-          MISSION : Dès l'ouverture, interprète immédiatement ces cartes avec poésie. Si c'est l'Oracle Mystique, sois attentive aux noms des cartes qui décrivent des états d'âme.
-          Ne parle jamais anglais. Sois concise, mystérieuse et bienveillante.`,
+          systemInstruction: `Tu es Cécile, une voyante lumineuse. RÉPONDS TOUJOURS EN FRANÇAIS.
+          Ta voix est claire, apaisante et articulée.
+          IMPORTANT : Tu peux suggérer à l'utilisateur d'ajouter jusqu'à 3 cartes supplémentaires (6 au total) s'il souhaite approfondir. Une fois les 6 cartes atteintes, dis-lui que le tirage est complet.`,
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
           },
@@ -283,9 +309,12 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
       ) : (
         <div className="space-y-12 animate-in fade-in duration-700">
           <div className="flex justify-center gap-8 flex-wrap">
+            {/* Cartes tirées */}
             {selectedCards.map((card, i) => (
-              <div key={i} className="flex flex-col items-center gap-4 animate-in slide-in-from-bottom-4" style={{ animationDelay: `${i * 0.2}s` }}>
-                <span className="text-[10px] font-mystic uppercase text-gold-muted tracking-widest">{i === 0 ? 'Passé' : i === 1 ? 'Présent' : 'Futur'}</span>
+              <div key={i} className="flex flex-col items-center gap-4 animate-in slide-in-from-bottom-4" style={{ animationDelay: `${i * 0.1}s` }}>
+                <span className="text-[10px] font-mystic uppercase text-gold-muted tracking-widest">
+                  {i === 0 ? 'Passé' : i === 1 ? 'Présent' : i === 2 ? 'Futur' : `Vision +${i-2}`}
+                </span>
                 
                 {deckType === 'MARSEILLE' ? (
                   <div className="w-44 h-72 card-marseille-authentic hover:-translate-y-2 transition-transform">
@@ -303,6 +332,24 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
                 )}
               </div>
             ))}
+
+            {/* Cases vides pour approfondir (jusqu'à 3 max) */}
+            {Array.from({ length: MAX_TOTAL_CARDS - selectedCards.length }).map((_, idx) => {
+              const isFirstEmpty = idx === 0;
+              return (
+                <div key={`empty-${idx}`} className="flex flex-col items-center gap-4 animate-in fade-in duration-1000" style={{ opacity: isFirstEmpty ? 1 : 0.3 }}>
+                   <span className="text-[10px] font-mystic uppercase text-gold-bright/40 tracking-widest">Approfondir</span>
+                   <button 
+                     onClick={isFirstEmpty ? deepenReading : undefined}
+                     disabled={voiceStatus === 'connecting' || !isFirstEmpty}
+                     className={`w-44 h-72 rounded border-2 border-dashed border-gold-bright/20 flex flex-col items-center justify-center gap-4 bg-gold-bright/5 transition-all ${isFirstEmpty ? 'hover:bg-gold-bright/10 hover:border-gold-bright/40 group' : 'cursor-not-allowed'}`}
+                   >
+                     <span className={`text-4xl text-gold-bright/30 ${isFirstEmpty ? 'group-hover:scale-125 transition-transform' : ''}`}>{isFirstEmpty ? '+' : ''}</span>
+                     <span className="text-[10px] font-mystic text-gold-bright/30 uppercase tracking-widest">{isFirstEmpty ? 'Ajouter une carte' : 'Case suivante'}</span>
+                   </button>
+                </div>
+              );
+            })}
           </div>
           
           <div className="max-w-3xl mx-auto flex flex-col items-center gap-6">
@@ -325,20 +372,33 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
                 </p>
               </div>
 
-              {voiceStatus === 'listening' && (
-                <div className="text-center animate-pulse">
-                  <p className="text-[10px] font-mystic text-gold-muted uppercase tracking-[0.2em]">Posez vos questions à voix haute pour lever le voile.</p>
+              <div className="text-center animate-in zoom-in duration-500">
+                <div className="inline-block px-8 py-3 bg-purple-950/40 border border-gold-bright/30 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.1)]">
+                  <p className="text-sm font-mystic text-gold-bright uppercase tracking-[0.2em] animate-pulse">
+                    Cécile est à votre écoute. Demandez-lui à voix haute d'analyser votre tirage.
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
 
-            <button 
-              disabled={voiceStatus === 'connecting'}
-              onClick={() => { setIsReading(false); stopVoiceSession(); }} 
-              className="mt-4 text-gold-muted/60 hover:text-gold-bright font-mystic text-[10px] uppercase tracking-[0.3em] transition-colors disabled:opacity-20 flex items-center gap-2"
-            >
-              <span className="text-lg">↺</span> Nouveau Tirage
-            </button>
+            <div className="flex gap-4">
+                {selectedCards.length < MAX_TOTAL_CARDS && (
+                  <button 
+                    disabled={voiceStatus === 'connecting'}
+                    onClick={deepenReading} 
+                    className="px-8 py-3 bg-gold-bright text-purple-950 font-mystic text-xs uppercase tracking-[0.2em] rounded border-2 border-gold-bright hover:bg-transparent hover:text-gold-bright transition-all disabled:opacity-30"
+                  >
+                    Approfondir le tirage
+                  </button>
+                )}
+                <button 
+                  disabled={voiceStatus === 'connecting'}
+                  onClick={() => { setIsReading(false); stopVoiceSession(); }} 
+                  className="px-8 py-3 text-gold-muted hover:text-gold-bright font-mystic text-xs uppercase tracking-[0.2em] rounded border-2 border-gold-muted/30 hover:border-gold-bright transition-all disabled:opacity-30"
+                >
+                  Nouveau Tirage
+                </button>
+            </div>
           </div>
         </div>
       )}

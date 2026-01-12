@@ -45,6 +45,30 @@ body {
   50% { transform: translateY(-10px); }
 }
 
+/* Jaillissement d'étoiles */
+.burst-particle {
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: 0;
+  animation: burst 1.2s forwards cubic-bezier(0.165, 0.84, 0.44, 1);
+  animation-delay: var(--delay);
+  text-shadow: 0 0 10px var(--gold-bright);
+}
+
+@keyframes burst {
+  0% {
+    transform: rotate(var(--angle)) translateY(0) scale(0);
+    opacity: 1;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateY(calc(-1 * var(--dist))) scale(2);
+    opacity: 0;
+  }
+}
+
 /* Salon UI */
 .salon-container {
   max-width: 1200px;

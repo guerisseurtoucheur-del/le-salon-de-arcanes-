@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { ViewType } from './types';
+import React, { useState, useEffect, useRef } from 'react';
+import { ViewType, AUDIO_THEMES } from './types';
 import Dashboard from './components/Dashboard';
 import TarotRoom from './components/TarotRoom';
 import CrystalBallRoom from './components/CrystalBallRoom';
@@ -13,6 +13,9 @@ import AudioController from './components/AudioController';
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>(ViewType.DASHBOARD);
   const [time, setTime] = useState(new Date());
+  const [hasEntered, setHasEntered] = useState(false);
+  const [isEntering, setIsEntering] = useState(false);
+  const globalAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -27,6 +30,37 @@ const App: React.FC = () => {
     return date.toLocaleDateString('fr-FR', options).toUpperCase();
   };
 
+  const enterSalon = async () => {
+    // 1. Déverrouiller l'AudioContext pour tout le site (essentiel pour la voix TTS plus tard)
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioCtx) {
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') await ctx.resume();
+    }
+
+    // 2. Jouer le son de cristal immédiatement (Interaction utilisateur directe)
+    // Utilisation d'un lien plus robuste
+    const chime = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-magical-glitter-shimmer-2364.mp3');
+    chime.volume = 0.7;
+    chime.play().catch(e => console.error("Le navigateur a bloqué le son de cristal:", e));
+
+    setIsEntering(true);
+
+    // 3. Préparer la musique d'ambiance pendant l'animation
+    const backgroundMusic = new Audio();
+    backgroundMusic.loop = true;
+    backgroundMusic.src = AUDIO_THEMES[ViewType.DASHBOARD];
+    backgroundMusic.volume = 0; // On commence à 0 pour le fondu dans AudioController
+    
+    // On la charge déjà
+    backgroundMusic.load();
+
+    setTimeout(() => {
+      globalAudioRef.current = backgroundMusic;
+      setHasEntered(true);
+    }, 1200);
+  };
+
   const renderView = () => {
     switch (currentView) {
       case ViewType.TAROT: return <TarotRoom onBack={() => setCurrentView(ViewType.DASHBOARD)} />;
@@ -39,9 +73,59 @@ const App: React.FC = () => {
     }
   };
 
+  if (!hasEntered) {
+    return (
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.15)_0%,transparent_70%)]"></div>
+        <div className={`text-center space-y-12 transition-all duration-1000 relative z-10 ${isEntering ? 'opacity-0 scale-110' : 'animate-in fade-in zoom-in duration-1000'}`}>
+          <div className="space-y-4">
+            <h1 className="text-7xl font-mystic text-gold-bright tracking-[0.2em] uppercase drop-shadow-[0_0_20px_rgba(255,215,0,0.5)]">Le Salon de Cécile</h1>
+            <p className="text-gold-muted font-cursive text-4xl italic">L'invisible vous attend...</p>
+          </div>
+          
+          <div className="relative inline-block">
+            <button 
+              onClick={enterSalon}
+              disabled={isEntering}
+              className="group relative px-16 py-6 bg-transparent border-2 border-gold-bright/30 overflow-hidden rounded-full transition-all hover:border-gold-bright hover:shadow-[0_0_40px_rgba(255,215,0,0.3)] disabled:opacity-0"
+            >
+              <span className="relative z-10 font-mystic text-gold-bright text-2xl tracking-widest uppercase group-hover:scale-110 block transition-transform">
+                Entrer dans le Salon
+              </span>
+              <div className="absolute inset-0 bg-gold-bright/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+            </button>
+
+            {/* Particules de jaillissement */}
+            {isEntering && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-visible">
+                {[...Array(20)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="burst-particle"
+                    style={{
+                      '--angle': `${i * 18}deg`,
+                      '--delay': `${Math.random() * 0.2}s`,
+                      '--dist': `${150 + Math.random() * 150}px`
+                    } as any}
+                  >
+                    {['✨', '💎', '✦', '✴️', '⭐'][i % 5]}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          <p className="text-gold-muted/40 font-serif text-sm uppercase tracking-[0.3em] flex items-center justify-center gap-2">
+            <span className="text-xl">🎧</span> Activez vos sens pour l'expérience complète
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="salon-container relative">
-      <AudioController currentView={currentView} />
+    <div className="salon-container relative animate-in fade-in duration-1000">
+      <AudioController currentView={currentView} sharedAudio={globalAudioRef.current} />
       
       <div className="fixed top-0 left-0 w-full z-50 pointer-events-none">
         <div className="max-w-screen-xl mx-auto px-6 py-2 flex justify-center">

@@ -58,14 +58,14 @@ export const ZODIAC_SIGNS: AstrologySign[] = [
   { name: 'Poissons', dates: '19 Février - 20 Mars', element: 'Eau', symbol: '♓' }
 ];
 
-// Utilisation de sons d'ambiance Google très stables
+// Utilisation de liens MP3 robustes et publics pour une compatibilité totale
 export const AUDIO_THEMES: Record<ViewType, string> = {
-  [ViewType.DASHBOARD]: 'https://actions.google.com/sounds/v1/ambiences/night_ambience.ogg',
-  [ViewType.TAROT]: 'https://actions.google.com/sounds/v1/ambiences/wind_chimes_and_birds.ogg',
-  [ViewType.CRYSTAL_BALL]: 'https://actions.google.com/sounds/v1/ambiences/glitchy_waves.ogg',
-  [ViewType.ASTROLOGY]: 'https://actions.google.com/sounds/v1/ambiences/crystal_bowl_vibrations.ogg',
-  [ViewType.PENDULUM]: 'https://actions.google.com/sounds/v1/ambiences/mystical_white_noise.ogg',
-  [ViewType.CECIL_DEEP]: 'https://actions.google.com/sounds/v1/ambiences/deep_space.ogg',
-  [ViewType.NEXUS]: 'https://actions.google.com/sounds/v1/ambiences/static_hum.ogg',
-  [ViewType.CHAT]: 'https://actions.google.com/sounds/v1/ambiences/night_ambience.ogg'
+  [ViewType.DASHBOARD]: 'https://assets.mixkit.co/music/preview/mixkit-meditation-soft-702.mp3',
+  [ViewType.TAROT]: 'https://assets.mixkit.co/music/preview/mixkit-mysterious-pensive-704.mp3',
+  [ViewType.CRYSTAL_BALL]: 'https://assets.mixkit.co/music/preview/mixkit-deep-meditation-701.mp3',
+  [ViewType.ASTROLOGY]: 'https://assets.mixkit.co/music/preview/mixkit-meditation-soft-702.mp3',
+  [ViewType.PENDULUM]: 'https://assets.mixkit.co/music/preview/mixkit-spirit-of-the-night-211.mp3',
+  [ViewType.CECIL_DEEP]: 'https://assets.mixkit.co/music/preview/mixkit-cinematic-mystery-suspense-672.mp3',
+  [ViewType.NEXUS]: 'https://assets.mixkit.co/music/preview/mixkit-ethereal-dreams-639.mp3',
+  [ViewType.CHAT]: 'https://assets.mixkit.co/music/preview/mixkit-ethereal-dreams-639.mp3'
 };
