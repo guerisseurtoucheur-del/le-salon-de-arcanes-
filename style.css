@@ -5,8 +5,8 @@
   --mystic-violet: #7e22ce;
   --gold-bright: #ffd700;
   --gold-muted: #b8860b;
-  --parchment: #fdf6e3;
-  --ink: #2c1e1a;
+  --parchment: #dccba0; /* Authentic aged Marseille parchment */
+  --ink: #1a1510;
 }
 
 body {
@@ -85,8 +85,78 @@ body {
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
 }
 
-/* --- DYNAMIC CARD BACKS --- */
+/* --- AUTHENTIC MARSEILLE CARD STYLING --- */
 
+.card-marseille-authentic {
+  background-color: var(--parchment);
+  background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+  border: 1.5px solid #1a1510;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+  padding: 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-marseille-inner {
+  border: 2px solid #1a1510;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  padding: 4px;
+}
+
+.card-marseille-accent-frame {
+  flex: 1;
+  border: 1px solid #1a1510;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.card-marseille-header {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'EB Garamond', serif;
+  font-weight: 700;
+  color: #1a1510;
+  font-size: 1rem;
+  background-color: rgba(0,0,0,0.02);
+}
+
+.card-marseille-illustration {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid #1a1510;
+  border-bottom: 1px solid #1a1510;
+  position: relative;
+}
+
+.card-marseille-footer {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0,0,0,0.02);
+}
+
+.card-marseille-title {
+  font-family: 'EB Garamond', serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #1a1510;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* Card Back Pattern Updates */
 .card-back-pattern {
   position: relative;
   display: flex;
@@ -104,7 +174,7 @@ body {
   pointer-events: none;
 }
 
-/* 1. MARSEILLE: Solaire & Royal */
+/* Marseille Back Theme */
 .back-marseille {
   background: #3e0a42;
   background-image: 
@@ -115,16 +185,8 @@ body {
   color: #ffd700;
   animation: pulse-mystic 3s infinite ease-in-out;
 }
-.back-marseille::after {
-  content: '';
-  position: absolute;
-  width: 150%;
-  height: 150%;
-  background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0L60 40L100 50L60 60L50 100L40 60L0 50L40 40Z' fill='%23ffd700' fill-opacity='0.05'/%3E%3C/svg%3E");
-  animation: rotate-slow 20s infinite linear;
-}
 
-/* 2. RIDER-WAITE: Gothique & Rosicrucien */
+/* Rider-Waite Theme */
 .back-rider {
   background: #1a1a2e;
   background-image: 
@@ -132,22 +194,11 @@ body {
     url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='15' cy='15' r='14' stroke='%234a0e4e' stroke-width='0.5' fill='none' opacity='0.2'/%3E%3C/svg%3E");
 }
 .back-rider .card-back-icon {
-  color: #ff3366; /* Un rose mystique vibrant */
+  color: #ff3366;
   animation: twinkle 2.5s infinite ease-in-out;
-  filter: drop-shadow(0 0 15px rgba(255, 51, 102, 0.6));
-}
-.back-rider::before {
-  content: '✦';
-  position: absolute;
-  top: 10%; left: 10%; color: gold; opacity: 0.5; animation: twinkle 3s infinite;
-}
-.back-rider::after {
-  content: '✦';
-  position: absolute;
-  bottom: 10%; right: 10%; color: gold; opacity: 0.5; animation: twinkle 3.5s infinite;
 }
 
-/* 3. ORACLE: Céleste & Éthéré */
+/* Oracle Theme */
 .back-oracle {
   background: #000428;
   background: linear-gradient(to bottom, #000428, #004e92);
@@ -155,20 +206,4 @@ body {
 .back-oracle .card-back-icon {
   color: #a5f3fc;
   animation: float-subtle 4s infinite ease-in-out;
-  filter: drop-shadow(0 0 20px #22d3ee);
-}
-.back-oracle::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(white 1px, transparent 1px);
-  background-size: 20px 20px;
-  opacity: 0.2;
-  animation: rotate-slow 60s infinite linear;
-}
-
-/* Placeholders spacing */
-.placeholder-glow {
-  animation: pulse-mystic 4s infinite;
-  box-shadow: 0 0 30px rgba(184, 134, 11, 0.2);
 }

@@ -2,6 +2,27 @@
 import React from 'react';
 import { ViewType } from '../types';
 
+const PendulumIcon = () => (
+  <div className="relative w-20 h-20 flex flex-col items-center group-hover:animate-swing-subtle transition-all duration-700">
+    <div className="w-[1px] h-10 bg-gold-muted/60 relative">
+      <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,215,0,0.8)_20%,transparent_30%)] bg-[length:4px_6px]"></div>
+    </div>
+    <div className="relative -mt-1 drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
+      <svg width="30" height="45" viewBox="0 0 70 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M35 0L70 40L55 90L35 110L15 90L0 40L35 0Z" fill="url(#crystal_grad_icon)" stroke="#1a1510" strokeWidth="1"/>
+        <path d="M35 0V110" stroke="white" strokeOpacity="0.4" strokeWidth="0.5"/>
+        <defs>
+          <linearGradient id="crystal_grad_icon" x1="0" y1="0" x2="70" y2="110" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#ffffff" stopOpacity="0.9"/>
+            <stop offset="0.4" stopColor="#fdf6e3" stopOpacity="0.6"/>
+            <stop offset="1" stopColor="#b8860b" stopOpacity="0.9"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  </div>
+);
+
 interface DashboardProps {
   onNavigate: (view: ViewType) => void;
 }
@@ -11,7 +32,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     { type: ViewType.TAROT, label: 'Les Arcanes du Tarot', icon: '🃏', desc: 'Marseille & Rider-Waite' },
     { type: ViewType.CRYSTAL_BALL, label: 'La Boule de Cristal', icon: '🔮', desc: 'Visions du Futur Proche' },
     { type: ViewType.ASTROLOGY, label: 'L\'Oracle des Astres', icon: '✨', desc: 'Votre Destin dans les Étoiles' },
-    { type: ViewType.PENDULUM, label: 'Le Sanctuaire du Pendule', icon: '⚓', desc: 'Vérité par le Oui ou le Non' },
+    { type: ViewType.PENDULUM, label: 'Le Sanctuaire du Pendule', icon: <PendulumIcon />, desc: 'Vérité par le Oui ou le Non' },
     { type: ViewType.CECIL_DEEP, label: 'Cécile éclaire votre Futur', icon: '👁️', desc: 'Révélations profondes sur votre Destinée' },
     { type: ViewType.NEXUS, label: 'Le Nexus de Nano', icon: '🔷', desc: 'Intelligence Cyber-Mystique' },
   ];

@@ -10,28 +10,28 @@ interface TarotViewProps {
 }
 
 const MARSEILLE_CARDS: TarotCard[] = [
-  { romanNumeral: "I", name: "Le Bateleur", image: "🧙", meaning: "Nouveau départ, potentiel, habileté." },
-  { romanNumeral: "II", name: "La Papesse", image: "📖", meaning: "Intuition, sagesse cachée, mystère." },
-  { romanNumeral: "III", name: "L'Impératrice", image: "👑", meaning: "Créativité, fertilité, abundance." },
-  { romanNumeral: "IIII", name: "L'Empereur", image: "🏛️", meaning: "Autorité, structure, stability." },
-  { romanNumeral: "V", name: "Le Pape", image: "🕊️", meaning: "Tradition, conseil, spiritualité." },
-  { romanNumeral: "VI", name: "L'Amoureux", image: "❤️", meaning: "Choix, relations, harmonie." },
-  { romanNumeral: "VII", name: "Le Chariot", image: "🚜", meaning: "Victoire, détermination, voyage." },
-  { romanNumeral: "VIII", name: "La Justice", image: "⚖️", meaning: "Équilibre, vérité, responsabilité." },
-  { romanNumeral: "VIIII", name: "L'Ermite", image: "🕯️", meaning: "Solitude, introspection, recherche." },
-  { romanNumeral: "X", name: "La Roue de Fortune", image: "🎡", meaning: "Changement, cycles, destin." },
-  { romanNumeral: "XI", name: "La Force", image: "🦁", meaning: "Courage, mastery de soi, patience." },
-  { romanNumeral: "XII", name: "Le Pendu", image: "🤸", meaning: "Lâcher-prise, perspective, sacrifice." },
-  { romanNumeral: "XIII", name: "L'Arcane sans nom", image: "💀", meaning: "Transformation, fin, renouveau." },
-  { romanNumeral: "XIIII", name: "La Tempérance", image: "🍶", meaning: "Modération, flux, alchimie." },
-  { romanNumeral: "XV", name: "Le Diable", image: "😈", meaning: "Passion, tentation, attachement." },
-  { romanNumeral: "XVI", name: "La Maison Dieu", image: "🏰", meaning: "Bouleversement, libération, éveil." },
-  { romanNumeral: "XVII", name: "L'Étoile", image: "✨", meaning: "Espoir, inspiration, sérénité." },
-  { romanNumeral: "XVIII", name: "La Lune", image: "🌙", meaning: "Rêves, illusions, subconscient." },
-  { romanNumeral: "XVIIII", name: "Le Soleil", image: "☀️", meaning: "Joie, succès, vitalité." },
-  { romanNumeral: "XX", name: "Le Jugement", image: "🎺", meaning: "Renaissance, bilan, appel." },
-  { romanNumeral: "XXI", name: "Le Monde", image: "🌍", meaning: "Accomplissement, plénitude, succès." },
-  { romanNumeral: "", name: "Le Mat", image: "🚶", meaning: "Inconnu, liberté, voyage intérieur." },
+  { romanNumeral: "I", name: "LE BATELEUR", image: "🧙", meaning: "Nouveau départ, potentiel, habileté." },
+  { romanNumeral: "II", name: "LA PAPESSE", image: "📖", meaning: "Intuition, sagesse cachée, mystère." },
+  { romanNumeral: "III", name: "L'IMPÉRATRICE", image: "👑", meaning: "Créativité, fertilité, abundance." },
+  { romanNumeral: "IIII", name: "L'EMPEREUR", image: "🏛️", meaning: "Autorité, structure, stability." },
+  { romanNumeral: "V", name: "LE PAPE", image: "🕊️", meaning: "Tradition, conseil, spiritualité." },
+  { romanNumeral: "VI", name: "L'AMOUREUX", image: "❤️", meaning: "Choix, relations, harmonie." },
+  { romanNumeral: "VII", name: "LE CHARIOT", image: "🚜", meaning: "Victoire, détermination, voyage." },
+  { romanNumeral: "VIII", name: "LA JUSTICE", image: "⚖️", meaning: "Équilibre, vérité, responsabilité." },
+  { romanNumeral: "VIIII", name: "L'ERMITE", image: "🕯️", meaning: "Solitude, introspection, recherche." },
+  { romanNumeral: "X", name: "LA ROUE DE FORTUNE", image: "🎡", meaning: "Changement, cycles, destin." },
+  { romanNumeral: "XI", name: "LA FORCE", image: "🦁", meaning: "Courage, mastery de soi, patience." },
+  { romanNumeral: "XII", name: "LE PENDU", image: "🤸", meaning: "Lâcher-prise, perspective, sacrifice." },
+  { romanNumeral: "XIII", name: "LA MORT", image: "💀", meaning: "Transformation, fin, renouveau." },
+  { romanNumeral: "XIIII", name: "LA TEMPÉRANCE", image: "🍶", meaning: "Modération, flux, alchimie." },
+  { romanNumeral: "XV", name: "LE DIABLE", image: "😈", meaning: "Passion, tentation, attachement." },
+  { romanNumeral: "XVI", name: "LA MAISON DIEU", image: "🏰", meaning: "Bouleversement, libération, éveil." },
+  { romanNumeral: "XVII", name: "L'ÉTOILE", image: "✨", meaning: "Espoir, inspiration, sérénité." },
+  { romanNumeral: "XVIII", name: "LA LUNE", image: "🌙", meaning: "Rêves, illusions, subconscient." },
+  { romanNumeral: "XVIIII", name: "LE SOLEIL", image: "☀️", meaning: "Joie, succès, vitalité." },
+  { romanNumeral: "XX", name: "LE JUGEMENT", image: "🎺", meaning: "Renaissance, bilan, appel." },
+  { romanNumeral: "XXI", name: "LE MONDE", image: "🌍", meaning: "Accomplissement, plénitude, succès." },
+  { romanNumeral: "", name: "LE MAT", image: "🚶", meaning: "Inconnu, liberté, voyage intérieur." },
 ];
 
 const SYBILLE_CARDS: TarotCard[] = [
@@ -232,7 +232,7 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
               <div className="w-full flex flex-col items-center gap-16">
                 <div className="flex flex-wrap justify-center gap-12 lg:gap-24">
                   {selectedCards.map((card, i) => (
-                    <TarotCardComponent key={i} card={card} isFlipped={isFlipped[i]} onClick={() => flipCard(i)} backClass={getDeckBackClass()} backIcon={getDeckBackIcon()} />
+                    <TarotCardComponent key={i} card={card} isFlipped={isFlipped[i]} onClick={() => flipCard(i)} backClass={getDeckBackClass()} backIcon={getDeckBackIcon()} deckType={deckType!} />
                   ))}
                 </div>
 
@@ -263,19 +263,34 @@ const DeckSelectionCard: React.FC<{ title: string; desc: string; img: string; on
   </button>
 );
 
-const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void; backClass: string; backIcon: string }> = ({ card, isFlipped, onClick, backClass, backIcon }) => (
+const TarotCardComponent: React.FC<{ card: TarotCard; isFlipped: boolean; onClick: () => void; backClass: string; backIcon: string; deckType: DeckType }> = ({ card, isFlipped, onClick, backClass, backIcon, deckType }) => (
   <div onClick={onClick} className={`w-52 h-80 cursor-pointer perspective-1000 ${isFlipped ? '' : 'hover:-translate-y-8'}`}>
     <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
       <div className={`absolute inset-0 card-back-pattern ${backClass} rounded shadow-2xl backface-hidden flex items-center justify-center`}>
          <span className="card-back-icon">{backIcon}</span>
       </div>
-      <div className="absolute inset-0 rounded rotate-y-180 backface-hidden card-antique-container p-4 bg-[#fdf6e3]">
-        <div className="h-full w-full border-2 border-gold-muted/20 flex flex-col items-center justify-between py-2">
-          <div className="text-xs font-bold text-amber-900 opacity-40 uppercase">{card.romanNumeral || 'Oracle'}</div>
-          <div className="text-8xl flex items-center justify-center my-auto">{card.image}</div>
-          <div className="text-center font-bold text-amber-950 font-mystic uppercase tracking-widest border-t border-gold-muted/30 pt-2 w-full">{card.name}</div>
+      
+      {deckType === 'MARSEILLE' ? (
+        <div className="absolute inset-0 rotate-y-180 backface-hidden card-marseille-authentic">
+          <div className="card-marseille-inner">
+            <div className="card-marseille-header">{card.romanNumeral || ' '}</div>
+            <div className="card-marseille-illustration">
+              <span className="text-8xl drop-shadow-md">{card.image}</span>
+            </div>
+            <div className="card-marseille-footer">
+              <div className="card-marseille-title">{card.name}</div>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="absolute inset-0 rounded rotate-y-180 backface-hidden card-antique-container p-4 bg-[#fdf6e3]">
+          <div className="h-full w-full border-2 border-gold-muted/20 flex flex-col items-center justify-between py-2">
+            <div className="text-xs font-bold text-amber-900 opacity-40 uppercase">{card.romanNumeral || 'Oracle'}</div>
+            <div className="text-8xl flex items-center justify-center my-auto">{card.image}</div>
+            <div className="text-center font-bold text-amber-950 font-mystic uppercase tracking-widest border-t border-gold-muted/30 pt-2 w-full">{card.name}</div>
+          </div>
+        </div>
+      )}
     </div>
   </div>
 );

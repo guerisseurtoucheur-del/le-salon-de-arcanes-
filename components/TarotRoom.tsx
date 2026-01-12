@@ -2,36 +2,50 @@
 import React, { useState } from 'react';
 
 const TAROT_MARSEILLE = [
-  { name: "Le Bateleur", image: "🧙", meaning: "Potentiel infini, nouveaux départs." },
-  { name: "La Papesse", image: "📖", meaning: "Intuition profonde, mystères cachés." },
-  { name: "L'Amoureux", image: "❤️", meaning: "Choix de l'âme, unions sacrées." },
-  { name: "La Roue de Fortune", image: "🎡", meaning: "Cycles éternels, destin en marche." },
-  { name: "Le Pendu", image: "🤸", meaning: "Perspectives nouvelles, lâcher-prise." },
-  { name: "Le Monde", image: "🌍", meaning: "Accomplissement total, harmonie." },
-  { name: "Le Soleil", image: "☀️", meaning: "Clarté divine, succès éclatant." },
-  { name: "L'Ermite", image: "🕯️", meaning: "Sagesse intérieure, introspection." },
+  { name: "LE BATELEUR", image: "🧙", roman: "I", color: "#d4a017" }, // Yellow
+  { name: "LA PAPESSE", image: "📖", roman: "II", color: "#2b547e" }, // Blue
+  { name: "L'IMPÉRATRICE", image: "👑", roman: "III", color: "#4e9258" }, // Green
+  { name: "L'EMPEREUR", image: "🛡️", roman: "IIII", color: "#990000" }, // Red
+  { name: "LE PAPE", image: "🕊️", roman: "V", color: "#990000" }, // Red
+  { name: "L'AMOUREUX", image: "❤️", roman: "VI", color: "#d4a017" }, // Yellow
+  { name: "LE CHARIOT", image: "🚜", roman: "VII", color: "#2b547e" }, // Blue
+  { name: "LA JUSTICE", image: "⚖️", roman: "VIII", color: "#4e9258" }, // Green
+  { name: "L'ERMITE", image: "🕯️", roman: "VIIII", color: "#990000" }, // Red
+  { name: "LA ROUE DE FORTUNE", image: "🎡", roman: "X", color: "#4e9258" }, // Green
+  { name: "LA FORCE", image: "🦁", roman: "XI", color: "#990000" }, // Red
+  { name: "LE PENDU", image: "🤸", roman: "XII", color: "#2b547e" }, // Blue
+  { name: "LA MORT", image: "💀", roman: "XIII", color: "#1a1510" }, // Black
+  { name: "LA TEMPÉRANCE", image: "🍶", roman: "XIIII", color: "#4e9258" }, // Green
+  { name: "LE DIABLE", image: "😈", roman: "XV", color: "#990000" }, // Red
+  { name: "LA MAISON DIEU", image: "🏰", roman: "XVI", color: "#d4a017" }, // Yellow
+  { name: "L'ÉTOILE", image: "⭐", roman: "XVII", color: "#2b547e" }, // Blue
+  { name: "LA LUNE", image: "🌙", roman: "XVIII", color: "#2b547e" }, // Blue
+  { name: "LE SOLEIL", image: "☀️", roman: "XVIIII", color: "#d4a017" }, // Yellow
+  { name: "LE JUGEMENT", image: "🎺", roman: "XX", color: "#4e9258" }, // Green
+  { name: "LE MONDE", image: "🌍", roman: "XXI", color: "#d4a017" }, // Yellow
+  { name: "LE MAT", image: "🚶", roman: " ", color: "#990000" }, // Red
 ];
 
 const RIDER_WAITE = [
-  { name: "Le Magicien", image: "✨", meaning: "Action, volonté, manifestation." },
-  { name: "La Grande Prêtresse", image: "🌙", meaning: "Sagesse, inconscient, mystère." },
-  { name: "L'Impératrice", image: "🌿", meaning: "Abondance, nature, créativité." },
-  { name: "L'Empereur", image: "🛡️", meaning: "Autorité, structure, protection." },
-  { name: "Le Hiérophante", image: "🛐", meaning: "Tradition, apprentissage, mentor." },
-  { name: "Les Amants", image: "🕊️", meaning: "Harmonie, values, alignement." },
-  { name: "La Force", image: "🦁", meaning: "Courage, compassion, mastery." },
-  { name: "L'Étoile", image: "⭐", meaning: "Espoir, inspiration, sérénité." },
+  { name: "The Magician", image: "✨" },
+  { name: "The High Priestess", image: "🌙" },
+  { name: "The Empress", image: "🌿" },
+  { name: "The Emperor", image: "🛡️" },
+  { name: "The Hierophant", image: "🛐" },
+  { name: "The Lovers", image: "🕊️" },
+  { name: "Strength", image: "🦁" },
+  { name: "The Star", image: "⭐" },
 ];
 
 const ORACLE_CARDS = [
-  { name: "La Destinée", image: "🗝️", meaning: "Une porte s'ouvre, le destin s'accomplit." },
-  { name: "L'Élévation", image: "🧗", meaning: "Progrès spirituel ou social, succès." },
-  { name: "La Réussite", image: "🏆", meaning: "Triomphe après l'effort, récompense." },
-  { name: "L'Inconstance", image: "🌪️", meaning: "Changements rapides, incertitude passagère." },
-  { name: "La Pensée", image: "💭", meaning: "Réflexion nécessaire, projets en gestation." },
-  { name: "Le Cadeau", image: "🎁", meaning: "Une surprise arrive, générosité du sort." },
-  { name: "La Fidélité", image: "🐕", meaning: "Soutien sincère, amitié durable." },
-  { name: "L'Union", image: "💍", meaning: "Alliance, contrat ou rencontre marquante." },
+  { name: "La Destinée", image: "🗝️" },
+  { name: "L'Élévation", image: "🧗" },
+  { name: "La Réussite", image: "🏆" },
+  { name: "L'Inconstance", image: "🌪️" },
+  { name: "La Pensée", image: "💭" },
+  { name: "Le Cadeau", image: "🎁" },
+  { name: "La Fidélité", image: "🐕" },
+  { name: "L'Union", image: "💍" },
 ];
 
 const TarotRoom: React.FC<{ onBack: () => void }> = () => {
@@ -54,12 +68,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
     if (deckType === 'MARSEILLE') return 'back-marseille';
     if (deckType === 'RIDER_WAITE') return 'back-rider';
     return 'back-oracle';
-  };
-
-  const getDeckBackIcon = () => {
-    if (deckType === 'MARSEILLE') return '☀️';
-    if (deckType === 'RIDER_WAITE') return '☸️';
-    return '👁️';
   };
 
   return (
@@ -87,7 +95,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
                 key={i} 
                 className={`w-32 h-52 card-back-pattern ${getDeckBackClass()} shadow-2xl transition-all duration-500 hover:-translate-y-6 hover:rotate-3 flex items-center justify-center`}
               >
-                <span className="card-back-icon">{getDeckBackIcon()}</span>
+                <span className="card-back-icon text-4xl">{deckType === 'MARSEILLE' ? '☀️' : deckType === 'RIDER_WAITE' ? '☸️' : '👁️'}</span>
               </div>
             ))}
           </div>
@@ -97,34 +105,41 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
           >
             Mélanger les Arcanes
           </button>
-          <p className="mt-8 text-gold-muted italic font-serif">
-            {deckType === 'ORACLE' ? "L'Oracle vous parlera des événements concrets de votre vie." : "Le Tarot vous révélera les profondeurs de votre âme."}
-          </p>
         </div>
       ) : (
         <div className="space-y-16 animate-in fade-in duration-1000">
-          <div className="flex justify-center gap-10 md:gap-20 flex-wrap">
+          <div className="flex justify-center gap-10 md:gap-14 flex-wrap">
             {selectedCards.map((card, i) => (
               <div key={i} className="flex flex-col items-center gap-6 animate-in slide-in-from-bottom-8" style={{ animationDelay: `${i * 0.3}s` }}>
                 <span className="text-xs font-mystic uppercase tracking-[0.4em] text-gold-muted/60">{i === 0 ? 'Passé' : i === 1 ? 'Présent' : 'Futur'}</span>
-                <div className="w-56 h-88 bg-[#fdf6e3] p-1 border-4 border-gold-muted shadow-[0_20px_50px_rgba(0,0,0,0.7)] transform transition-transform hover:-translate-y-4 rounded-sm">
-                   <div className="h-full w-full border-2 border-gold-muted/20 flex flex-col items-center justify-between p-4">
-                      <div className="text-xs font-bold text-amber-900 opacity-40 uppercase tracking-tighter">
-                        {deckType === 'ORACLE' ? 'Oracle des Destins' : 'Arcane Majeur'}
+                
+                {deckType === 'MARSEILLE' ? (
+                  <div className="w-56 h-96 card-marseille-authentic hover:-translate-y-4">
+                    <div className="card-marseille-inner" style={{ borderColor: card.color }}>
+                      <div className="card-marseille-accent-frame" style={{ borderColor: card.color }}>
+                        <div className="card-marseille-header" style={{ color: card.color }}>{card.roman}</div>
+                        <div className="card-marseille-illustration">
+                          <span className="text-8xl drop-shadow-lg">{card.image}</span>
+                        </div>
+                        <div className="card-marseille-footer">
+                          <div className="card-marseille-title">{card.name}</div>
+                        </div>
                       </div>
-                      <span className="text-8xl drop-shadow-md my-6">{card.image}</span>
-                      <h4 className="font-mystic text-amber-950 text-xl text-center leading-none border-t border-gold-muted/30 pt-4 w-full uppercase">{card.name}</h4>
-                   </div>
-                </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-56 h-88 bg-[#fdf6e3] p-1 border-4 border-gold-muted shadow-[0_20px_50px_rgba(0,0,0,0.7)] transform transition-transform hover:-translate-y-4 rounded-sm">
+                    <div className="h-full w-full border-2 border-gold-muted/20 flex flex-col items-center justify-between p-4">
+                        <div className="text-xs font-bold text-amber-900 opacity-40 uppercase tracking-tighter">
+                          {deckType === 'ORACLE' ? 'Oracle des Destins' : 'Rider-Waite Smith'}
+                        </div>
+                        <span className="text-8xl drop-shadow-md my-6">{card.image}</span>
+                        <h4 className="font-mystic text-amber-950 text-xl text-center leading-none border-t border-gold-muted/30 pt-4 w-full uppercase">{card.name}</h4>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
-          </div>
-          
-          <div className="p-10 glass-mystic gold-border rounded-3xl text-center max-w-3xl mx-auto shadow-2xl relative">
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-8 bg-purple-950 border-2 border-gold-muted font-mystic text-gold-bright text-xl uppercase tracking-widest">Vision de l'Oracle</div>
-            <p className="italic text-2xl md:text-3xl font-cursive text-gold-bright leading-relaxed px-6">
-              "Les fils de votre destin s'entrelacent : {selectedCards.map(c => c.meaning).join(' ')}"
-            </p>
           </div>
           
           <div className="text-center">
