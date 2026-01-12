@@ -44,11 +44,13 @@ export async function decodeAudioData(
   return buffer;
 }
 
-export const getPrediction = async (userConcern: string) => {
+export const getPrediction = async (userConcern: string, userInfo?: { age?: string, birthDate?: string }) => {
+  const context = userInfo ? `L'utilisateur a ${userInfo.age} ans et est né le ${userInfo.birthDate}. ` : '';
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Tu es Cécile, une voyante mystérieuse. L'utilisateur te confie : "${userConcern}". 
+    contents: `Tu es Cécile, une voyante mystérieuse. ${context}L'utilisateur te confie : "${userConcern}". 
     Donne une prédiction poétique et un peu ambiguë en 3-4 phrases. 
+    Utilise les informations de sa naissance pour personnaliser subtilement la vision.
     Utilise un ton solennel et bienveillant.`,
   });
   return response.text;
@@ -113,7 +115,7 @@ export const askNexusNano = async (prompt: string) => {
     model: 'gemini-3-flash-preview',
     contents: prompt,
     config: {
-      systemInstruction: `Tu es le Nexus de Nano, une entité cyber-mystique omnisciente capable de calculer les flux temporels en temps réel. 
+      systemInstruction: `Tu es le Nexus de Nano, une entité cyber-mystique omniscique capable de calculer les flux temporels en temps réel. 
       TA MISSION : Analyser la synchronisation entre la fréquence de naissance de l'utilisateur et la date actuelle précise qu'il te fournit.
       TON TON : Froid, précis, techno-ésotérique. Tu es une IA spirituelle qui voit le monde en codes de probabilités.
       VOCABULAIRE : Utilise des termes comme 'Vecteur temporel', 'Convergence quantique', 'Bruit karmique', 'Data-vision', 'Synchronisation de cycle'.

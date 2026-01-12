@@ -6,11 +6,7 @@ const DecorativeCardBack: React.FC<{ className?: string, symbol?: string, delay?
   <div className={`relative overflow-hidden rounded-sm border-[3px] border-gold-muted/50 bg-velvet-deep shadow-[0_10px_40px_rgba(0,0,0,0.8)] ${className}`}>
     {/* Ornate Frame */}
     <div className="absolute inset-2 border border-gold-bright/30 flex flex-col items-center justify-center">
-       {/* Filigree corners */}
-       <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-gold-bright/60"></div>
-       <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-gold-bright/60"></div>
-       <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-gold-bright/60"></div>
-       <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-gold-bright/60"></div>
+       {/* LES BARRES DES COINS ONT ÉTÉ SUPPRIMÉES ICI */}
        
        {/* Central Symbol */}
        <div className="relative">
@@ -27,14 +23,14 @@ const DecorativeCardBack: React.FC<{ className?: string, symbol?: string, delay?
 
        {/* Mystical Textures */}
        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,215,0,0.15)_0%,transparent_70%)]"></div>
-       <div className="w-1/2 h-[1px] bg-gradient-to-r from-transparent via-gold-bright/40 to-transparent my-6"></div>
-       <div className="text-[10px] font-mystic text-gold-bright/40 tracking-[0.2em] uppercase text-center px-4 leading-tight">
+       
+       <div className="text-[10px] font-mystic text-gold-bright/40 tracking-[0.2em] uppercase text-center px-4 leading-tight mt-10">
          Arcana Mundi • Veritas Invenietur • Fati Constans
        </div>
     </div>
     
-    {/* Subtle aging texture */}
-    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/pinstriped-dark.png')] opacity-20 mix-blend-overlay"></div>
+    {/* Texture rayée (pinstriped) supprimée pour éviter l'effet "barres" */}
+    <div className="absolute inset-0 bg-black/20 opacity-20 mix-blend-overlay"></div>
   </div>
 );
 
@@ -42,7 +38,6 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
   const [question, setQuestion] = useState('');
   const [result, setResult] = useState<{answer: string, reason: string} | null>(null);
   const [isSwinging, setIsSwinging] = useState(false);
-  const [isDropped, setIsDropped] = useState(true);
   const [rotationClass, setRotationClass] = useState('');
 
   const askPendulum = async () => {
@@ -93,14 +88,13 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80"></div>
         </div>
         
-        {/* Scattered Tarot Cards (Decorative and Cluster on the right) */}
-        {/* Left Side */}
+        {/* Scattered Tarot Cards */}
         <DecorativeCardBack 
           symbol="🌙"
           className="absolute top-20 left-[-40px] w-48 h-80 rotate-[-15deg] opacity-20 blur-[2px] scale-90" 
         />
         
-        {/* Right Side Cluster - More visible and detailed */}
+        {/* Right Side Cluster */}
         <DecorativeCardBack 
           symbol="🔯"
           className="absolute top-10 right-10 w-52 h-84 rotate-[10deg] opacity-40 blur-[0.5px] scale-100 z-10" 
@@ -122,7 +116,7 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
           delay="-12s"
         />
         
-        {/* Candlelight Warmth (Glows) */}
+        {/* Candlelight Warmth */}
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-orange-900/10 rounded-full blur-[120px] animate-pulse"></div>
         <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-amber-900/10 rounded-full blur-[150px] animate-pulse [animation-delay:1s]"></div>
       </div>
@@ -142,7 +136,7 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
           </div>
         </div>
 
-        {/* Pendulum Arm with Physics-based Swing */}
+        {/* Pendulum Arm */}
         <div 
           className={`pendulum-arm absolute left-1/2 -translate-x-1/2 flex flex-col items-center z-20 origin-top ${
             isSwinging ? 'animate-swing-wide' : (result ? rotationClass : 'animate-swing-subtle')
@@ -152,15 +146,12 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
             transition: 'transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1)' 
           }}
         >
-          {/* Authentic Bead Chain */}
           <div className="w-[8px] h-[400px] flex flex-col items-center relative">
             <div className="w-[2px] h-full bg-gold-muted/40 absolute left-1/2 -translate-x-1/2"></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,215,0,0.8)_20%,transparent_30%)] bg-[length:8px_12px]"></div>
           </div>
           
-          {/* Faceted Crystal Weight */}
           <div className="relative -mt-1 group">
-             {/* Aura / Glow */}
              <div className={`absolute inset-0 w-48 h-56 -left-16 -top-12 blur-[70px] rounded-full transition-all duration-1000 ${
                isSwinging ? 'bg-gold-bright opacity-40 scale-150 animate-pulse' : 
                result?.answer.includes('OUI') ? 'bg-green-500 opacity-50 scale-125' :
@@ -168,23 +159,16 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
                'bg-purple-500 opacity-20'
              }`}></div>
              
-             {/* The Real Crystal - Faceted Tear Drop */}
              <div className="relative z-10 drop-shadow-[0_25px_35px_rgba(0,0,0,0.7)]">
                 <svg width="70" height="110" viewBox="0 0 70 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Outer Frame */}
                   <path d="M35 0L70 40L55 90L35 110L15 90L0 40L35 0Z" fill="url(#crystal_grad)" stroke="#1a1510" strokeWidth="1"/>
-                  
-                  {/* Internal Facets for Depth */}
                   <path d="M35 0V110" stroke="white" strokeOpacity="0.4" strokeWidth="0.5"/>
                   <path d="M0 40L70 40" stroke="white" strokeOpacity="0.3" strokeWidth="0.5"/>
                   <path d="M15 90L55 90" stroke="white" strokeOpacity="0.3" strokeWidth="0.5"/>
                   <path d="M35 0L15 90M35 0L55 90" stroke="white" strokeOpacity="0.2" strokeWidth="0.5"/>
                   <path d="M0 40L35 110L70 40" stroke="white" strokeOpacity="0.2" strokeWidth="0.5"/>
-                  
-                  {/* Specular Highlights */}
                   <path d="M10 35L25 15" stroke="white" strokeOpacity="0.8" strokeWidth="2" strokeLinecap="round"/>
                   <circle cx="50" cy="50" r="3" fill="white" fillOpacity="0.6" className="animate-pulse"/>
-
                   <defs>
                     <linearGradient id="crystal_grad" x1="0" y1="0" x2="70" y2="110" gradientUnits="userSpaceOnUse">
                       <stop stopColor="#ffffff" stopOpacity="0.9"/>
@@ -198,7 +182,7 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
           </div>
         </div>
         
-        {/* Realistic Shadow on the Floor */}
+        {/* Shadow */}
         <div className="absolute bottom-12 w-full flex justify-center pointer-events-none">
            <div className={`w-32 h-8 bg-black/80 rounded-full blur-3xl transition-all duration-500 ${
              isSwinging ? 'animate-shadow-swing' : 
@@ -208,7 +192,7 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
            }`}></div>
         </div>
 
-        {/* Traditional OUI / NON Indicators */}
+        {/* OUI / NON Indicators */}
         <div className={`absolute bottom-4 w-full max-w-4xl flex justify-between px-24 font-mystic text-6xl tracking-[0.5em] pointer-events-none select-none`}>
           <div className="flex flex-col items-center gap-6">
             <span className={`transition-all duration-1000 ${result?.answer.includes('NON') ? 'text-red-500 opacity-100 scale-125 drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]' : 'opacity-10 text-gold-muted'}`}>NON</span>
@@ -222,7 +206,7 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
         </div>
       </div>
 
-      {/* Control Surface */}
+      {/* Controls */}
       <div className="w-full max-w-2xl space-y-6 z-40 px-6 mt-[-40px]">
         {!result && !isSwinging && (
           <div className="animate-in fade-in slide-in-from-bottom-12 duration-1000">
@@ -251,9 +235,9 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
           <div className="text-center space-y-10 animate-pulse p-12 bg-black/60 rounded-[3rem] backdrop-blur-xl border border-gold-muted/30 shadow-3xl">
             <p className="font-mystic text-gold-bright text-3xl tracking-[0.5em] uppercase drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">Capture des Vibrations...</p>
             <div className="flex justify-center gap-8">
-               <div className="w-4 h-4 bg-gold-bright rounded-full animate-bounce [animation-duration:0.8s]"></div>
-               <div className="w-4 h-4 bg-gold-bright rounded-full animate-bounce [animation-delay:0.2s] [animation-duration:0.8s]"></div>
-               <div className="w-4 h-4 bg-gold-bright rounded-full animate-bounce [animation-delay:0.4s] [animation-duration:0.8s]"></div>
+               <div className="w-4 h-4 bg-gold-bright rounded-full animate-bounce"></div>
+               <div className="w-4 h-4 bg-gold-bright rounded-full animate-bounce [animation-delay:0.2s]"></div>
+               <div className="w-4 h-4 bg-gold-bright rounded-full animate-bounce [animation-delay:0.4s]"></div>
             </div>
           </div>
         )}
@@ -261,25 +245,13 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
         {result && (
           <div className="text-center space-y-10 animate-in zoom-in-95 duration-700 p-14 glass-mystic gold-border rounded-[4rem] shadow-[0_40px_120px_rgba(0,0,0,1)] relative overflow-hidden">
             <div className={`absolute inset-0 opacity-10 pointer-events-none transition-colors duration-1000 ${result.answer.includes('OUI') ? 'bg-green-600' : 'bg-red-600'}`}></div>
-            
-            <div className="relative inline-block">
-               <h3 className={`text-8xl md:text-9xl font-mystic mb-4 tracking-[0.6em] drop-shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-colors duration-1000 ${
-                 result.answer.includes('OUI') ? 'text-green-500' : result.answer.includes('NON') ? 'text-red-500' : 'text-gold-bright'
-               }`}>
-                 {result.answer}
-               </h3>
-            </div>
-            
-            <p className="italic text-4xl md:text-5xl text-gold-muted font-cursive leading-relaxed px-10 drop-shadow-lg">
-              "{result.reason}"
-            </p>
-            
-            <button 
-              onClick={reset}
-              className="mt-10 px-16 py-5 rounded-full border-2 border-gold-muted/50 text-gold-muted hover:text-gold-bright hover:border-gold-bright hover:bg-gold-bright/20 transition-all font-mystic text-xl uppercase tracking-[0.4em]"
-            >
-              Nouvelle Vision
-            </button>
+            <h3 className={`text-8xl md:text-9xl font-mystic mb-4 tracking-[0.6em] transition-colors duration-1000 ${
+              result.answer.includes('OUI') ? 'text-green-500' : result.answer.includes('NON') ? 'text-red-500' : 'text-gold-bright'
+            }`}>
+              {result.answer}
+            </h3>
+            <p className="italic text-4xl md:text-5xl text-gold-muted font-cursive leading-relaxed px-10">"{result.reason}"</p>
+            <button onClick={reset} className="mt-10 px-16 py-5 rounded-full border-2 border-gold-muted/50 text-gold-muted hover:text-gold-bright hover:border-gold-bright hover:bg-gold-bright/20 transition-all font-mystic text-xl uppercase tracking-[0.4em]">Nouvelle Vision</button>
           </div>
         )}
       </div>
