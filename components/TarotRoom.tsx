@@ -89,9 +89,10 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
     setIsReading(true);
     setTranscript('');
     
+    // Attendre la fin du rendu des cartes pour lancer la voix
     setTimeout(() => {
       startVoiceSession(drawn);
-    }, 500);
+    }, 600);
   };
 
   const startVoiceSession = async (cardsForContext?: any[]) => {
@@ -114,7 +115,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const cardNames = activeCards.map((c, i) => `${i === 0 ? 'le Passé' : i === 1 ? 'le Présent' : 'le Futur'} est : ${c.name}`).join(', ');
+      const cardNames = activeCards.map((c, i) => `${i === 0 ? 'Passé' : i === 1 ? 'Présent' : 'Futur'} : ${c.name}`).join(', ');
       const deckName = deckType === 'MARSEILLE' ? 'Tarot de Marseille' : deckType === 'RIDER_WAITE' ? 'Rider-Waite' : 'Oracle Mystique';
 
       const sessionPromise = ai.live.connect({
@@ -142,9 +143,11 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
             source.connect(scriptProcessor);
             scriptProcessor.connect(audioContextRef.current!.destination);
 
+            // Message initial plus direct pour forcer l'IA à parler
             sessionPromise.then((session) => {
+              const prompt = `Cécile, voici un tirage de l'${deckName}. Les cartes sorties sont : ${cardNames}. Offre immédiatement une interprétation mystique et poétique de ce message en FRANÇAIS. Ne pose pas de question au début, commence directement la lecture.`;
               session.sendRealtimeInput({
-                parts: [{ text: `Cécile, le tirage du ${deckName} est prêt. Les cartes sont : ${cardNames}. Interprète-les immédiatement EN FRANÇAIS avec poésie.` }]
+                parts: [{ text: prompt }]
               });
             });
           },
@@ -200,12 +203,13 @@ const TarotRoom: React.FC<{ onBack: () => void }> = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: `RÈGLE ABSOLUE : RÉPONDS EXCLUSIVEMENT EN FRANÇAIS. Ne parle jamais anglais.
+          systemInstruction: `RÈGLE ABSOLUE : RÉPONDS EXCLUSIVEMENT EN FRANÇAIS.
           Tu es Cécile, une cartomancienne experte. Ta voix est jeune, lumineuse et parfaitement articulée. 
-          CONTEXTE DU TIRAGE : Un tirage du ${deckName} a été effectué. 
+          Tu es spécialisée dans le Tarot de Marseille, le Rider-Waite et l'Oracle Mystique (un jeu de cartes symboliques).
+          CONTEXTE DU TIRAGE : Un tirage de l'${deckName} a été effectué. 
           CARTES : ${cardNames}. 
-          MISSION : Dès l'ouverture, interprète immédiatement ces cartes avec poésie et bienveillance. Ne sois pas trop bavarde, reste mystérieuse mais claire. 
-          Après ton interprétation, reste disponible pour répondre aux questions à voix haute de l'utilisateur.`,
+          MISSION : Dès l'ouverture, interprète immédiatement ces cartes avec poésie. Si c'est l'Oracle Mystique, sois attentive aux noms des cartes qui décrivent des états d'âme.
+          Ne parle jamais anglais. Sois concise, mystérieuse et bienveillante.`,
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
           },
