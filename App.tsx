@@ -12,16 +12,30 @@ import NexusRoom from './components/NexusRoom';
 const Candle: React.FC<{ className?: string }> = ({ className }) => (
   <div className={`relative flex flex-col items-center ${className}`}>
     <div className="relative mb-1">
-      <div className="flame-glow w-16 h-16 bg-amber-500/20 rounded-full absolute -top-8 left-1/2 -translate-x-1/2 blur-xl animate-glow-pulse"></div>
-      <div className="flame w-4 h-8 bg-gradient-to-t from-orange-600 via-amber-400 to-yellow-100 rounded-full blur-[1px] animate-flame-flicker origin-bottom shadow-[0_0_20px_rgba(251,191,36,0.6)]"></div>
+      {/* Halo de lumière plus intense et plus large */}
+      <div className="flame-glow w-32 h-32 bg-amber-500/10 rounded-full absolute -top-16 left-1/2 -translate-x-1/2 blur-3xl animate-glow-pulse-heavy"></div>
+      
+      {/* Flamme principale plus haute et dansante */}
+      <div className="flame w-5 h-20 bg-gradient-to-t from-orange-600 via-amber-400 to-yellow-50 rounded-full blur-[1px] animate-flame-dance origin-bottom shadow-[0_0_40px_rgba(251,191,36,0.8)] relative">
+        {/* Coeur de la flamme (Partie plus chaude/claire) */}
+        <div className="absolute inset-x-1.5 top-6 bottom-2 bg-white/60 rounded-full blur-[2px]"></div>
+        {/* Pointe de la flamme (Effet de fumée/chaleur) */}
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-2 h-8 bg-amber-200/20 blur-md rounded-full"></div>
+      </div>
     </div>
-    <div className="w-6 h-32 bg-gradient-to-b from-[#2a1a0a] via-[#4d3319] to-[#1a0f05] rounded-t-sm shadow-inner relative border-x border-gold-muted/20">
+    
+    {/* Corps de la bougie */}
+    <div className="w-8 h-40 bg-gradient-to-b from-[#2a1a0a] via-[#4d3319] to-[#1a0f05] rounded-t-sm shadow-inner relative border-x border-gold-muted/20">
       <div className="absolute top-0 left-0 w-full h-2 bg-black/40 blur-[1px]"></div>
-      <div className="absolute top-1 left-1 w-1 h-6 bg-[#4d3319] rounded-full opacity-60"></div>
-      <div className="absolute top-2 right-2 w-1 h-4 bg-[#4d3319] rounded-full opacity-40"></div>
+      <div className="absolute top-1 left-1.5 w-1 h-10 bg-[#4d3319] rounded-full opacity-60"></div>
+      <div className="absolute top-4 right-2 w-1 h-6 bg-[#4d3319] rounded-full opacity-40"></div>
+      {/* Effet de cire qui coule */}
+      <div className="absolute top-0 right-1 w-2 h-12 bg-[#3d2914] rounded-b-full opacity-80 blur-[0.5px]"></div>
     </div>
-    <div className="w-12 h-2 bg-gold-muted/40 rounded-full -mt-1 shadow-lg border-b border-gold-bright/10"></div>
-    <div className="w-16 h-1 bg-black/60 rounded-full mt-0.5"></div>
+    
+    {/* Base de la bougie */}
+    <div className="w-16 h-3 bg-gold-muted/40 rounded-full -mt-1 shadow-lg border-b border-gold-bright/10"></div>
+    <div className="w-20 h-1 bg-black/60 rounded-full mt-0.5"></div>
   </div>
 );
 
@@ -30,6 +44,7 @@ const App: React.FC = () => {
   const [time, setTime] = useState(new Date());
   const [hasEntered, setHasEntered] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
+  const [showBurst, setShowBurst] = useState(false);
   const [tokens, setTokens] = useState<number>(() => {
     const saved = localStorage.getItem('cecile_tokens');
     return saved ? parseInt(saved, 10) : 1; 
@@ -60,20 +75,23 @@ const App: React.FC = () => {
       return;
     }
 
+    setShowBurst(true);
+
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (AudioCtx) {
       const ctx = new AudioCtx();
       if (ctx.state === 'suspended') await ctx.resume();
     }
 
-    const chime = new Audio('https://assets.mixkit.co/active_storage/sfx/2367/2367-preview.mp3');
-    chime.volume = 0.7;
+    const chime = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
+    chime.volume = 0.6;
     chime.play().catch(() => {});
 
     setIsEntering(true);
     setTimeout(() => {
       setHasEntered(true);
       setIsEntering(false);
+      setShowBurst(false);
     }, 1200);
   };
 
@@ -138,7 +156,6 @@ const App: React.FC = () => {
             <p className="text-gold-muted font-cursive text-3xl md:text-5xl italic">L'invisible vous attend...</p>
           </div>
 
-          {/* Section Présentation des Services */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 py-10">
             <LandingFeature icon="🃏" label="Tarot Sacré" delay="0s" />
             <LandingFeature icon="🔮" label="Visions de Cristal" delay="0.1s" />
@@ -147,7 +164,26 @@ const App: React.FC = () => {
             <LandingFeature icon="👁️" label="Sagesse Profonde" delay="0.4s" />
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-8 relative">
+            {showBurst && (
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
+                {[...Array(20)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="crystal-shard"
+                    style={{ 
+                      '--angle': `${Math.random() * 360}deg`,
+                      '--dist': `${100 + Math.random() * 200}px`,
+                      '--delay': `${Math.random() * 0.2}s`,
+                      '--size': `${10 + Math.random() * 20}px`
+                    } as any}
+                  >
+                    {['✨', '💎', '🔸', '💠'][Math.floor(Math.random() * 4)]}
+                  </div>
+                ))}
+              </div>
+            )}
+
             <button 
               onClick={enterSalon}
               disabled={isEntering}

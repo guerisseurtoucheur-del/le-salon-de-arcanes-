@@ -45,26 +45,52 @@ body {
   50% { transform: translateY(-10px); }
 }
 
-/* Jaillissement d'étoiles */
-.burst-particle {
-  position: absolute;
-  font-size: 1.5rem;
-  opacity: 0;
-  animation: burst 1.2s forwards cubic-bezier(0.165, 0.84, 0.44, 1);
-  animation-delay: var(--delay);
-  text-shadow: 0 0 10px var(--gold-bright);
+/* Danse de la flamme */
+@keyframes flame-dance {
+  0% { transform: scale(1) rotate(-1deg); filter: brightness(1); }
+  15% { transform: scale(1.1, 0.9) rotate(2deg); filter: brightness(1.2); }
+  30% { transform: scale(0.9, 1.2) rotate(-3deg); filter: brightness(0.95); }
+  45% { transform: scale(1.05, 1.1) rotate(1deg); filter: brightness(1.1); }
+  60% { transform: scale(0.95, 0.85) rotate(-2deg); filter: brightness(1.25); }
+  75% { transform: scale(1.1, 1.2) rotate(3deg); filter: brightness(1); }
+  90% { transform: scale(0.9, 1.1) rotate(-1deg); filter: brightness(1.1); }
+  100% { transform: scale(1) rotate(-1deg); filter: brightness(1); }
 }
 
-@keyframes burst {
+.animate-flame-dance {
+  animation: flame-dance 3s infinite ease-in-out;
+}
+
+@keyframes glow-pulse-heavy {
+  0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.4; transform: translate(-50%, -50%) scale(1.15); }
+}
+
+.animate-glow-pulse-heavy {
+  animation: glow-pulse-heavy 4s infinite ease-in-out;
+}
+
+/* Jaillissement d'éclats cristallins */
+.crystal-shard {
+  position: absolute;
+  font-size: var(--size);
+  opacity: 0;
+  animation: crystal-burst-anim 1.2s forwards cubic-bezier(0.165, 0.84, 0.44, 1);
+  animation-delay: var(--delay);
+  text-shadow: 0 0 10px var(--gold-bright);
+  z-index: 100;
+}
+
+@keyframes crystal-burst-anim {
   0% {
-    transform: rotate(var(--angle)) translateY(0) scale(0);
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(0);
     opacity: 1;
   }
   40% {
     opacity: 1;
   }
   100% {
-    transform: rotate(var(--angle)) translateY(calc(-1 * var(--dist))) scale(2);
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(-1 * var(--dist))) scale(2);
     opacity: 0;
   }
 }
