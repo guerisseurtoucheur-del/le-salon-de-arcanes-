@@ -63,9 +63,9 @@ export const generateSpeech = async (text: string) => {
 export const generateNostradamusSpeech = async (text: string) => {
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
-    contents: [{ parts: [{ text: `Tu es Nostradamus. Lis d'une voix d'outre-tombe et solennelle : ${text}` }] }],
+    contents: [{ parts: [{ text: `Tu es Nostradamus, un prophète du XVIe siècle. Lis d'une voix d'homme, profonde, solennelle et autoritaire le texte suivant : ${text}` }] }],
     config: {
-      responseModalities: ['AUDIO'],
+      responseModalities: [Modality.AUDIO],
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: { voiceName: 'Charon' }, 
@@ -179,8 +179,9 @@ export const getPendulumResponse = async (question: string) => {
 export const getHoroscope = async (sign: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Génère l'horoscope du jour pour le signe du ${sign}. 
-    Inclus une section Travail, Amour et Énergie. Ton mystique.`,
+    contents: `Génère l'horoscope du jour complet, mystique et poétique pour le signe du ${sign}. 
+    Inclus des sections riches pour le Travail, l'Amour et l'Énergie. 
+    Utilise un langage prophétique et imagé (style XVIe siècle). Réponds avec environ 2-3 phrases par section.`,
   });
   return response.text;
 };

@@ -38,6 +38,10 @@ const ORACLE_CARDS: TarotCard[] = [
   { name: "Le Cadeau", image: "🎁", meaning: "Surprise" },
   { name: "La Fidélité", image: "🐕", meaning: "Loyauté" },
   { name: "L'Union", image: "💍", meaning: "Engagement" },
+  { name: "Le Voyage", image: "🚢", meaning: "Déplacement" },
+  { name: "La Maison", image: "🏠", meaning: "Stabilité" },
+  { name: "L'Argent", image: "💰", meaning: "Abondance" },
+  { name: "Le Malheur", image: "🥀", meaning: "Fin de cycle" },
 ];
 
 const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
@@ -55,30 +59,16 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const streamRef = useRef<MediaStream | null>(null);
   const nextStartTimeRef = useRef(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
-  const transcriptRef = useRef<HTMLDivElement>(null);
-
-  const playSfx = (url: string, volume = 0.5) => {
-    const audio = new Audio(url);
-    audio.volume = volume;
-    audio.play().catch(() => {});
-  };
 
   useEffect(() => {
-    if (transcriptRef.current) {
-      transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
-    }
-  }, [transcript]);
-
-  useEffect(() => {
-    startVoiceSession("Bonjour voyageur... Approchez. Prenez place dans mon humble salon. Lequel de ces deux jeux appelle votre âme aujourd'hui ? Le traditionnel Tarot de Marseille ou la douce Sybille de mon Oracle ?");
+    const welcome = "Bonjour, je suis Cécile votre cartomancienne. Je vous propose pour commencer de tirer trois cartes. Quel jeu préférez-vous ? Le Tarot ancestral ou mon Oracle ?";
+    startVoiceSession(welcome);
     return () => stopVoiceSession();
   }, []);
 
   const startVoiceSession = async (initialPrompt?: string) => {
     if (sessionRef.current) {
-      if (initialPrompt) {
-        sessionRef.current.sendRealtimeInput({ parts: [{ text: initialPrompt }] });
-      }
+      if (initialPrompt) sessionRef.current.sendRealtimeInput({ parts: [{ text: initialPrompt }] });
       return;
     }
 
@@ -98,50 +88,39 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             setVoiceStatus('listening');
             const source = audioContextRef.current!.createMediaStreamSource(stream);
             const scriptProcessor = audioContextRef.current!.createScriptProcessor(4096, 1, 1);
-            
             scriptProcessor.onaudioprocess = (e) => {
               if (!audioContextRef.current || audioContextRef.current.state === 'closed') return;
               const inputData = e.inputBuffer.getChannelData(0);
-              const l = inputData.length;
-              const int16 = new Int16Array(l);
-              for (let i = 0; i < l; i++) int16[i] = inputData[i] * 32768;
+              const int16 = new Int16Array(inputData.length);
+              for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
               sessionPromise.then(s => s.sendRealtimeInput({ media: { data: encodeAudio(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' } }));
             };
             source.connect(scriptProcessor);
             scriptProcessor.connect(audioContextRef.current!.destination);
-
-            if (initialPrompt) {
-              sessionPromise.then(s => s.sendRealtimeInput({ parts: [{ text: initialPrompt }] }));
-            }
+            if (initialPrompt) sessionPromise.then(s => s.sendRealtimeInput({ parts: [{ text: initialPrompt }] }));
           },
           onmessage: async (message: any) => {
             if (message.serverContent?.outputTranscription) {
-              setTranscript(prev => prev + message.serverContent.outputTranscription.text);
+                setTranscript(prev => {
+                    const newText = message.serverContent.outputTranscription.text;
+                    return prev.endsWith(newText) ? prev : prev + newText;
+                });
             }
-            const modelParts = message.serverContent?.modelTurn?.parts;
-            if (modelParts) {
-              for (const part of modelParts) {
-                if (part.inlineData?.data && outputContextRef.current && outputContextRef.current.state !== 'closed') {
-                  setVoiceStatus('speaking');
-                  nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContextRef.current.currentTime);
-                  const buffer = await decodeAudioData(decodeAudio(part.inlineData.data), outputContextRef.current, 24000, 1);
-                  const source = outputContextRef.current.createBufferSource();
-                  source.buffer = buffer;
-                  source.connect(outputContextRef.current.destination);
-                  source.onended = () => {
-                    sourcesRef.current.delete(source);
-                    if (sourcesRef.current.size === 0) setVoiceStatus('listening');
-                  };
-                  source.start(nextStartTimeRef.current);
-                  nextStartTimeRef.current += buffer.duration;
-                  sourcesRef.current.add(source);
-                }
-              }
-            }
-            if (message.serverContent?.interrupted) {
-              sourcesRef.current.forEach(s => { try { s.stop(); } catch {} });
-              sourcesRef.current.clear();
-              nextStartTimeRef.current = 0;
+            const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+            if (audioData && outputContextRef.current && outputContextRef.current.state !== 'closed') {
+              setVoiceStatus('speaking');
+              nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContextRef.current.currentTime);
+              const buffer = await decodeAudioData(decodeAudio(audioData), outputContextRef.current, 24000, 1);
+              const source = outputContextRef.current.createBufferSource();
+              source.buffer = buffer;
+              source.connect(outputContextRef.current.destination);
+              source.onended = () => {
+                sourcesRef.current.delete(source);
+                if (sourcesRef.current.size === 0) setVoiceStatus('listening');
+              };
+              source.start(nextStartTimeRef.current);
+              nextStartTimeRef.current += buffer.duration;
+              sourcesRef.current.add(source);
             }
           },
           onclose: () => setVoiceStatus('idle'),
@@ -149,16 +128,13 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile, une voyante lumineuse. RÉPONDS TOUJOURS EN FRANÇAIS. Ta voix est jeune, chaleureuse et très articulée. Tu guides l'utilisateur à travers son tirage. Tu es proactive : tu commentes ses choix et tu l'invites à passer à l'étape suivante. Si les 3 cartes sont retournées, interprète-les immédiatement.",
+          systemInstruction: "Tu es Cécile, cartomancienne. RÉPONDS TOUJOURS EN FRANÇAIS. Ton ton est poétique, mystérieux mais bienveillant. Quand l'utilisateur a tiré 3 cartes, analyse-les. Puis, INVITE-LE à piocher jusqu'à 3 autres cartes pour approfondir. Dès qu'une nouvelle carte est piochée, analyse-la immédiatement en lien avec le tirage existant.",
           speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
           outputAudioTranscription: {}
         }
       });
       sessionRef.current = await sessionPromise;
-    } catch (err) {
-      console.error(err);
-      setVoiceStatus('idle');
-    }
+    } catch (err) { setVoiceStatus('idle'); }
   };
 
   const stopVoiceSession = () => {
@@ -169,177 +145,170 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     if (outputContextRef.current) outputContextRef.current.close().catch(() => {});
   };
 
-  const selectDeck = (type: DeckType) => {
-    // Son d'ouverture de jeu
-    playSfx('https://assets.mixkit.co/active_storage/sfx/1103/1103-preview.mp3', 0.6);
-    setDeckType(type);
-    setStep('drawing');
-    const msg = type === 'MARSEILLE' 
-      ? "Le Tarot de Marseille... Les arcanes majeurs, porteurs d'une sagesse ancestrale. Très bien. Concentrez-vous sur votre question, faites le vide... et choisissez trois cartes de ce tas."
-      : "L'Oracle de la Sybille... Les secrets du quotidien et les murmures du coeur. Un excellent choix. Respirez profondément, visualisez votre tourment... et tirez trois cartes.";
-    startVoiceSession(msg);
-  };
-
   const drawCard = (card: TarotCard) => {
-    if (selectedCards.length >= 3 || selectedCards.find(c => c.name === card.name)) return;
-    
-    // Son "Casino Card Deal" sec et satisfaisant
-    playSfx('https://assets.mixkit.co/active_storage/sfx/158/158-preview.mp3', 0.8);
+    if (selectedCards.length >= 6 || selectedCards.find(c => c.name === card.name)) return;
     
     const newSelection = [...selectedCards, card];
     setSelectedCards(newSelection);
-    
-    if (newSelection.length === 3) {
+
+    if (step === 'interpreting') {
+      const newFlipped = new Set(flippedIndices);
+      newFlipped.add(newSelection.length - 1);
+      setFlippedIndices(newFlipped);
+      setTranscript(prev => prev + "\n\n"); // Espace pour la nouvelle analyse
+      startVoiceSession(`Une nouvelle énergie se manifeste : ${card.name}. Écoutons ce qu'elle ajoute à notre vision...`);
+    } else if (newSelection.length === 3) {
       setStep('flipping');
-      startVoiceSession("Parfait. Les trois piliers de votre destinée sont posés. Retournez-les maintenant, une par une, pour que nous puissions lire ce qu'elles nous révèlent.");
+      startVoiceSession("Le triangle du destin est formé. Retournez vos cartes, que je puisse lire en vous.");
     }
   };
 
   const flipCard = (index: number) => {
-    if (step !== 'flipping') return;
-    if (flippedIndices.has(index)) return;
-    
-    // Son de retournement de carte
-    playSfx('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3', 0.5);
-    
+    if (step !== 'flipping' || flippedIndices.has(index)) return;
     const newFlipped = new Set(flippedIndices);
     newFlipped.add(index);
     setFlippedIndices(newFlipped);
-
-    if (newFlipped.size === 3) {
+    
+    if (newFlipped.size === 3 && step === 'flipping') {
       setStep('interpreting');
-      const cardNames = selectedCards.map(c => c.name).join(', ');
-      startVoiceSession(`Ah... Je vois. Les voiles se déchirent. Nous avons tiré : ${cardNames}. Laissez-moi vous dire ce que je perçois à travers ces symboles...`);
+      const names = selectedCards.map(c => c.name).join(', ');
+      startVoiceSession(`Le voile se lève sur ${names}. Voici mon interprétation. Si vous souhaitez des précisions, piochez de nouvelles cartes dans le jeu qui vient de réapparaître.`);
     }
   };
 
+  const availableDeck = deckType === 'MARSEILLE' ? TAROT_MARSEILLE : ORACLE_CARDS;
+
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-12">
-      {/* Header Statut Cécile - Maintenu tout en haut */}
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[40] animate-in slide-in-from-top-4">
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-black/80 backdrop-blur-2xl border border-gold-bright/30 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.2)]">
-          <div className={`w-1.5 h-1.5 rounded-full ${voiceStatus === 'speaking' ? 'bg-green-500 animate-ping' : voiceStatus === 'listening' ? 'bg-gold-bright animate-pulse' : 'bg-gold-muted'}`}></div>
-          <span className="font-mystic text-[8px] md:text-[9px] text-gold-bright uppercase tracking-[0.2em]">
-            {voiceStatus === 'connecting' ? "Cécile arrive..." : voiceStatus === 'speaking' ? "Cécile vous guide..." : voiceStatus === 'listening' ? "Cécile est à votre écoute..." : "Présence en attente..."}
-          </span>
+    <div className="min-h-[70vh] flex flex-col items-center justify-start space-y-12 pb-24">
+      {/* Voice Feedback UI */}
+      <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[40] flex items-center gap-3 px-6 py-3 bg-black/90 backdrop-blur-xl rounded-full border transition-all duration-500 ${voiceStatus === 'speaking' ? 'border-gold-bright shadow-[0_0_25px_rgba(255,215,0,0.3)] scale-105' : 'border-gold-bright/10'}`}>
+        <div className="flex gap-1 items-end h-4">
+           {[...Array(5)].map((_, i) => (
+             <div 
+               key={i} 
+               className={`w-1 bg-gold-bright rounded-full transition-all duration-300 ${voiceStatus === 'speaking' ? 'animate-pulse' : 'h-1 opacity-20'}`}
+               style={{ height: voiceStatus === 'speaking' ? `${30 + Math.random() * 70}%` : '4px', animationDelay: `${i * 0.1}s` }}
+             ></div>
+           ))}
         </div>
+        <span className="font-mystic text-xs text-gold-bright uppercase tracking-widest">{voiceStatus === 'speaking' ? "Cécile déchiffre les signes..." : "Cécile est à votre écoute..."}</span>
       </div>
 
       {step === 'intro' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 w-full max-w-4xl px-4">
-          <DeckCard 
-            title="Tarot de Marseille" 
-            desc="L'Arcane Sacré" 
-            icon="☀️" 
-            onClick={() => selectDeck('MARSEILLE')} 
-            theme="back-marseille"
-          />
-          <DeckCard 
-            title="Oracle Sybille" 
-            desc="Le Miroir du Quotidien" 
-            icon="👁️" 
-            onClick={() => selectDeck('ORACLE')} 
-            theme="back-oracle"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 w-full max-w-4xl px-4 pt-12">
+          <button onClick={() => { setDeckType('MARSEILLE'); setStep('drawing'); startVoiceSession("Le Tarot de Marseille. La puissance des traditions. Tirez trois cartes pour commencer."); }} className="group p-12 glass-mystic rounded-[3rem] border-2 border-gold-muted/20 hover:border-gold-bright transition-all text-center space-y-6 hover:shadow-[0_0_50px_rgba(212,175,55,0.2)]">
+             <span className="text-8xl block group-hover:scale-110 transition-transform">🧙‍♂️</span>
+             <h3 className="text-3xl font-mystic text-gold-bright uppercase tracking-widest">Le Tarot de Marseille</h3>
+             <p className="text-gold-muted/60 font-serif italic">Les 22 Arcanes Majeurs du destin.</p>
+          </button>
+          <button onClick={() => { setDeckType('ORACLE'); setStep('drawing'); startVoiceSession("L'Oracle. La clarté des visions. Choisissez trois cartes."); }} className="group p-12 glass-mystic rounded-[3rem] border-2 border-gold-muted/20 hover:border-gold-bright transition-all text-center space-y-6 hover:shadow-[0_0_50px_rgba(212,175,55,0.2)]">
+             <span className="text-8xl block group-hover:scale-110 transition-transform">🔮</span>
+             <h3 className="text-3xl font-mystic text-gold-bright uppercase tracking-widest">Oracle</h3>
+             <p className="text-gold-muted/60 font-serif italic">Des scènes révélatrices du futur.</p>
+          </button>
         </div>
       )}
 
-      {step === 'drawing' && (
-        <div className="w-full flex flex-col items-center space-y-12 animate-in fade-in zoom-in duration-700">
-          <p className="font-cursive text-4xl text-gold-muted italic text-center">Choisissez vos 3 cartes...</p>
-          <div className="flex flex-wrap justify-center gap-4 max-w-5xl">
-            {(deckType === 'MARSEILLE' ? TAROT_MARSEILLE : ORACLE_CARDS).map((card, i) => (
-              <button 
-                key={i}
-                onClick={() => drawCard(card)}
-                disabled={selectedCards.length >= 3 || !!selectedCards.find(c => c.name === card.name)}
-                className={`w-24 h-40 card-back-pattern rounded shadow-2xl transition-all hover:-translate-y-6 active:scale-95 active:brightness-125 relative group overflow-hidden ${deckType === 'MARSEILLE' ? 'back-marseille' : 'back-oracle'} ${selectedCards.find(c => c.name === card.name) ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100'}`}
-              >
-                {/* Effet Sparkle au survol et clic */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span className="text-3xl drop-shadow-md relative z-10">{deckType === 'MARSEILLE' ? '☀️' : '👁️'}</span>
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-4">
-            {selectedCards.map((_, i) => (
-              <div key={i} className="w-16 h-24 border-2 border-gold-bright/20 rounded-lg flex items-center justify-center text-gold-bright/30 font-mystic text-xs shadow-inner bg-black/20">
-                {i + 1}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {(step === 'flipping' || step === 'interpreting') && (
-        <div className="w-full flex flex-col items-center space-y-16 animate-in fade-in duration-700">
-          <div className="flex flex-wrap justify-center gap-12">
-            {selectedCards.map((card, i) => (
-              <div 
+      {/* Cartes piochées (actives) */}
+      {(step === 'flipping' || step === 'interpreting' || (step === 'drawing' && selectedCards.length > 0)) && (
+        <div className="w-full max-w-6xl flex flex-wrap justify-center gap-6 pt-10 px-4">
+          {selectedCards.map((card, i) => (
+            <div 
                 key={i} 
-                onClick={() => flipCard(i)}
-                className={`w-52 h-80 cursor-pointer perspective-1000 group ${flippedIndices.has(i) ? '' : 'hover:-translate-y-8 transition-transform active:scale-95'}`}
-              >
-                <div className={`relative w-full h-full transition-all duration-700 preserve-3d ${flippedIndices.has(i) ? 'rotate-y-180' : ''}`}>
-                  <div className={`absolute inset-0 card-back-pattern ${deckType === 'MARSEILLE' ? 'back-marseille' : 'back-oracle'} rounded shadow-2xl backface-hidden flex items-center justify-center`}>
-                    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <span className="text-6xl drop-shadow-2xl animate-pulse">{deckType === 'MARSEILLE' ? '☀️' : '👁️'}</span>
-                  </div>
-                  
-                  {deckType === 'MARSEILLE' ? (
-                    <div className="absolute inset-0 rotate-y-180 backface-hidden card-marseille-authentic">
-                      <div className="card-marseille-inner" style={{ borderColor: card.color }}>
-                        <div className="card-marseille-header" style={{ color: card.color }}>{card.roman}</div>
-                        <div className="card-marseille-illustration"><span className="text-8xl drop-shadow-md">{card.image}</span></div>
-                        <div className="card-marseille-footer"><div className="card-marseille-title">{card.name}</div></div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 rotate-y-180 backface-hidden rounded bg-[#fdf6e3] p-4 flex flex-col items-center justify-between border-4 border-gold-muted/30 shadow-2xl">
-                        <span className="text-8xl my-auto drop-shadow-md">{card.image}</span>
-                        <div className="text-center font-mystic text-amber-950 uppercase border-t border-gold-muted/20 pt-2 w-full">{card.name}</div>
-                    </div>
-                  )}
+                onClick={() => flipCard(i)} 
+                className={`w-36 h-56 md:w-44 md:h-72 cursor-pointer perspective-1000 group ${flippedIndices.has(i) ? 'rotate-y-180' : 'hover:-translate-y-4 transition-transform'}`}
+            >
+              <div className="relative w-full h-full transition-all duration-700 preserve-3d shadow-2xl">
+                <div className={`absolute inset-0 card-back-pattern rounded-xl flex items-center justify-center backface-hidden border-2 border-gold-muted/30 ${deckType === 'MARSEILLE' ? 'back-marseille' : 'back-oracle'}`}>
+                   <span className="text-4xl text-gold-bright opacity-30 group-hover:opacity-100 transition-opacity">{deckType === 'MARSEILLE' ? '☀️' : '👁️'}</span>
+                </div>
+                <div className="absolute inset-0 rotate-y-180 backface-hidden rounded-xl bg-gradient-to-br from-[#fdf6e3] to-[#dccba0] p-3 flex flex-col items-center justify-between border-4 border-gold-muted shadow-2xl">
+                   <div className="text-amber-950 font-mystic text-sm uppercase opacity-40">{card.roman || ''}</div>
+                   <span className="text-7xl md:text-8xl filter drop-shadow-lg">{card.image}</span>
+                   <div className="text-center w-full border-t border-amber-900/20 pt-2">
+                     <span className="text-[10px] md:text-xs font-mystic text-amber-950 uppercase tracking-widest">{card.name}</span>
+                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-          <div className="w-full max-w-4xl glass-mystic p-10 antique-border shadow-2xl animate-in slide-in-from-bottom-8">
-            <div className="max-h-60 overflow-y-auto custom-scrollbar pr-4 font-serif italic text-2xl md:text-3xl leading-relaxed text-gold-bright drop-shadow-[0_0_10px_rgba(255,215,0,0.3)]" ref={transcriptRef}>
-              {transcript || "Le destin se dévoile en silence..."}
+      {/* Zone de l'Oracle (Parchemin d'interprétation) */}
+      {step === 'interpreting' && (
+        <div className="w-full max-w-4xl px-6 animate-in fade-in duration-1000">
+            <div className="parchment p-10 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.5)] antique-border relative group">
+                <div className="absolute top-4 left-6 flex gap-1 opacity-20">
+                   <div className="w-2 h-2 bg-amber-950 rounded-full"></div>
+                   <div className="w-2 h-2 bg-amber-950 rounded-full"></div>
+                   <div className="w-2 h-2 bg-amber-950 rounded-full"></div>
+                </div>
+                <div className="prose prose-stone max-w-none">
+                    <p className="italic text-2xl md:text-3xl text-amber-950 font-serif leading-relaxed first-letter:text-6xl first-letter:font-mystic first-letter:mr-3 first-letter:float-left first-letter:text-amber-900">
+                       {transcript || "Cécile consulte les sphères..."}
+                    </p>
+                </div>
             </div>
-            <div className="mt-8 flex justify-center">
-              <button 
-                onClick={() => { playSfx('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3', 0.4); setStep('intro'); setSelectedCards([]); setFlippedIndices(new Set()); startVoiceSession("Voulez-vous interroger les arcanes une nouvelle fois ?"); }}
-                className="px-8 py-3 bg-amber-950 text-gold-bright border border-gold-bright/30 font-mystic text-xs uppercase tracking-[0.2em] rounded hover:bg-black transition-all shadow-[0_0_15px_rgba(255,215,0,0.1)]"
-              >Recommencer le Tirage</button>
-            </div>
+        </div>
+      )}
+
+      {/* Pile de cartes / Deck de pioche (Apparaît au début et après l'analyse) */}
+      {(step === 'drawing' || (step === 'interpreting' && selectedCards.length < 6)) && (
+        <div className="w-full flex flex-col items-center space-y-8 animate-in slide-in-from-bottom-12 duration-1000">
+          <div className="text-center">
+             <p className="font-mystic text-gold-bright/60 text-xs uppercase tracking-[0.5em] mb-4">
+                {selectedCards.length === 0 ? "Choisissez 3 cartes pour commencer" : 
+                 selectedCards.length < 3 ? `Encore ${3 - selectedCards.length} à piocher...` : 
+                 "Le jeu est ouvert. Piochez jusqu'à 3 cartes supplémentaires."}
+             </p>
+             <div className="h-1 w-24 bg-gold-muted/20 mx-auto rounded-full"></div>
+          </div>
+          
+          <div className="flex flex-wrap justify-center gap-3 px-8 max-w-5xl">
+            {availableDeck.map((card, i) => {
+              const isSelected = selectedCards.find(c => c.name === card.name);
+              return (
+                <button 
+                  key={i} 
+                  onClick={() => drawCard(card)} 
+                  disabled={!!isSelected}
+                  className={`relative w-16 h-28 md:w-24 md:h-40 card-back-pattern rounded-lg shadow-xl hover:-translate-y-6 transition-all border border-gold-muted/30 ${deckType === 'MARSEILLE' ? 'back-marseille' : 'back-oracle'} ${isSelected ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100'}`}
+                >
+                  <div className="absolute inset-0 bg-gold-bright/5 opacity-0 hover:opacity-100 transition-opacity"></div>
+                  <span className="text-2xl md:text-4xl opacity-10">{deckType === 'MARSEILLE' ? '☀️' : '👁️'}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Bouton Retour permanent */}
-      <button 
-        onClick={() => { stopVoiceSession(); onBack(); }}
-        className="fixed bottom-10 left-10 px-6 py-2 border border-gold-muted/30 text-gold-muted hover:text-gold-bright hover:border-gold-bright transition-all font-mystic text-[10px] uppercase tracking-widest z-[50]"
-      >Quitter le Salon</button>
+      {/* Navigation et Actions */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4 z-50">
+        <button 
+            onClick={() => { stopVoiceSession(); onBack(); }} 
+            className="px-8 py-4 bg-black/80 backdrop-blur-md border border-gold-muted/30 text-gold-muted hover:text-gold-bright transition-all font-mystic text-[10px] uppercase tracking-[0.4em] rounded-full shadow-2xl"
+        >
+          Sortir du Salon
+        </button>
+        {step === 'interpreting' && (
+            <button 
+                onClick={() => {
+                    setStep('intro');
+                    setSelectedCards([]);
+                    setFlippedIndices(new Set());
+                    setTranscript('');
+                    startVoiceSession("Le destin est un livre que l'on peut rouvrir sans cesse. Quel jeu choisissons-nous pour cette nouvelle séance ?");
+                }}
+                className="px-10 py-4 bg-gold-bright text-black border border-gold-bright transition-all font-mystic text-[10px] uppercase tracking-[0.4em] rounded-full shadow-[0_0_30px_rgba(255,215,0,0.5)] hover:scale-105 active:scale-95"
+            >
+              Nouveau Tirage
+            </button>
+        )}
+      </div>
     </div>
   );
 };
-
-const DeckCard: React.FC<{ title: string, desc: string, icon: string, onClick: () => void, theme: string }> = ({ title, desc, icon, onClick, theme }) => (
-  <button 
-    onClick={onClick}
-    className={`group relative p-12 bg-black/40 border-2 border-gold-muted/20 rounded-[2rem] overflow-hidden transition-all hover:border-gold-bright hover:shadow-[0_0_50px_rgba(255,215,0,0.2)] active:scale-95 text-center space-y-6 animate-in zoom-in-95 duration-700`}
-  >
-    <div className={`absolute inset-0 ${theme} opacity-10 group-hover:opacity-20 transition-opacity`}></div>
-    <span className="block text-7xl group-hover:scale-110 transition-transform drop-shadow-[0_0_15px_rgba(255,215,0,0.3)]">{icon}</span>
-    <div className="relative z-10">
-      <h3 className="text-2xl font-mystic text-gold-bright uppercase tracking-widest mb-2">{title}</h3>
-      <p className="text-gold-muted font-serif italic text-lg opacity-60 group-hover:opacity-100 transition-opacity">{desc}</p>
-    </div>
-  </button>
-);
 
 export default TarotRoom;
