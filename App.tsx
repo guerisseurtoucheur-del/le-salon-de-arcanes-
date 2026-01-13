@@ -86,7 +86,6 @@ const App: React.FC = () => {
     if (tokens > 0) {
       setTokens(prev => prev - 1);
       setCurrentView(view);
-      // Son d'ouverture de pièce
       const doorSound = new Audio('https://assets.mixkit.co/active_storage/sfx/1110/1110-preview.mp3');
       doorSound.volume = 0.3;
       doorSound.play().catch(() => {});
@@ -97,8 +96,6 @@ const App: React.FC = () => {
 
   const buyTokens = (amount: number) => {
     setIsProcessingPayment(true);
-    
-    // Simulation de la transaction Stripe (2.5 secondes)
     setTimeout(() => {
       setTokens(prev => prev + amount);
       setIsProcessingPayment(false);
@@ -134,24 +131,41 @@ const App: React.FC = () => {
           <Candle className="mb-20" />
           <Candle className="mb-20" />
         </div>
-        <div className={`text-center space-y-12 transition-all duration-1000 relative z-10 ${isEntering ? 'opacity-0 scale-110' : 'animate-in fade-in zoom-in duration-1000'}`}>
+        
+        <div className={`text-center space-y-12 transition-all duration-1000 relative z-10 w-full max-w-5xl px-6 ${isEntering ? 'opacity-0 scale-110' : 'animate-in fade-in zoom-in duration-1000'}`}>
           <div className="space-y-4">
-            <h1 className="text-7xl font-mystic text-gold-bright tracking-[0.2em] uppercase drop-shadow-[0_0_20px_rgba(255,215,0,0.5)]">Le Salon de Cécile</h1>
-            <p className="text-gold-muted font-cursive text-4xl italic">L'invisible vous attend...</p>
+            <h1 className="text-6xl md:text-8xl font-mystic text-gold-bright tracking-[0.2em] uppercase drop-shadow-[0_0_20px_rgba(255,215,0,0.5)]">Le Salon de Cécile</h1>
+            <p className="text-gold-muted font-cursive text-3xl md:text-5xl italic">L'invisible vous attend...</p>
           </div>
-          <button 
-            onClick={enterSalon}
-            disabled={isEntering}
-            className="group relative px-16 py-6 bg-transparent border-2 border-gold-bright/30 overflow-hidden rounded-full transition-all hover:border-gold-bright hover:shadow-[0_0_40px_rgba(255,215,0,0.3)] disabled:opacity-0"
-          >
-            <div className="absolute inset-0 bg-gold-bright/10 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></div>
-            <span className="relative z-10 font-mystic text-gold-bright text-2xl tracking-widest uppercase group-hover:scale-110 block transition-transform">
-              {tokens > 0 ? 'Entrer dans le Salon' : 'Réserver une séance'}
-            </span>
-          </button>
-          {tokens === 0 && (
-             <p className="text-gold-muted/40 font-mystic text-[10px] uppercase tracking-[0.3em] animate-pulse">Aucun éclat de destiné en votre possession</p>
-          )}
+
+          {/* Section Présentation des Services */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 py-10">
+            <LandingFeature icon="🃏" label="Tarot Sacré" delay="0s" />
+            <LandingFeature icon="🔮" label="Visions de Cristal" delay="0.1s" />
+            <LandingFeature icon="✨" label="Oracle des Astres" delay="0.2s" />
+            <LandingFeature icon="💎" label="Le Pendule" delay="0.3s" />
+            <LandingFeature icon="👁️" label="Sagesse Profonde" delay="0.4s" />
+          </div>
+
+          <div className="space-y-8">
+            <button 
+              onClick={enterSalon}
+              disabled={isEntering}
+              className="group relative px-12 md:px-20 py-6 md:py-8 bg-transparent border-2 border-gold-bright/30 overflow-hidden rounded-full transition-all hover:border-gold-bright hover:shadow-[0_0_50px_rgba(255,215,0,0.4)] disabled:opacity-0"
+            >
+              <div className="absolute inset-0 bg-gold-bright/10 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></div>
+              <span className="relative z-10 font-mystic text-gold-bright text-xl md:text-3xl tracking-[0.2em] uppercase group-hover:scale-110 block transition-transform">
+                {tokens > 0 ? 'Entrer dans le Salon' : 'Réserver une séance'}
+              </span>
+            </button>
+            
+            {tokens === 0 && (
+               <p className="text-gold-muted/60 font-mystic text-xs uppercase tracking-[0.4em] animate-pulse">Aucun éclat de destiné • Offrez une offrande pour entrer</p>
+            )}
+            {tokens > 0 && (
+               <p className="text-gold-muted/40 font-mystic text-[10px] uppercase tracking-[0.3em] italic">Une première consultation vous est offerte par les Arcanes</p>
+            )}
+          </div>
         </div>
 
         {showShop && (
@@ -223,6 +237,21 @@ const App: React.FC = () => {
     </div>
   );
 };
+
+const LandingFeature: React.FC<{ icon: string, label: string, delay: string }> = ({ icon, label, delay }) => (
+  <div 
+    className="flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom-8 duration-1000" 
+    style={{ animationDelay: delay }}
+  >
+    <div className="relative group">
+      <div className="absolute inset-0 bg-gold-bright/20 rounded-full blur-xl scale-0 group-hover:scale-150 transition-transform duration-700 opacity-0 group-hover:opacity-100"></div>
+      <span className="text-4xl md:text-6xl drop-shadow-[0_0_10px_rgba(255,215,0,0.3)] animate-float-subtle relative block transition-transform group-hover:scale-110">
+        {icon}
+      </span>
+    </div>
+    <span className="font-cursive text-gold-muted text-lg md:text-2xl whitespace-nowrap">{label}</span>
+  </div>
+);
 
 const ShopOverlay: React.FC<{ onClose: () => void, onBuy: (amount: number) => void, isProcessing: boolean }> = ({ onClose, onBuy, isProcessing }) => (
   <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-500">
