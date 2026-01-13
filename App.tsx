@@ -141,9 +141,24 @@ const App: React.FC = () => {
             )}
           </div>
           
-          <p className="text-gold-muted/40 font-serif text-sm uppercase tracking-[0.3em] flex items-center justify-center gap-2">
-            <span className="text-xl">🎧</span> Activez vos sens pour l'expérience complète
-          </p>
+          {/* Liste des services proposés (Remplaçant la note audio) */}
+          <div className="space-y-4 max-w-2xl px-6 animate-pulse">
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-gold-bright/30 to-transparent"></div>
+            <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 font-mystic text-[11px] md:text-sm text-gold-bright tracking-[0.25em] uppercase">
+              <span className="drop-shadow-[0_0_10px_rgba(255,215,0,0.4)]">Tarot Divinatoire</span>
+              <span className="text-gold-muted/40">✦</span>
+              <span className="drop-shadow-[0_0_10px_rgba(255,215,0,0.4)]">Boule de Cristal</span>
+              <span className="text-gold-muted/40">✦</span>
+              <span className="drop-shadow-[0_0_10px_rgba(255,215,0,0.4)]">Oracle des Astres</span>
+              <span className="text-gold-muted/40">✦</span>
+              <span className="drop-shadow-[0_0_10px_rgba(255,215,0,0.4)]">Pendule Sacré</span>
+              <span className="text-gold-muted/40">✦</span>
+              <span className="drop-shadow-[0_0_10px_rgba(255,215,0,0.4)]">Visions Profondes</span>
+              <span className="text-gold-muted/40">✦</span>
+              <span className="drop-shadow-[0_0_10px_rgba(255,215,0,0.4)]">Nexus Quantique</span>
+            </div>
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-gold-bright/30 to-transparent"></div>
+          </div>
         </div>
 
         <style>{`
