@@ -10,8 +10,8 @@ export enum ViewType {
   NEXUS = 'NEXUS'
 }
 
-export type TarotDeck = 'MARSEILLE' | 'RIDER_WAITE';
-export type DeckType = 'MARSEILLE' | 'SYBILLE';
+export type TarotDeck = 'MARSEILLE' | 'ORACLE';
+export type DeckType = 'MARSEILLE' | 'ORACLE';
 
 export interface TarotCard {
   name: string;
@@ -19,6 +19,8 @@ export interface TarotCard {
   meaning: string;
   romanNumeral?: string;
   playingCard?: string;
+  color?: string;
+  roman?: string;
 }
 
 export interface AstrologySign {
@@ -58,7 +60,6 @@ export const ZODIAC_SIGNS: AstrologySign[] = [
   { name: 'Poissons', dates: '19 Février - 20 Mars', element: 'Eau', symbol: '♓' }
 ];
 
-// Utilisation de liens MP3 robustes et publics pour une compatibilité totale
 export const AUDIO_THEMES: Record<ViewType, string> = {
   [ViewType.DASHBOARD]: 'https://assets.mixkit.co/music/preview/mixkit-meditation-soft-702.mp3',
   [ViewType.TAROT]: 'https://assets.mixkit.co/music/preview/mixkit-mysterious-pensive-704.mp3',

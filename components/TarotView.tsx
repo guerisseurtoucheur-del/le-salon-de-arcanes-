@@ -191,7 +191,8 @@ const TarotView: React.FC<TarotViewProps> = ({ onNavigate, onSaveReading }) => {
             title="La Sybille des Salons" 
             desc="L'Oracle du XIXe siècle. Scènes de vie, lithographies élégantes et secrets du quotidien." 
             img="🔮"
-            onClick={() => startTarotReading('SYBILLE')}
+            // Fix: Changed 'SYBILLE' to 'ORACLE' to match DeckType definition in types.ts (line 194)
+            onClick={() => startTarotReading('ORACLE')}
           />
         </div>
       </div>
