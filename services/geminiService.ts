@@ -47,7 +47,7 @@ export async function decodeAudioData(
 export const generateSpeech = async (text: string) => {
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
-    contents: [{ parts: [{ text: `Lis cette prophétie avec une voix mystérieuse et lente : ${text}` }] }],
+    contents: [{ parts: [{ text: `Voix mystérieuse, claire et fluide : ${text}` }] }],
     config: {
       responseModalities: [Modality.AUDIO],
       speechConfig: {
@@ -63,9 +63,9 @@ export const generateSpeech = async (text: string) => {
 export const generateNostradamusSpeech = async (text: string) => {
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
-    contents: [{ parts: [{ text: `Tu es Nostradamus, le grand prophète. Lis cet horoscope avec une voix d'outre-tombe, très lente, solennelle, chargée de mystère et d'autorité ancienne : ${text}` }] }],
+    contents: [{ parts: [{ text: `Tu es Nostradamus. Lis d'une voix d'outre-tombe et solennelle : ${text}` }] }],
     config: {
-      responseModalities: [Modality.AUDIO],
+      responseModalities: ['AUDIO'],
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: { voiceName: 'Charon' }, 

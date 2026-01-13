@@ -230,7 +230,7 @@ const App: React.FC = () => {
         </nav>
       )}
 
-      <main className="glass-mystic gold-border p-8 rounded-xl animate-fade min-h-[60vh]">
+      <main className={`${currentView === ViewType.CRYSTAL_BALL ? '' : 'glass-mystic gold-border'} p-8 rounded-xl animate-fade min-h-[60vh]`}>
         {renderView()}
       </main>
 
