@@ -24,15 +24,21 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     return () => stopVoiceSession();
   }, []);
 
+  const resumeAudio = () => {
+    if (outputContextRef.current?.state === 'suspended') {
+      outputContextRef.current.resume();
+    }
+  };
+
   useEffect(() => {
     if (transcriptEndRef.current) {
       transcriptEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [transcript]);
 
-  // Envoi de texte à la session Live pour réponse vocale immédiate
   const handleTextSend = (e?: React.FormEvent) => {
     e?.preventDefault();
+    resumeAudio();
     if (!query.trim() || !sessionRef.current) return;
 
     const text = query;
@@ -77,7 +83,7 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             const scriptProcessor = audioContextRef.current!.createScriptProcessor(4096, 1, 1);
             
             scriptProcessor.onaudioprocess = (e) => {
-              if (!audioContextRef.current || audioContextRef.current.state === 'closed') return;
+              if (!audioContextRef.current || audioContextRef.current.state === 'closed' || !sessionRef.current) return;
               const inputData = e.inputBuffer.getChannelData(0);
               const int16 = new Int16Array(inputData.length);
               for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
@@ -112,21 +118,25 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               }
             }
 
-            const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (audioData && outputContextRef.current && outputContextRef.current.state !== 'closed') {
-              setVoiceStatus('speaking');
-              nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContextRef.current.currentTime);
-              const buffer = await decodeAudioData(decodeAudio(audioData), outputContextRef.current, 24000, 1);
-              const source = outputContextRef.current.createBufferSource();
-              source.buffer = buffer;
-              source.connect(outputContextRef.current.destination);
-              source.onended = () => {
-                sourcesRef.current.delete(source);
-                if (sourcesRef.current.size === 0) setVoiceStatus('listening');
-              };
-              source.start(nextStartTimeRef.current);
-              nextStartTimeRef.current += buffer.duration;
-              sourcesRef.current.add(source);
+            if (message.serverContent?.modelTurn?.parts) {
+              for (const part of message.serverContent.modelTurn.parts) {
+                if (part.inlineData?.data && outputContextRef.current && outputContextRef.current.state !== 'closed') {
+                  setVoiceStatus('speaking');
+                  resumeAudio();
+                  nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContextRef.current.currentTime);
+                  const buffer = await decodeAudioData(decodeAudio(part.inlineData.data), outputContextRef.current, 24000, 1);
+                  const source = outputContextRef.current.createBufferSource();
+                  source.buffer = buffer;
+                  source.connect(outputContextRef.current.destination);
+                  source.onended = () => {
+                    sourcesRef.current.delete(source);
+                    if (sourcesRef.current.size === 0) setVoiceStatus('listening');
+                  };
+                  source.start(nextStartTimeRef.current);
+                  nextStartTimeRef.current += buffer.duration;
+                  sourcesRef.current.add(source);
+                }
+              }
             }
           },
           onclose: () => stopVoiceSession(),
@@ -157,7 +167,7 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-10 py-6 min-h-[85vh] relative">
+    <div className="flex flex-col items-center gap-10 py-6 min-h-[85vh] relative" onClick={resumeAudio}>
       <div className="text-center space-y-4 animate-fade">
         <h2 className="text-4xl md:text-5xl font-mystic text-gold-bright tracking-[0.2em] uppercase drop-shadow-[0_0_20px_rgba(255,215,0,0.5)] leading-tight">Le Miroir des Visions</h2>
         <p className="text-gold-muted font-sensual text-3xl italic">Confiez vos secrets à Cécile, par la voix ou la plume.</p>
@@ -198,7 +208,7 @@ const CecileDeepRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3">
                 <button onClick={handleTextSend} disabled={!query.trim()} className="w-12 h-12 rounded-full bg-gold-bright/10 border border-gold-bright/40 text-gold-bright flex items-center justify-center hover:bg-gold-bright hover:text-black transition-all disabled:opacity-20"><span className="text-xl">🖋️</span></button>
                 <button 
-                  onClick={isVoiceActive ? stopVoiceSession : () => startVoiceSession(false)}
+                  onClick={() => { resumeAudio(); isVoiceActive ? stopVoiceSession() : startVoiceSession(false); }}
                   disabled={voiceStatus === 'connecting'}
                   className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${isVoiceActive ? 'bg-red-900/40 border-red-500 animate-pulse' : 'bg-gold-bright/10 border-gold-bright/40 text-gold-bright hover:scale-110'}`}
                 >
