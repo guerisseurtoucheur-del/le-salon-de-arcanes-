@@ -2,6 +2,27 @@
 import React from 'react';
 import { ViewType } from '../types';
 
+const OracleCardIcon = () => (
+  <div className="relative w-16 h-24 transition-all duration-700 group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-[0_0_30px_rgba(255,215,0,0.3)] perspective-1000">
+    <div className="w-full h-full bg-gradient-to-br from-blue-900 to-black border-2 border-gold-bright/40 rounded-lg flex items-center justify-center relative overflow-hidden animate-float-subtle">
+      {/* Texture de fond de la carte */}
+      <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')]"></div>
+      
+      {/* Cadre intérieur doré */}
+      <div className="absolute inset-1 border border-gold-bright/20 rounded-md"></div>
+      
+      {/* Symbole central */}
+      <div className="relative z-10 flex flex-col items-center">
+        <span className="text-3xl drop-shadow-[0_0_10px_rgba(255,215,0,0.8)] animate-pulse">👁️</span>
+        <div className="mt-1 w-8 h-[1px] bg-gold-bright/30"></div>
+      </div>
+      
+      {/* Reflet magique au survol */}
+      <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-25deg] transition-all duration-1000 group-hover:left-[100%]"></div>
+    </div>
+  </div>
+);
+
 const PendulumIcon = () => (
   <div className="relative w-20 h-20 flex flex-col items-center group-hover:animate-swing-subtle transition-all duration-700">
     <div className="w-[1px] h-10 bg-gold-muted/60 relative">
@@ -31,7 +52,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate, tokens, onOpenShop }) => {
   const rooms = [
-    { type: ViewType.TAROT, label: 'Les Arcanes du Tarot', icon: '🃏', desc: 'Marseille & Rider-Waite' },
+    { type: ViewType.TAROT, label: "L'Oracle de Cécile", icon: <OracleCardIcon />, desc: 'Découvrez les secrets de votre destinée' },
     { type: ViewType.CRYSTAL_BALL, label: 'La Boule de Cristal', icon: '🔮', desc: 'Visions du Futur Proche' },
     { type: ViewType.ASTROLOGY, label: 'L\'Oracle des Astres', icon: '✨', desc: 'Votre Destin dans les Étoiles' },
     { type: ViewType.PENDULUM, label: 'Le Sanctuaire du Pendule', icon: <PendulumIcon />, desc: 'Vérité par le Oui ou le Non' },
@@ -67,9 +88,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, tokens, onOpenShop })
             <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-600/10 rounded-full blur-[60px] group-hover:bg-purple-600/20 transition-all"></div>
             
             <div className="flex flex-col items-center gap-6 relative z-10">
-              <span className="text-7xl group-hover:scale-125 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(255,215,0,0.2)]">
-                {room.icon}
-              </span>
+              <div className="min-h-[100px] flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+                {typeof room.icon === 'string' ? (
+                  <span className="text-7xl drop-shadow-[0_0_15px_rgba(255,215,0,0.2)]">{room.icon}</span>
+                ) : (
+                  room.icon
+                )}
+              </div>
               <div className="text-center">
                 <h3 className="text-2xl font-mystic text-gold-bright mb-2 tracking-wide group-hover:translate-x-2 transition-transform">{room.label}</h3>
                 <p className="text-gold-muted/80 font-serif italic text-base">{room.desc}</p>

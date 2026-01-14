@@ -28,6 +28,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [flippedIndices, setFlippedIndices] = useState<Set<number>>(new Set());
   const [voiceStatus, setVoiceStatus] = useState<'idle' | 'connecting' | 'listening' | 'speaking'>('idle');
   const [transcript, setTranscript] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const outputContextRef = useRef<AudioContext | null>(null);
@@ -37,9 +38,17 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
 
   useEffect(() => {
-    const welcome = "Bienvenue dans mon sanctuaire. L'Oracle est prêt. Concentrez-vous sur l'énergie qui vous entoure et choisissez trois cartes pour poser les bases de votre destin.";
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    const welcome = "Bienvenue dans mon sanctuaire. L'Oracle de Cécile est prêt. Concentrez-vous sur l'énergie qui vous entoure et choisissez trois cartes pour poser les bases de votre destin.";
     startVoiceSession(welcome);
-    return () => stopVoiceSession();
+    
+    return () => {
+      stopVoiceSession();
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   const startVoiceSession = async (initialPrompt?: string) => {
@@ -104,7 +113,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile, une cartomancienne experte de l'Oracle. RÉPONDS TOUJOURS EN FRANÇAIS. Ton ton est chaleureux, mystérieux et très intuitif. L'utilisateur tire des cartes de l'Oracle. Quand il en a 3, analyse-les comme un tout cohérent (Passé, Présent, Futur). Ensuite, INVITE-LE explicitement à tirer jusqu'à 3 cartes de précision supplémentaires pour éclairer un point d'ombre. Analyse chaque nouvelle carte dès qu'elle apparaît.",
+          systemInstruction: "Tu es Cécile, une cartomancienne experte. RÉPONDS TOUJOURS EN FRANÇAIS. Ton ton est chaleureux, mystérieux et très intuitif. L'utilisateur utilise 'L'Oracle de Cécile'. Analyse les 3 premières cartes comme le Passé, le Présent et le Futur. Puis invite-le à tirer jusqu'à 3 cartes de précision.",
           speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
           outputAudioTranscription: {}
         }
@@ -124,7 +133,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const drawCard = (card: TarotCard) => {
     if (selectedCards.length >= 6 || selectedCards.find(c => c.name === card.name)) return;
     
-    // Play small sound effect simulation
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
     audio.volume = 0.2;
     audio.play().catch(() => {});
@@ -136,10 +144,10 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       const newFlipped = new Set(flippedIndices);
       newFlipped.add(newSelection.length - 1);
       setFlippedIndices(newFlipped);
-      startVoiceSession(`Une carte de précision : ${card.name}. Voyons ce qu'elle nous révèle de plus sur cette situation...`);
+      startVoiceSession(`Une nouvelle carte de précision : ${card.name}. Écoutons ce que l'Oracle ajoute à votre histoire.`);
     } else if (newSelection.length === 3) {
       setStep('flipping');
-      startVoiceSession("Les trois piliers sont posés. Retournez-les un par un, je vous prie.");
+      startVoiceSession("Les trois piliers de votre destin sont posés. Retournez-les un à un.");
     }
   };
 
@@ -152,123 +160,128 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     if (newFlipped.size === 3 && step === 'flipping') {
       setStep('interpreting');
       const names = selectedCards.map(c => c.name).join(', ');
-      startVoiceSession(`Le voile se lève sur ${names}. Voici ce que les vibrations me disent... Une fois que vous m'aurez écoutée, vous pourrez piocher de nouvelles cartes pour approfondir.`);
+      startVoiceSession(`L'Oracle parle de ${names}. Voici ma vision... N'hésitez pas à tirer d'autres cartes ensuite.`);
     }
   };
 
   return (
-    <div className="min-h-[75vh] flex flex-col items-center justify-start space-y-10 pb-28 pt-8">
-      {/* Voice Status Indicator */}
-      <div className={`fixed top-24 left-1/2 -translate-x-1/2 z-[40] flex items-center gap-4 px-8 py-3 bg-black/80 backdrop-blur-2xl rounded-full border-2 transition-all duration-700 ${voiceStatus === 'speaking' ? 'border-gold-bright shadow-[0_0_40px_rgba(255,215,0,0.4)] scale-110' : 'border-gold-muted/20 scale-100'}`}>
-        <div className="flex gap-1.5 items-end h-5">
+    <div className="min-h-[85vh] flex flex-col items-center justify-start space-y-6 md:space-y-10 pb-32 pt-4 md:pt-8 overflow-x-hidden">
+      {/* Voice Status Indicator - Mobile Optimized */}
+      <div className={`fixed top-16 md:top-24 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 md:gap-4 px-6 md:px-8 py-2 md:py-3 bg-black/90 backdrop-blur-3xl rounded-full border-2 transition-all duration-700 ${voiceStatus === 'speaking' ? 'border-gold-bright shadow-[0_0_40px_rgba(255,215,0,0.4)] scale-105' : 'border-gold-muted/20 scale-100'}`}>
+        <div className="flex gap-1 items-end h-4 md:h-5">
            {[...Array(6)].map((_, i) => (
              <div 
                key={i} 
-               className={`w-1 bg-gold-bright rounded-full transition-all duration-300 ${voiceStatus === 'speaking' ? 'animate-pulse' : 'h-1 opacity-20'}`}
-               style={{ height: voiceStatus === 'speaking' ? `${40 + Math.random() * 60}%` : '4px', animationDelay: `${i * 0.1}s` }}
+               className={`w-0.5 md:w-1 bg-gold-bright rounded-full transition-all duration-300 ${voiceStatus === 'speaking' ? 'animate-pulse' : 'h-1 opacity-20'}`}
+               style={{ height: voiceStatus === 'speaking' ? `${30 + Math.random() * 70}%` : '4px', animationDelay: `${i * 0.1}s` }}
              ></div>
            ))}
         </div>
-        <span className="font-mystic text-xs text-gold-bright uppercase tracking-[0.3em]">{voiceStatus === 'speaking' ? "Cécile interprète vos signes..." : "L'Oracle est silencieux..."}</span>
+        <span className="font-mystic text-[9px] md:text-xs text-gold-bright uppercase tracking-[0.2em] md:tracking-[0.3em] whitespace-nowrap">
+          {voiceStatus === 'speaking' ? "Cécile interprète..." : "L'Oracle est prêt"}
+        </span>
       </div>
 
-      {/* Main Spread Area */}
-      <div className="w-full max-w-6xl flex flex-wrap justify-center gap-8 px-6 min-h-[400px]">
+      {/* Main Spread Area - Responsive Grid */}
+      <div className="w-full max-w-6xl flex flex-wrap justify-center gap-4 md:gap-8 px-4 min-h-[300px] md:min-h-[400px]">
         {selectedCards.map((card, i) => (
           <div 
               key={i} 
               onClick={() => flipCard(i)} 
-              className={`w-36 h-56 md:w-48 md:h-72 cursor-pointer perspective-1000 group transition-all duration-1000 animate-in zoom-in-50 slide-in-from-bottom-20 ${flippedIndices.has(i) ? 'rotate-y-180' : 'hover:-translate-y-4'}`}
+              className={`w-28 h-44 md:w-48 md:h-72 cursor-pointer perspective-1000 group transition-all duration-1000 animate-in zoom-in-50 slide-in-from-bottom-20 ${flippedIndices.has(i) ? 'rotate-y-180' : 'hover:-translate-y-2 md:hover:-translate-y-4'}`}
           >
-            <div className="relative w-full h-full transition-all duration-700 preserve-3d shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden border border-gold-muted/20">
+            <div className="relative w-full h-full transition-all duration-700 preserve-3d shadow-xl rounded-xl md:rounded-2xl overflow-hidden border border-gold-muted/20">
               {/* Back of the card */}
-              <div className="absolute inset-0 back-oracle backface-hidden flex items-center justify-center p-4">
-                 <div className="w-full h-full border-2 border-gold-bright/10 rounded-xl flex items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 back-oracle backface-hidden flex items-center justify-center p-2 md:p-4">
+                 <div className="w-full h-full border border-gold-bright/10 rounded-lg md:rounded-xl flex items-center justify-center relative overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,215,0,0.05)_0%,transparent_70%)] animate-pulse"></div>
-                    <span className="text-5xl text-gold-bright/30 group-hover:text-gold-bright group-hover:scale-125 transition-all duration-500">👁️</span>
+                    <span className="text-3xl md:text-5xl text-gold-bright/30">👁️</span>
                  </div>
               </div>
               {/* Front of the card */}
-              <div className="absolute inset-0 rotate-y-180 backface-hidden bg-gradient-to-br from-[#fdf6e3] to-[#e6dbb9] p-4 flex flex-col items-center justify-between border-4 border-gold-muted shadow-2xl">
-                 <div className="text-amber-950/20 font-mystic text-[10px] uppercase tracking-widest">Oracle de Cécile</div>
-                 <div className="flex-1 flex flex-col items-center justify-center gap-4">
-                    <span className="text-7xl md:text-9xl filter drop-shadow-[0_5px_15px_rgba(0,0,0,0.2)] animate-float-subtle">{card.image}</span>
-                    <h4 className="text-center font-mystic text-sm md:text-lg text-amber-950 uppercase tracking-[0.2em] border-b border-amber-900/10 pb-2">{card.name}</h4>
+              <div className="absolute inset-0 rotate-y-180 backface-hidden bg-gradient-to-br from-[#fdf6e3] to-[#e6dbb9] p-2 md:p-4 flex flex-col items-center justify-between border-2 md:border-4 border-gold-muted shadow-2xl">
+                 <div className="text-amber-950/20 font-mystic text-[8px] md:text-[10px] uppercase tracking-widest">Oracle de Cécile</div>
+                 <div className="flex-1 flex flex-col items-center justify-center gap-2 md:gap-4">
+                    <span className="text-4xl md:text-8xl filter drop-shadow-md">{card.image}</span>
+                    <h4 className="text-center font-mystic text-[10px] md:text-lg text-amber-950 uppercase tracking-[0.1em] md:tracking-[0.2em] border-b border-amber-900/10 pb-1 md:pb-2 leading-tight">{card.name}</h4>
                  </div>
-                 <p className="text-[10px] text-amber-900/60 font-serif italic text-center px-2">{card.meaning}</p>
+                 <p className="text-[7px] md:text-[10px] text-amber-900/60 font-serif italic text-center px-1 md:px-2 leading-none md:leading-normal">{card.meaning}</p>
               </div>
             </div>
           </div>
         ))}
-        {/* Placeholder for remaining draws */}
-        {selectedCards.length > 0 && selectedCards.length < 3 && [...Array(3 - selectedCards.length)].map((_, i) => (
-           <div key={i} className="w-36 h-56 md:w-48 md:h-72 rounded-2xl border-2 border-dashed border-gold-muted/20 flex items-center justify-center opacity-30">
-              <span className="font-mystic text-xs text-gold-muted uppercase">Pilier {selectedCards.length + i + 1}</span>
+        {/* Placeholder logic for mobile to keep layout clean */}
+        {selectedCards.length < 3 && [...Array(3 - selectedCards.length)].map((_, i) => (
+           <div key={i} className="w-28 h-44 md:w-48 md:h-72 rounded-xl md:rounded-2xl border-2 border-dashed border-gold-muted/10 flex items-center justify-center opacity-20">
+              <span className="font-mystic text-[8px] md:text-xs text-gold-muted uppercase">Pilier {selectedCards.length + i + 1}</span>
            </div>
         ))}
       </div>
 
-      {/* Interpretation Parchment */}
+      {/* Interpretation Parchment - Mobile Optimized */}
       {step === 'interpreting' && (
-        <div className="w-full max-w-4xl px-6 animate-in fade-in duration-1000">
-            <div className="parchment p-10 md:p-16 rounded-[3rem] shadow-[0_30px_80px_rgba(0,0,0,0.6)] antique-border relative group overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-gold-bright/20 to-transparent"></div>
+        <div className="w-full max-w-4xl px-4 animate-in fade-in duration-1000 pb-10">
+            <div className="parchment p-6 md:p-16 rounded-[2rem] md:rounded-[3rem] shadow-2xl antique-border relative group overflow-hidden">
                 <div className="prose prose-stone max-w-none relative z-10">
-                    <p className="italic text-2xl md:text-4xl text-amber-950 font-serif leading-relaxed first-letter:text-7xl first-letter:font-mystic first-letter:mr-4 first-letter:float-left first-letter:text-amber-900 drop-shadow-sm">
-                       {transcript || "Cécile entre en communion avec l'invisible..."}
+                    <p className="italic text-xl md:text-4xl text-amber-950 font-serif leading-relaxed first-letter:text-5xl md:first-letter:text-7xl first-letter:font-mystic first-letter:mr-2 md:first-letter:mr-4 first-letter:float-left first-letter:text-amber-900 drop-shadow-sm">
+                       {transcript || "L'Oracle entre en communion..."}
                     </p>
                 </div>
                 {selectedCards.length < 6 && (
-                   <div className="mt-12 pt-8 border-t border-amber-950/10 text-center animate-pulse">
-                      <p className="font-mystic text-xs text-amber-900/50 uppercase tracking-[0.4em]">Piochez une carte de précision pour dissiper les doutes</p>
+                   <div className="mt-6 md:mt-12 pt-4 md:pt-8 border-t border-amber-950/10 text-center animate-pulse">
+                      <p className="font-mystic text-[8px] md:text-xs text-amber-900/50 uppercase tracking-[0.2em] md:tracking-[0.4em]">Piochez une carte de précision pour approfondir</p>
                    </div>
                 )}
             </div>
         </div>
       )}
 
-      {/* The Deck Spread (Interactable) */}
+      {/* The Deck Spread - Responsive Fan */}
       {(step === 'drawing' || (step === 'interpreting' && selectedCards.length < 6)) && (
-        <div className="w-full flex flex-col items-center space-y-12 pb-10">
-          <div className="text-center space-y-2">
-             <h3 className="font-mystic text-gold-bright text-sm uppercase tracking-[0.6em]">L'Eventail des Possibles</h3>
-             <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-gold-bright/40 to-transparent mx-auto"></div>
+        <div className="w-full flex flex-col items-center space-y-4 md:space-y-12 pb-10">
+          <div className="text-center space-y-1">
+             <h3 className="font-mystic text-gold-bright text-[10px] md:text-sm uppercase tracking-[0.3em] md:tracking-[0.6em]">L'Eventail des Possibles</h3>
+             <div className="h-[1px] w-16 md:w-24 bg-gradient-to-r from-transparent via-gold-bright/40 to-transparent mx-auto"></div>
           </div>
           
-          <div className="relative w-full max-w-5xl h-48 flex justify-center items-end px-10">
-            {ORACLE_CARDS.map((card, i) => {
-              const isSelected = selectedCards.find(c => c.name === card.name);
-              // Calculate fan-out rotation
-              const rotation = (i - (ORACLE_CARDS.length / 2)) * 6;
-              const translateX = (i - (ORACLE_CARDS.length / 2)) * 25;
-              
-              return (
-                <button 
-                  key={i} 
-                  onClick={() => drawCard(card)} 
-                  disabled={!!isSelected}
-                  className={`absolute w-24 h-40 md:w-32 md:h-52 back-oracle rounded-xl shadow-2xl border-2 border-gold-muted/40 transition-all duration-500 hover:-translate-y-12 hover:scale-110 active:scale-95 flex items-center justify-center ${isSelected ? 'opacity-0 scale-0 pointer-events-none' : 'opacity-100'}`}
-                  style={{ 
-                    transform: `translateX(${translateX}px) rotate(${rotation}deg)`,
-                    transformOrigin: 'bottom center',
-                    zIndex: i
-                  }}
-                >
-                  <span className="text-2xl opacity-10 drop-shadow-md">👁️</span>
-                </button>
-              );
-            })}
+          <div className="relative w-full max-w-5xl h-36 md:h-48 flex justify-center items-end px-4 md:px-10 overflow-x-auto no-scrollbar">
+            <div className="flex relative w-fit mx-auto min-w-full justify-center">
+              {ORACLE_CARDS.map((card, i) => {
+                const isSelected = selectedCards.find(c => c.name === card.name);
+                // Adjust rotation for mobile to keep cards within view
+                const factor = isMobile ? 4 : 6;
+                const spacing = isMobile ? 12 : 25;
+                const rotation = (i - (ORACLE_CARDS.length / 2)) * factor;
+                const translateX = (i - (ORACLE_CARDS.length / 2)) * spacing;
+                
+                return (
+                  <button 
+                    key={i} 
+                    onClick={() => drawCard(card)} 
+                    disabled={!!isSelected}
+                    className={`absolute w-16 h-28 md:w-32 md:h-52 back-oracle rounded-lg md:rounded-xl shadow-xl border border-gold-muted/30 transition-all duration-500 hover:-translate-y-6 md:hover:-translate-y-12 hover:scale-110 active:scale-95 flex items-center justify-center ${isSelected ? 'opacity-0 scale-0 pointer-events-none' : 'opacity-100'}`}
+                    style={{ 
+                      transform: `translateX(${translateX}px) rotate(${rotation}deg)`,
+                      transformOrigin: 'bottom center',
+                      zIndex: i
+                    }}
+                  >
+                    <span className="text-xl md:text-2xl opacity-10">👁️</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Navigation Controls */}
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 flex gap-6 z-50">
+      {/* Navigation Controls - Safe for Mobile */}
+      <div className="fixed bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-4 md:gap-6 z-[110] w-full px-6 justify-center">
         <button 
             onClick={() => { stopVoiceSession(); onBack(); }} 
-            className="px-10 py-4 bg-black/90 backdrop-blur-2xl border border-gold-muted/30 text-gold-muted hover:text-gold-bright transition-all font-mystic text-[10px] uppercase tracking-[0.5em] rounded-full shadow-2xl hover:shadow-gold-bright/10"
+            className="flex-1 max-w-[150px] md:max-w-none px-4 md:px-10 py-3 md:py-4 bg-black/95 backdrop-blur-2xl border border-gold-muted/30 text-gold-muted hover:text-gold-bright transition-all font-mystic text-[8px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.5em] rounded-full shadow-2xl"
         >
-          Sortir du Salon
+          Sortir
         </button>
         {step === 'interpreting' && (
             <button 
@@ -277,9 +290,9 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     setSelectedCards([]);
                     setFlippedIndices(new Set());
                     setTranscript('');
-                    startVoiceSession("Le destin est une page blanche que nous réécrivons ensemble. Choisissez trois nouvelles cartes.");
+                    startVoiceSession("Le destin est une page blanche. Choisissez trois nouvelles cartes.");
                 }}
-                className="px-12 py-4 bg-gold-bright text-black font-mystic text-[10px] uppercase tracking-[0.5em] rounded-full shadow-[0_0_40px_rgba(255,215,0,0.4)] hover:scale-105 active:scale-95 transition-all"
+                className="flex-1 max-w-[200px] md:max-w-none px-4 md:px-12 py-3 md:py-4 bg-gold-bright text-black font-mystic text-[8px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.5em] rounded-full shadow-lg hover:scale-105 transition-all"
             >
               Nouveau Tirage
             </button>
@@ -291,6 +304,8 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         .perspective-1000 { perspective: 1000px; }
         .preserve-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         .back-oracle {
           background: linear-gradient(135deg, #000428 0%, #004e92 100%);
