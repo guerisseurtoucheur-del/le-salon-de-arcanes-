@@ -79,7 +79,7 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
   };
 
   const handleVision = async () => {
-    if (!query.trim()) return;
+    if (!query.trim() || loading) return;
     setLoading(true);
     setPrediction('');
     setVisionUrl(null);
@@ -108,7 +108,7 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
         <p className="text-gold-muted font-sensual text-3xl italic">L'avenir n'est qu'un reflet qui attend d'être révélé.</p>
       </div>
 
-      <div className="relative group perspective-1000">
+      <div className="relative group perspective-1000 cursor-pointer" onClick={() => step === 'vision' && query.trim() && handleVision()}>
         <div className={`relative w-72 h-72 md:w-80 md:h-80 rounded-full crystal-container transition-all duration-700 z-10 flex items-center justify-center overflow-hidden border-4 ${isSpeaking || visionUrl ? 'border-gold-bright shadow-[0_0_150px_rgba(255,215,0,0.7)]' : 'border-gold-muted/20 shadow-[0_0_80px_rgba(139,92,246,0.3)]'}`}>
           
           <div className="absolute inset-0 rounded-full border-[1px] border-white/10 z-30 pointer-events-none overflow-hidden">
@@ -156,6 +156,14 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
                 alt="Vision"
               />
             )}
+
+            {!visionUrl && !loading && step === 'vision' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-30 animate-pulse pointer-events-none">
+                <span className="text-5xl text-gold-bright/60 mb-2 drop-shadow-[0_0_15px_rgba(255,215,0,0.8)]">✨</span>
+                <span className="text-3xl text-gold-bright/40 mb-2">👆</span>
+                <span className="font-mystic text-gold-muted text-[10px] uppercase tracking-[0.3em] bg-black/40 px-3 py-1 rounded-full border border-gold-muted/20">Fixer l'Abîme</span>
+              </div>
+            )}
             
             <div className={`absolute inset-0 rounded-full transition-all duration-700 z-20 pointer-events-none ${isSpeaking || visionUrl ? 'shadow-[inset_0_0_100px_rgba(255,215,0,0.5)]' : 'shadow-[inset_0_0_60px_rgba(0,0,0,0.9)]'}`}></div>
           </div>
@@ -201,7 +209,7 @@ const CrystalBallRoom: React.FC<{ onBack: () => void }> = () => {
           <div className="relative">
             <textarea 
               placeholder="Quelle ombre vous tourmente ?"
-              className="w-full bg-black/40 border border-gold-muted/20 p-5 rounded-2xl text-gold-bright text-xl font-serif-elegant italic focus:border-gold-bright transition-all resize-none shadow-inner"
+              className="w-full bg-black/80 border border-gold-muted/20 p-5 rounded-2xl text-gold-bright text-xl font-serif-elegant italic focus:border-gold-bright transition-all resize-none shadow-inner"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               rows={2}
