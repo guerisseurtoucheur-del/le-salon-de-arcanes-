@@ -32,7 +32,9 @@ const App: React.FC = () => {
   const [showBurst, setShowBurst] = useState(false);
   const [tokens, setTokens] = useState<number>(() => {
     const saved = localStorage.getItem('cecile_tokens');
-    return saved ? parseInt(saved, 10) : 1; 
+    // Si pas de jetons sauvegardés ou si c'est 0 à la toute première visite, on donne 1 éclat
+    if (saved === null) return 3; 
+    return parseInt(saved, 10);
   });
   const [showShop, setShowShop] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -55,19 +57,21 @@ const App: React.FC = () => {
   };
 
   const enterSalon = async () => {
-    if (tokens <= 0) {
-      setShowShop(true);
-      return;
-    }
+    // On autorise toujours l'entrée pour voir le Dashboard, même avec 0 jetons
     setShowBurst(true);
     const chime = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
     chime.volume = 0.4;
     chime.play().catch(() => {});
     setIsEntering(true);
+    
     setTimeout(() => {
       setHasEntered(true);
       setIsEntering(false);
       setShowBurst(false);
+      // Si l'utilisateur n'a plus de jetons, on lui suggère la boutique dès l'entrée
+      if (tokens <= 0) {
+        setShowShop(true);
+      }
     }, 1000);
   };
 
@@ -77,22 +81,19 @@ const App: React.FC = () => {
       return;
     }
     if (tokens > 0) {
-      setTokens(prev => prev - 1);
+      setTokens(prev => Math.max(0, prev - 1));
       setCurrentView(view);
     } else {
       setShowShop(true);
     }
   };
 
-  // Fixed error: added missing buyTokens function to handle token purchase.
   const buyTokens = (amount: number) => {
     setIsProcessingPayment(true);
-    // Simulation d'une offrande (paiement)
     setTimeout(() => {
       setTokens(prev => prev + amount);
       setIsProcessingPayment(false);
       setShowShop(false);
-      
       const chime = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
       chime.volume = 0.4;
       chime.play().catch(() => {});
@@ -132,16 +133,23 @@ const App: React.FC = () => {
             <LandingFeature icon="✨" label="Astres" delay="0.2s" />
           </div>
 
-          <button 
-            onClick={enterSalon}
-            disabled={isEntering}
-            className="group relative px-10 md:px-20 py-5 md:py-8 bg-black/40 border-2 border-gold-bright/30 rounded-full transition-all hover:border-gold-bright hover:shadow-[0_0_50px_rgba(255,215,0,0.3)] disabled:opacity-0"
-          >
-            <span className="relative z-10 font-mystic text-gold-bright text-lg md:text-3xl tracking-widest uppercase block">
-              Entrer
-            </span>
-          </button>
+          <div className="flex flex-col items-center gap-4">
+            <button 
+              onClick={enterSalon}
+              disabled={isEntering}
+              className="group relative px-10 md:px-20 py-5 md:py-8 bg-black/40 border-2 border-gold-bright/30 rounded-full transition-all hover:border-gold-bright hover:shadow-[0_0_50px_rgba(255,215,0,0.3)] disabled:opacity-0"
+            >
+              <span className="relative z-10 font-mystic text-gold-bright text-lg md:text-3xl tracking-widest uppercase block">
+                Entrer
+              </span>
+            </button>
+            {tokens <= 0 && (
+              <p className="text-gold-muted/60 font-serif italic text-sm animate-pulse">Vos éclats sont épuisés, mais vous pouvez entrer pour les renouveler.</p>
+            )}
+          </div>
         </div>
+
+        {showShop && <ShopOverlay onClose={() => setShowShop(false)} onBuy={buyTokens} isProcessing={isProcessingPayment} />}
       </div>
     );
   }
