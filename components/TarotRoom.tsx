@@ -18,7 +18,7 @@ const ORACLE_CARDS: TarotCard[] = [
   { name: "L'Argent", image: "💰", meaning: "Une amélioration matérielle substantielle." },
   { name: "Le Malheur", image: "🥀", meaning: "Une fin de cycle, nécessaire pour renaître." },
   { name: "L'Espoir", image: "🌟", meaning: "La lumière au bout du tunnel." },
-  { name: "La Rencontre", image: "🤝", meaning: "Une personne clé va croiser votre route." },
+  { name: "La Rencontre", image: "🤝", meaning: "Une personné clé va croiser votre route." },
   { name: "Le Secret", image: "🤫", meaning: "Une vérité cachée va éclater." },
 ];
 
@@ -165,7 +165,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile, une cartomancienne experte et charismatique. RÉPONDS TOUJOURS EN FRANÇAIS. Ton ton est chaleureux, mystérieux et très INTERACTIF. Ne te contente pas de lire, dialogue avec l'utilisateur. Commente chaque carte quand elle est révélée (Passé, Présent, Futur). Quand l'utilisateur pose une question, utilise ta voix pour donner une interprétation profonde en liant toutes les cartes ensemble. Sois rassurante mais honnête. Tu es une présence vivante dans ce salon.",
+          systemInstruction: "Tu es Cécile, une cartomancienne experte et charismatique. Ton ton est chaleureux, mystérieux et très INTERACTIF. RÉPONDS TOUJOURS EN FRANÇAIS. Commente chaque carte quand elle est révélée. Quand l'utilisateur pose une question, utilise ta voix pour donner une interprétation profonde en liant toutes les cartes ensemble. Ton but est de rendre l'expérience vivante.",
           speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
           outputAudioTranscription: {},
           inputAudioTranscription: {}
@@ -222,10 +222,10 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       startVoiceSession(`Pour ${position}, l'arcane de ${card.name} se révèle. ${card.meaning}`);
     } else {
       setStep('interpreting');
-      setTranscript("Cécile analyse l'ensemble de vos arcanes...");
+      setTranscript("Cécile se concentre sur les fils de votre existence...");
       const names = selectedCards.slice(0, 3).map(c => c.name).join(', ');
       startVoiceSession(`Le triptyque est complet : ${names}. Laissez-moi vous dire ce que cela signifie pour votre chemin global... Après cela, vous pourrez me poser une question précise.`);
-      setTimeout(() => setStep('questioning'), 8000);
+      setTimeout(() => setStep('questioning'), 10000);
     }
   };
 
@@ -245,9 +245,23 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       {/* Background Decor */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_50%_50%,rgba(184,134,11,0.1)_0%,transparent_70%)]"></div>
 
-      {/* Progression & Instruction Header (Haut) */}
-      <div className="flex flex-col items-center z-[60] mb-8">
-        <div className="flex items-center gap-4 bg-black/60 px-6 py-2 rounded-full border border-gold-muted/20 shadow-2xl mb-4">
+      {/* Header Area (Respect de la hiérarchie demandée) */}
+      <div className="flex flex-col items-center z-[60] mb-8 space-y-4">
+        
+        {/* 1. Cécile vous écoute (Tout en haut) */}
+        <div className={`flex items-center gap-4 px-8 py-3 bg-black/95 backdrop-blur-3xl rounded-full border-2 transition-all duration-700 ${voiceStatus === 'speaking' ? 'border-gold-bright shadow-[0_0_40px_rgba(255,215,0,0.5)] scale-105' : 'border-gold-muted/20 scale-100'}`}>
+          <div className="flex gap-1 items-end h-5">
+             {[...Array(6)].map((_, i) => (
+               <div key={i} className={`w-1 bg-gold-bright rounded-full ${voiceStatus === 'speaking' ? 'animate-pulse' : 'h-1 opacity-20'}`} style={{ height: voiceStatus === 'speaking' ? `${30 + Math.random() * 70}%` : '4px' }}></div>
+             ))}
+          </div>
+          <span className="font-mystic text-[10px] md:text-xs text-gold-bright uppercase tracking-widest">
+            {voiceStatus === 'speaking' ? "Cécile vous parle..." : voiceStatus === 'listening' ? "Cécile vous écoute" : "L'Oracle attend"}
+          </span>
+        </div>
+
+        {/* 2. Bulle Tirage / Progression */}
+        <div className="flex items-center gap-4 bg-black/60 px-6 py-2 rounded-full border border-gold-muted/20 shadow-2xl">
           <div className={`w-3 h-3 rounded-full transition-all duration-500 ${selectedCards.length >= 3 ? 'bg-gold-bright shadow-[0_0_15px_gold]' : 'bg-white/10'}`}></div>
           <div className="w-8 h-[1px] bg-gold-muted/30"></div>
           <div className={`w-3 h-3 rounded-full transition-all duration-500 ${step === 'questioning' && question.trim() ? 'bg-gold-bright shadow-[0_0_15px_gold]' : 'bg-white/10'}`}></div>
@@ -258,35 +272,23 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           </span>
         </div>
         
-        {/* PHRASE PERCUTANTE - Placée ici sous la bulle */}
+        {/* 3. Phrase percutante (Dessous) */}
         {(selectedCards.length < 3) && (
-          <h3 className="font-mystic text-gold-bright text-xs md:text-lg uppercase tracking-[0.4em] animate-in fade-in slide-in-from-top-2 duration-1000">
+          <h3 className="font-mystic text-gold-bright text-xs md:text-lg uppercase tracking-[0.4em] animate-in fade-in slide-in-from-top-2 duration-1000 pt-2">
              Éveillez les 3 Arcanes de votre Destin
           </h3>
         )}
         {(selectedCards.length >= 3 && selectedCards.length < 6 && step === 'questioning') && (
-           <h3 className="font-mystic text-gold-bright text-xs md:text-lg uppercase tracking-[0.4em] animate-in fade-in slide-in-from-top-2 duration-1000">
-             Demander une Précision
+           <h3 className="font-mystic text-gold-bright text-xs md:text-lg uppercase tracking-[0.4em] animate-in fade-in slide-in-from-top-2 duration-1000 pt-2 text-center">
+             Posez votre question à Cécile...
           </h3>
         )}
-      </div>
-
-      {/* Voice Status Indicator (Bas) */}
-      <div className={`fixed bottom-32 md:bottom-40 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4 px-8 py-3 bg-black/95 backdrop-blur-3xl rounded-full border-2 transition-all duration-700 ${voiceStatus === 'speaking' ? 'border-gold-bright shadow-[0_0_40px_rgba(255,215,0,0.5)] scale-105' : 'border-gold-muted/20 scale-100'}`}>
-        <div className="flex gap-1 items-end h-5">
-           {[...Array(6)].map((_, i) => (
-             <div key={i} className={`w-1 bg-gold-bright rounded-full ${voiceStatus === 'speaking' ? 'animate-pulse' : 'h-1 opacity-20'}`} style={{ height: voiceStatus === 'speaking' ? `${30 + Math.random() * 70}%` : '4px' }}></div>
-           ))}
-        </div>
-        <span className="font-mystic text-xs text-gold-bright uppercase tracking-widest">
-          {voiceStatus === 'speaking' ? "Cécile vous parle..." : voiceStatus === 'listening' ? "Cécile vous écoute" : "L'Oracle attend"}
-        </span>
       </div>
 
       {/* Main Table Content */}
       <div className="w-full max-w-6xl z-10 flex flex-col items-center gap-4 px-4">
         
-        {/* Spread Area - Rapproché du haut pour éviter le scroll */}
+        {/* Spread Area (Slots de cartes) */}
         <div className="w-full flex flex-wrap justify-center gap-4 md:gap-12 min-h-[300px] md:min-h-[400px] items-center z-[50]">
           {selectedCards.map((card, i) => (
             <div 
@@ -295,11 +297,9 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 className={`w-28 h-44 md:w-56 md:h-80 cursor-pointer perspective-1000 group transition-all duration-1000 ${flippedIndices.has(i) ? '' : 'hover:-translate-y-4 hover:shadow-[0_20px_50px_rgba(255,215,0,0.2)]'}`}
             >
               <div className={`relative w-full h-full transition-all duration-700 preserve-3d shadow-2xl rounded-xl md:rounded-2xl ${flippedIndices.has(i) ? 'rotate-y-180' : ''}`}>
-                
                 <div className="absolute inset-0 back-oracle backface-hidden flex items-center justify-center rounded-xl md:rounded-2xl z-[2]">
                    <CardBackContent />
                 </div>
-
                 <div className="absolute inset-0 rotate-y-180 backface-hidden bg-gradient-to-br from-[#fdf6e3] to-[#e6dbb9] p-4 md:p-8 flex flex-col items-center justify-between border-4 border-gold-muted rounded-xl md:rounded-2xl shadow-inner z-[1]">
                    <div className="text-amber-950/40 font-mystic text-[10px] md:text-sm uppercase tracking-tighter border-b border-amber-900/10 w-full text-center pb-2">
                       {i === 0 ? "Le Passé" : i === 1 ? "Le Présent" : i === 2 ? "Le Futur" : "Précision"}
@@ -312,7 +312,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                       <p className="text-[9px] md:text-sm text-amber-900/70 font-serif italic leading-tight">{card.meaning}</p>
                    </div>
                 </div>
-
               </div>
             </div>
           ))}
@@ -323,7 +322,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           ))}
         </div>
 
-        {/* --- DECK ÉVENTAIL : REMONTÉ ICI POUR ÊTRE TOUJOURS VISIBLE --- */}
+        {/* Deck Éventail (Placé juste sous les slots) */}
         {(step === 'drawing' || (step === 'questioning' && selectedCards.length < 6)) && (
           <div className="w-full flex flex-col items-center py-4 z-[55] animate-in fade-in zoom-in duration-700">
             <div className="relative w-full max-w-5xl h-48 md:h-60 flex justify-center items-end px-10 overflow-x-auto no-scrollbar overflow-y-visible">
@@ -360,6 +359,21 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           </div>
         )}
 
+        {/* Parchment Revelation (Le Parchemin Déroulant) */}
+        {transcript && (
+          <div className="w-full max-w-4xl animate-in fade-in slide-in-from-top-4 duration-1000 mb-20 z-[20]">
+              <div className="parchment-unroll p-10 md:p-20 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] antique-border bg-[#fdf6e3] relative overflow-hidden">
+                  <div className="absolute top-6 right-10 font-mystic text-[10px] text-amber-900/30 uppercase tracking-[0.5em]">Verbum Oraculi</div>
+                  <div className="prose prose-stone max-w-none">
+                      <p className="transcript-reveal italic text-2xl md:text-4xl text-amber-950 font-serif leading-relaxed first-letter:text-6xl md:first-letter:text-8xl first-letter:font-mystic first-letter:mr-6 first-letter:float-left first-letter:text-amber-900 first-letter:leading-none">
+                         {transcript}
+                      </p>
+                      <div ref={transcriptRef} className="h-4 w-full" />
+                  </div>
+              </div>
+          </div>
+        )}
+
         {/* Question Area */}
         {step === 'questioning' && (
           <div className="w-full max-w-2xl animate-in slide-in-from-bottom-10 duration-700 space-y-6 z-[30] my-8">
@@ -367,7 +381,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <h4 className="font-mystic text-gold-bright text-xl uppercase tracking-widest">Parlez à Cécile</h4>
               <p className="text-gold-muted/60 text-sm italic font-serif">Le voile est levé. Quelle vérité cherchez-vous maintenant ?</p>
             </div>
-            
             <div className="relative group shadow-3xl">
               <textarea 
                 value={question}
@@ -376,14 +389,11 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 className="w-full bg-black/95 border-2 border-gold-bright/30 p-8 rounded-[2.5rem] text-gold-bright text-2xl font-serif italic focus:border-gold-bright transition-all min-h-[160px] resize-none pr-16 shadow-inner"
               />
               <div className="absolute right-6 bottom-6 flex gap-4">
-                <div 
-                  className={`w-14 h-14 rounded-full border flex items-center justify-center transition-all ${voiceStatus === 'listening' ? 'bg-gold-bright text-black border-gold-bright scale-110 shadow-[0_0_30px_gold]' : 'bg-black border-gold-bright/30 text-gold-bright'}`}
-                >
+                <div className={`w-14 h-14 rounded-full border flex items-center justify-center transition-all ${voiceStatus === 'listening' ? 'bg-gold-bright text-black border-gold-bright scale-110 shadow-[0_0_30px_gold]' : 'bg-black border-gold-bright/30 text-gold-bright'}`}>
                   🎙️
                 </div>
               </div>
             </div>
-
             <button 
               onClick={askFinalQuestion}
               disabled={!question.trim() || voiceStatus === 'connecting'}
@@ -395,22 +405,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             </button>
           </div>
         )}
-
-        {/* Parchment Interpretation - Descend naturellement en bas */}
-        {transcript && (
-          <div className="w-full max-w-4xl animate-in fade-in slide-in-from-top-4 duration-1000 mb-20 z-[20]">
-              <div className="parchment p-10 md:p-20 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] antique-border bg-[#fdf6e3] relative overflow-hidden">
-                  <div className="absolute top-6 right-10 font-mystic text-[12px] text-amber-900/30 uppercase tracking-[0.5em]">Verbum Oraculi</div>
-                  <div className="prose prose-stone max-w-none">
-                      <p className="italic text-2xl md:text-4xl text-amber-950 font-serif leading-relaxed first-letter:text-6xl md:first-letter:text-8xl first-letter:font-mystic first-letter:mr-6 first-letter:float-left first-letter:text-amber-900 first-letter:leading-none">
-                         {transcript}
-                      </p>
-                      <div ref={transcriptRef} className="h-4 w-full" />
-                  </div>
-              </div>
-          </div>
-        )}
-
       </div>
 
       {/* Persistent Navigation Footer */}
@@ -430,6 +424,28 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         .preserve-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .parchment-unroll {
+          animation: unroll-parchment 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+          transform-origin: top;
+          max-height: 0;
+          opacity: 0;
+        }
+        
+        @keyframes unroll-parchment {
+          0% { max-height: 0; opacity: 0; transform: scaleY(0.9); }
+          100% { max-height: 2000px; opacity: 1; transform: scaleY(1); }
+        }
+
+        .transcript-reveal {
+          mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+          animation: text-reveal-scroll 2s ease-out forwards;
+        }
+
+        @keyframes text-reveal-scroll {
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
     </div>
   );
