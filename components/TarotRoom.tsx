@@ -22,6 +22,20 @@ const ORACLE_CARDS: TarotCard[] = [
   { name: "Le Secret", image: "🤫", meaning: "Une vérité cachée va éclater." },
 ];
 
+const CardBackContent = () => (
+  <div className="w-full h-full relative overflow-hidden">
+    <div className="card-inner-frame"></div>
+    <div className="mystic-seal">
+      <div className="seal-ring"></div>
+      <span className="seal-decor-top">✧</span>
+      <span className="seal-decor-bottom">✧</span>
+      <span className="seal-decor-left">☾</span>
+      <span className="seal-decor-right">☽</span>
+      <span className="seal-main-icon">👁️</span>
+    </div>
+  </div>
+);
+
 const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [step, setStep] = useState<'drawing' | 'flipping' | 'interpreting' | 'questioning'>('drawing');
   const [selectedCards, setSelectedCards] = useState<TarotCard[]>([]);
@@ -44,7 +58,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
-    // Initialisation immédiate de la session
     startVoiceSession("Bonjour. Je suis Cécile. Installez-vous confortablement. Choisissez trois cartes dans l'éventail devant vous pour poser les bases de notre séance. Je vous écoute.");
     
     return () => {
@@ -120,7 +133,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               }
             }
             
-            // Traitement de l'audio par itération sur les parts pour être sûr de ne rien rater
             if (message.serverContent?.modelTurn?.parts) {
               for (const part of message.serverContent.modelTurn.parts) {
                 if (part.inlineData?.data && outputContextRef.current && outputContextRef.current.state !== 'closed') {
@@ -273,10 +285,8 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           >
             <div className={`relative w-full h-full transition-all duration-700 preserve-3d shadow-2xl rounded-xl md:rounded-2xl ${flippedIndices.has(i) ? 'rotate-y-180' : ''}`}>
               
-              <div className="absolute inset-0 back-oracle backface-hidden flex items-center justify-center p-2 rounded-xl md:rounded-2xl border-2 border-gold-muted/30">
-                 <div className="w-full h-full border border-gold-bright/10 rounded-lg flex flex-col items-center justify-center gap-4 relative overflow-hidden bg-gradient-to-br from-indigo-950 to-black">
-                    <span className={`text-4xl md:text-7xl text-gold-bright transition-all ${!flippedIndices.has(i) && step === 'flipping' ? 'scale-125 animate-pulse shadow-[0_0_20px_gold]' : 'opacity-40'}`}>👁️</span>
-                 </div>
+              <div className="absolute inset-0 back-oracle backface-hidden flex items-center justify-center rounded-xl md:rounded-2xl">
+                 <CardBackContent />
               </div>
 
               <div className="absolute inset-0 rotate-y-180 backface-hidden bg-gradient-to-br from-[#fdf6e3] to-[#e6dbb9] p-3 md:p-6 flex flex-col items-center justify-between border-2 md:border-4 border-gold-muted rounded-xl md:rounded-2xl shadow-inner">
@@ -372,10 +382,10 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     key={i} 
                     onClick={() => drawCard(card)} 
                     disabled={!!isSelected}
-                    className={`absolute w-16 h-28 md:w-36 md:h-56 back-oracle rounded-lg shadow-xl border border-gold-muted/30 transition-all duration-500 hover:-translate-y-10 hover:scale-110 active:scale-95 flex items-center justify-center ${isSelected ? 'opacity-0 scale-0 pointer-events-none' : 'opacity-100'}`}
+                    className={`absolute w-16 h-28 md:w-36 md:h-56 back-oracle rounded-lg shadow-xl border border-gold-muted/30 transition-all duration-500 hover:-translate-y-10 hover:scale-110 active:scale-95 flex items-center justify-center ${isSelected ? 'opacity-0 scale-0 pointer-events-none' : 'opacity-100 group'}`}
                     style={{ transform: `translateX(${translateX}px) rotate(${rotation}deg)`, transformOrigin: 'bottom center', zIndex: i }}
                   >
-                    <span className="text-xl md:text-3xl opacity-10">👁️</span>
+                    <CardBackContent />
                   </button>
                 );
               })}
@@ -393,14 +403,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             >Nouveau Tirage</button>
         )}
       </div>
-
-      <style>{`
-        .rotate-y-180 { transform: rotateY(180deg); }
-        .perspective-1000 { perspective: 1000px; }
-        .preserve-3d { transform-style: preserve-3d; }
-        .backface-hidden { backface-visibility: hidden; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-      `}</style>
     </div>
   );
 };
