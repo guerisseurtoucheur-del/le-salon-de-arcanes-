@@ -10,7 +10,7 @@ const ORACLE_CARDS: TarotCard[] = [
   { name: "L'Inconstance", image: "🌪️", meaning: "Une période de doutes et de changements rapides." },
   { name: "La Pensée", image: "💭", meaning: "Un projet qui mûrit dans l'ombre." },
   { name: "Le Cadeau", image: "🎁", meaning: "Une surprise inattendue, une aide providentielle." },
-  { name: "La Fidélité", image: "🐕", meaning: "Un soutien indéfectible de votre entourage." },
+  { name: "La Fidélité", image: "🐕", meaning: "Un soutien indéfectical de votre entourage." },
   { name: "L'Union", image: "💍", meaning: "Un engagement fort, amoureux ou professionnel." },
   { name: "Le Voyage", image: "🚢", meaning: "Un déplacement nécessaire pour votre évolution." },
   { name: "La Maison", image: "🏠", meaning: "La stabilité retrouvée, le foyer protecteur." },
@@ -158,7 +158,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile, une cartomancienne de renom. Ton ton est chaleureux, mystérieux et très professionnel. RÉPONDS TOUJOURS EN FRANÇAIS. Tu analyses les tirages avec une grande précision poétique. Tu vois les cartes sur la table, ne demande jamais confirmation du tirage. Ton rôle est d'interpréter les arcanes et de guider le consultant.",
+          systemInstruction: "Tu es Cécile, une cartomancienne de renom. Ton ton est chaleureux, mystérieux et très professionnel. RÉPONDS TOUJOURS EN FRANÇAIS. Tu analyses les tirages avec une grande précision poétique. Tu vois parfaitement les cartes sur la table, tu n'as pas besoin qu'on te les décrive. Ton rôle est d'interpréter les arcanes et de guider le consultant avec sagesse.",
           speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
           outputAudioTranscription: {},
           inputAudioTranscription: {}
@@ -197,7 +197,10 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       const newFlipped = new Set(flippedIndices);
       newFlipped.add(newSelection.length - 1);
       setFlippedIndices(newFlipped);
-      startVoiceSession(`L'arcane de ${card.name} s'ajoute à votre chemin pour éclairer les zones d'ombre.`);
+      
+      // Rappel immédiat du contexte complet lors d'une précision
+      const context = newSelection.map((c, i) => `${i === 0 ? 'Passé' : i === 1 ? 'Présent' : i === 2 ? 'Futur' : 'Précision'} : ${c.name}`).join(", ");
+      startVoiceSession(`L'arcane de ${card.name} s'ajoute à votre chemin. Rappel de la vision complète : ${context}. Interprète l'ajout.`);
     }
   };
 
@@ -237,19 +240,34 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     - Passé : ${selectedCards[0].name}
     - Présent : ${selectedCards[1].name}
     - Futur : ${selectedCards[2].name}
-    Donne une interprétation fluide et solennelle. Termine impérativement ton intervention en demandant au consultant s'il souhaite approfondir cette vision en tirant une, deux ou trois cartes supplémentaires de précision au talon.`;
+    Donne une interprétation fluide et solennelle d'environ 30 à 45 secondes. Termine impérativement ton intervention en demandant au consultant s'il souhaite approfondir cette vision en tirant une, deux ou trois cartes supplémentaires de précision au talon.`;
     
     startVoiceSession(interpretationPrompt);
-    // On passe à 'questioning' après un délai pour laisser Cécile parler
-    setTimeout(() => setStep('questioning'), 15000);
+    setTimeout(() => setStep('questioning'), 5000);
   };
 
   const askFinalQuestion = (e?: React.FormEvent) => {
     e?.preventDefault();
     resumeAudio();
     if (!question.trim()) return;
-    setTranscript("Cécile écoute votre question...");
-    startVoiceSession(`L'utilisateur demande : "${question}". Réponds-lui en t'appuyant sur les cartes présentes sur la table.`);
+    
+    const userQuery = question;
+    setQuestion(''); // On vide immédiatement pour le ressenti de fluidité
+    
+    // Feedback immédiat dans le transcript pour l'utilisateur
+    setTranscript(prev => prev + "\n\n(Vous) : " + userQuery + "\n\nCécile vous répond...");
+
+    // On inclut tout le contexte des cartes dans le prompt pour que Cécile ne se trompe pas
+    const cardsContext = selectedCards.map((c, i) => `${i === 0 ? 'Passé' : i === 1 ? 'Présent' : i === 2 ? 'Futur' : 'Précision'} : ${c.name}`).join(", ");
+    const fullPrompt = `RAPPEL DU TIRAGE : ${cardsContext}. 
+    QUESTION DU CONSULTANT : "${userQuery}". 
+    Réponds maintenant en tant que Cécile, en utilisant les symboles des cartes pour guider tes paroles.`;
+
+    if (sessionRef.current) {
+      sessionRef.current.sendRealtimeInput({ parts: [{ text: fullPrompt }] });
+    } else {
+      startVoiceSession(fullPrompt);
+    }
   };
 
   return (
@@ -306,7 +324,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           ))}
         </div>
 
-        {/* --- BANDEAU INDICATIF (Juste sous les bulles vides) --- */}
+        {/* --- BANDEAU INDICATIF --- */}
         {selectedCards.length < 3 && (
           <div className="z-[60] -mt-2 md:-mt-4 mb-8 animate-in fade-in slide-in-from-top-2 duration-700 flex flex-col items-center w-full">
             <div className="flex items-center gap-2 md:gap-4 px-3 md:px-6 py-1 md:py-1.5 bg-black/40 border border-gold-bright/30 rounded-full backdrop-blur-md shadow-[0_0_20px_rgba(255,215,0,0.1)]">
@@ -318,7 +336,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                </span>
                <span className="animate-bounce-horizontal-reverse text-gold-bright text-[10px] md:text-base">✨</span>
             </div>
-            {/* Flèche pointant vers le bas pour le deck */}
             <div className="mt-2 animate-bounce">
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 5V19M12 19L5 12M12 19L19 12" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -331,7 +348,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         {selectedCards.length < 6 && (
           <div className={`w-full flex flex-col items-center z-[55] transition-all duration-700 ${selectedCards.length < 3 ? 'mt-4' : 'mt-8'}`}>
             {selectedCards.length < 3 ? (
-              /* Phase 1 : L'éventail complet pour le tirage initial */
               <div className="flex flex-col items-center gap-12 md:gap-24 -mt-16 md:-mt-24">
                 <div className="relative w-full max-w-5xl h-32 md:h-48 flex justify-center items-end px-4">
                   <div className="flex relative w-fit mx-auto min-w-full justify-center">
@@ -361,7 +377,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 </div>
               </div>
             ) : (
-              /* Phase 2 : Le paquet unique (Talon) pour les précisions */
               <div className="flex flex-col items-center gap-4 mt-4">
                 <p className="font-mystic text-gold-muted text-[8px] md:text-xs uppercase tracking-widest opacity-60">Envie d'approfondir la vision ? Piochez au talon (max 3).</p>
                 <button 
@@ -386,12 +401,12 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             </button>
           )}
 
-          {/* Transcript (Bulle de Cécile) */}
+          {/* Transcript */}
           {transcript && (
             <div className="w-full max-w-xl animate-in fade-in slide-in-from-top-4 duration-1000">
                 <div className="parchment-unroll p-4 md:p-6 rounded-[2rem] shadow-2xl antique-border bg-[#fdf6e3] relative overflow-hidden">
-                    <div className="max-h-[140px] md:max-h-[200px] overflow-y-auto no-scrollbar">
-                      <p className="italic text-xs md:text-lg text-amber-950 font-serif leading-relaxed text-center">
+                    <div className="max-h-[140px] md:max-h-[220px] overflow-y-auto no-scrollbar">
+                      <p className="italic text-xs md:text-lg text-amber-950 font-serif leading-relaxed text-center whitespace-pre-wrap">
                          <span className="text-amber-900 font-mystic text-xl mr-2">✧</span>{transcript}
                       </p>
                     </div>
@@ -408,16 +423,16 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   placeholder="Posez votre question à Cécile sur ce tirage..."
-                  className="w-full bg-black/95 border border-gold-bright/30 p-4 rounded-3xl text-gold-bright text-sm md:text-xl font-serif italic focus:border-gold-bright transition-all min-h-[100px] resize-none pr-28 shadow-inner"
+                  className="w-full bg-black/95 border border-gold-bright/30 p-4 rounded-3xl text-gold-bright text-sm md:text-xl font-serif italic focus:border-gold-bright transition-all min-h-[100px] resize-none pr-32 shadow-inner"
+                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && askFinalQuestion()}
                 />
-                <div className="absolute right-4 bottom-4 flex items-center gap-2">
+                <div className="absolute right-4 bottom-4 flex items-center gap-3">
                   <button 
                     onClick={askFinalQuestion}
                     disabled={!question.trim()}
-                    title="Valider la question"
-                    className="w-10 h-10 rounded-full bg-gold-bright text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg disabled:opacity-20 disabled:grayscale"
+                    className="h-10 px-4 bg-gold-bright text-black font-mystic text-[10px] tracking-widest uppercase rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all disabled:opacity-20 disabled:grayscale flex items-center gap-2"
                   >
-                    <span className="text-lg font-bold">✓</span>
+                    Envoyer <span className="text-sm">🖋️</span>
                   </button>
                   <div className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${voiceStatus === 'listening' ? 'bg-gold-bright text-black shadow-[0_0_15px_gold]' : 'bg-black text-gold-bright border-gold-bright/30'}`}>
                     <span className="text-xs">🎙️</span>
