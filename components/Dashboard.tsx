@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ViewType } from '../types';
 
@@ -14,6 +13,29 @@ const PendulumIcon: React.FC<{ className?: string }> = ({ className }) => (
     <circle cx="50" cy="5" r="3" fill="currentColor" />
     <path d="M50 5 L50 60" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
     <path d="M50 60 L65 80 L50 100 L35 80 Z" fill="currentColor" fillOpacity="0.8" stroke="currentColor" strokeWidth="1" />
+  </svg>
+);
+
+const MysticOracleIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 100 130" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Card Body */}
+    <rect x="10" y="10" width="80" height="110" rx="8" fill="url(#cardGrad)" stroke="currentColor" strokeWidth="2"/>
+    {/* Inner Frame */}
+    <rect x="18" y="18" width="64" height="94" rx="4" stroke="currentColor" strokeWidth="1" strokeOpacity="0.3"/>
+    {/* Third Eye Symbol */}
+    <path d="M50 45 C65 45 78 55 78 55 C78 55 65 65 50 65 C35 65 22 55 22 55 C22 55 35 45 50 45Z" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="50" cy="55" r="5" fill="currentColor"/>
+    {/* Mystical Rays */}
+    <path d="M50 35 V28M50 75 V82M70 55 H77M23 55 H30M65 40 L70 35M35 40 L30 35M65 70 L70 75M35 70 L30 75" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+    {/* Ornaments */}
+    <circle cx="50" cy="102" r="3" stroke="currentColor" strokeWidth="1"/>
+    <path d="M40 102 H45M55 102 H60" stroke="currentColor" strokeWidth="1"/>
+    <defs>
+      <linearGradient id="cardGrad" x1="50" y1="10" x2="50" y2="120" gradientUnits="userSpaceOnUse">
+        <stop stopColor="currentColor" stopOpacity="0.1"/>
+        <stop offset="1" stopColor="currentColor" stopOpacity="0.02"/>
+      </linearGradient>
+    </defs>
   </svg>
 );
 
@@ -39,7 +61,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, tokens, onOpenShop, s
   };
 
   const rooms = [
-    { type: ViewType.TAROT, label: "L'Oracle de Cécile", icon: "🃏", desc: 'Le destin gravé dans les Arcanes.' },
+    { type: ViewType.TAROT, label: "L'Oracle de Cécile", icon: <MysticOracleIcon className="w-16 h-20 text-gold-bright" />, desc: 'Le destin gravé dans les Arcanes.' },
     { type: ViewType.CRYSTAL_BALL, label: 'Miroir des Visions', icon: '🔮', desc: 'Ce qui est caché sera révélé.' },
     { type: ViewType.ASTROLOGY, label: 'Cercle des Astres', icon: '✨', desc: 'Alignez votre âme sur le Cosmos.' },
     { type: ViewType.PENDULUM, label: 'Sanctuaire du Pendule', icon: <PendulumIcon className="w-16 h-16 text-gold-bright" />, desc: 'La vérité par l\'oscillation.' },
@@ -78,7 +100,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, tokens, onOpenShop, s
             className={`group relative p-10 bg-black/60 border-2 rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,215,0,0.2)] ${tokens > 0 || room.type === ViewType.GRIMOIRE ? 'border-gold-muted/30 hover:border-gold-bright' : 'border-red-900/20 grayscale opacity-80'}`}
           >
             <div className="flex flex-col items-center gap-6">
-              <div className="transition-transform duration-700 group-hover:scale-125 group-hover:rotate-6">
+              <div className="transition-transform duration-700 group-hover:scale-125 group-hover:rotate-6 flex items-center justify-center">
                 {typeof room.icon === 'string' ? <span className="text-7xl">{room.icon}</span> : room.icon}
               </div>
               <div className="text-center">
