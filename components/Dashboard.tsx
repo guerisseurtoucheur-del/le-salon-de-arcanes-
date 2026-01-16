@@ -1,75 +1,72 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ViewType } from '../types';
-
-const OracleCardIcon = () => (
-  <div className="relative w-16 h-24 transition-all duration-700 group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-[0_0_30px_rgba(255,215,0,0.3)] perspective-1000">
-    <div className="w-full h-full bg-gradient-to-br from-blue-900 to-black border-2 border-gold-bright/40 rounded-lg flex items-center justify-center relative overflow-hidden animate-float-subtle">
-      {/* Texture de fond de la carte */}
-      <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')]"></div>
-      
-      {/* Cadre intérieur doré */}
-      <div className="absolute inset-1 border border-gold-bright/20 rounded-md"></div>
-      
-      {/* Symbole central */}
-      <div className="relative z-10 flex flex-col items-center">
-        <span className="text-3xl drop-shadow-[0_0_10px_rgba(255,215,0,0.8)] animate-pulse">👁️</span>
-        <div className="mt-1 w-8 h-[1px] bg-gold-bright/30"></div>
-      </div>
-      
-      {/* Reflet magique au survol */}
-      <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-25deg] transition-all duration-1000 group-hover:left-[100%]"></div>
-    </div>
-  </div>
-);
-
-const PendulumIcon = () => (
-  <div className="relative w-20 h-20 flex flex-col items-center group-hover:animate-swing-subtle transition-all duration-700">
-    <div className="w-[1px] h-10 bg-gold-muted/60 relative">
-      <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,215,0,0.8)_20%,transparent_30%)] bg-[length:4px_6px]"></div>
-    </div>
-    <div className="relative -mt-1 drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
-      <svg width="30" height="45" viewBox="0 0 70 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M35 0L70 40L55 90L35 110L15 90L0 40L35 0Z" fill="url(#crystal_grad_icon)" stroke="#1a1510" strokeWidth="1"/>
-        <path d="M35 0V110" stroke="white" strokeOpacity="0.4" strokeWidth="0.5"/>
-        <defs>
-          <linearGradient id="crystal_grad_icon" x1="0" y1="0" x2="70" y2="110" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#ffffff" stopOpacity="0.9"/>
-            <stop offset="0.4" stopColor="#fdf6e3" stopOpacity="0.6"/>
-            <stop offset="1" stopColor="#b8860b" stopOpacity="0.9"/>
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-  </div>
-);
 
 interface DashboardProps {
   onNavigate: (view: ViewType) => void;
   tokens: number;
   onOpenShop: () => void;
+  setTokens: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigate, tokens, onOpenShop }) => {
+const PendulumIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="5" r="3" fill="currentColor" />
+    <path d="M50 5 L50 60" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+    <path d="M50 60 L65 80 L50 100 L35 80 Z" fill="currentColor" fillOpacity="0.8" stroke="currentColor" strokeWidth="1" />
+  </svg>
+);
+
+const Dashboard: React.FC<DashboardProps> = ({ onNavigate, tokens, onOpenShop, setTokens }) => {
+  const [canClaimBonus, setCanClaimBonus] = useState(false);
+  const [bonusClaimed, setBonusClaimed] = useState(false);
+
+  useEffect(() => {
+    const lastClaim = localStorage.getItem('last_mystic_bonus');
+    const now = Date.now();
+    if (!lastClaim || now - parseInt(lastClaim) > 24 * 60 * 60 * 1000) {
+      setCanClaimBonus(true);
+    }
+  }, []);
+
+  const claimBonus = () => {
+    setTokens(prev => prev + 1);
+    localStorage.setItem('last_mystic_bonus', Date.now().toString());
+    setCanClaimBonus(false);
+    setBonusClaimed(true);
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
+    audio.play();
+  };
+
   const rooms = [
-    { type: ViewType.TAROT, label: "L'Oracle de Cécile", icon: <OracleCardIcon />, desc: 'Découvrez les secrets de votre destinée' },
-    { type: ViewType.CRYSTAL_BALL, label: 'La Boule de Cristal', icon: '🔮', desc: 'Visions du Futur Proche' },
-    { type: ViewType.ASTROLOGY, label: 'L\'Oracle des Astres', icon: '✨', desc: 'Votre Destin dans les Étoiles' },
-    { type: ViewType.PENDULUM, label: 'Le Sanctuaire du Pendule', icon: <PendulumIcon />, desc: 'Vérité par le Oui ou le Non' },
-    { type: ViewType.CECIL_DEEP, label: 'Cécile éclaire votre Futur', icon: '👁️', desc: 'Révélations profondes sur votre Destinée' },
-    { type: ViewType.NEXUS, label: 'Le Nexus de Nano', icon: '🔷', desc: 'Intelligence Cyber-Mystique' },
+    { type: ViewType.TAROT, label: "L'Oracle de Cécile", icon: "🃏", desc: 'Le destin gravé dans les Arcanes.' },
+    { type: ViewType.CRYSTAL_BALL, label: 'Miroir des Visions', icon: '🔮', desc: 'Ce qui est caché sera révélé.' },
+    { type: ViewType.ASTROLOGY, label: 'Cercle des Astres', icon: '✨', desc: 'Alignez votre âme sur le Cosmos.' },
+    { type: ViewType.PENDULUM, label: 'Sanctuaire du Pendule', icon: <PendulumIcon className="w-16 h-16 text-gold-bright" />, desc: 'La vérité par l\'oscillation.' },
+    { type: ViewType.CECIL_DEEP, label: 'Visions Profondes', icon: '👁️', desc: 'Révélations sur votre âme.' },
+    { type: ViewType.GRIMOIRE, label: 'Le Grimoire', icon: '📖', desc: 'Relisez vos prophéties passées.' },
   ];
 
   return (
-    <div className="space-y-12">
-      {/* Message d'accueil conditionnel */}
-      {tokens === 0 && (
-        <div className="bg-red-950/20 border border-red-500/30 p-4 rounded-2xl flex items-center justify-between animate-in slide-in-from-top-4">
-           <div className="flex items-center gap-4">
-              <span className="text-2xl">⚠️</span>
-              <p className="text-gold-muted text-sm font-serif italic">Vos éclats sont épuisés. Consultez la boutique pour poursuivre votre quête.</p>
+    <div className="space-y-12 animate-in fade-in duration-700">
+      {canClaimBonus && (
+        <div className="bg-gradient-to-r from-gold-bright/10 to-transparent border border-gold-bright/30 p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_50px_rgba(255,215,0,0.1)]">
+           <div className="flex items-center gap-6">
+              <span className="text-6xl animate-bounce">🎁</span>
+              <div>
+                <h3 className="text-2xl font-mystic text-gold-bright uppercase tracking-widest">Rituel Quotidien</h3>
+                <p className="text-gold-muted font-serif-elegant italic text-lg">Un éclat de lumière vous est offert pour votre fidélité.</p>
+              </div>
            </div>
-           <button onClick={onOpenShop} className="px-6 py-2 bg-gold-bright text-black font-mystic text-[10px] uppercase tracking-widest rounded-full hover:scale-105 transition-all">Boutique</button>
+           <button onClick={claimBonus} className="px-10 py-4 bg-gold-bright text-black font-mystic text-sm uppercase tracking-widest rounded-full hover:scale-110 shadow-xl transition-all animate-pulse">
+              Réclamer mon Éclat
+           </button>
+        </div>
+      )}
+
+      {bonusClaimed && (
+        <div className="text-center p-4 bg-green-900/20 border border-green-500/30 rounded-full animate-in zoom-in">
+          <p className="text-green-400 font-mystic text-xs uppercase tracking-widest">L'éclat a été ajouté à votre bourse. Revenez demain !</p>
         </div>
       )}
 
@@ -78,33 +75,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, tokens, onOpenShop })
           <button
             key={room.type}
             onClick={() => onNavigate(room.type)}
-            className={`group relative p-10 bg-gradient-to-br from-purple-950/60 to-black/80 border-2 rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_0_40px_rgba(184,134,11,0.2)] ${tokens > 0 ? 'border-gold-muted/30 hover:border-gold-bright' : 'border-red-900/20 grayscale opacity-80'}`}
+            className={`group relative p-10 bg-black/60 border-2 rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,215,0,0.2)] ${tokens > 0 || room.type === ViewType.GRIMOIRE ? 'border-gold-muted/30 hover:border-gold-bright' : 'border-red-900/20 grayscale opacity-80'}`}
           >
-            {/* Token Badge */}
-            <div className={`absolute top-4 left-4 px-3 py-1 rounded-full border flex items-center gap-2 transition-all ${tokens > 0 ? 'border-gold-bright/30 bg-gold-bright/10 text-gold-bright' : 'border-red-500/30 bg-red-900/10 text-red-400'}`}>
-               <span className="text-[10px] font-mystic uppercase tracking-widest">Coût: 1 Éclat</span>
-            </div>
-
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-600/10 rounded-full blur-[60px] group-hover:bg-purple-600/20 transition-all"></div>
-            
-            <div className="flex flex-col items-center gap-6 relative z-10">
-              <div className="min-h-[100px] flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
-                {typeof room.icon === 'string' ? (
-                  <span className="text-7xl drop-shadow-[0_0_15px_rgba(255,215,0,0.2)]">{room.icon}</span>
-                ) : (
-                  room.icon
-                )}
+            <div className="flex flex-col items-center gap-6">
+              <div className="transition-transform duration-700 group-hover:scale-125 group-hover:rotate-6">
+                {typeof room.icon === 'string' ? <span className="text-7xl">{room.icon}</span> : room.icon}
               </div>
               <div className="text-center">
-                <h3 className="text-2xl font-mystic text-gold-bright mb-2 tracking-wide group-hover:translate-x-2 transition-transform">{room.label}</h3>
-                <p className="text-gold-muted/80 font-serif italic text-base">{room.desc}</p>
+                <h3 className="text-2xl font-mystic text-gold-bright mb-2 tracking-wide uppercase">{room.label}</h3>
+                <p className="text-gold-muted/80 font-serif-elegant italic text-lg">{room.desc}</p>
               </div>
             </div>
-            
-            <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-              <span className="text-gold-bright font-mystic flex items-center gap-2">
-                {tokens > 0 ? 'Entrer' : 'Verrouillé'} <span className="text-xl">→</span>
-              </span>
+            <div className="absolute top-4 right-6 font-mystic text-[10px] text-gold-muted/40 uppercase tracking-widest">
+              {room.type === ViewType.GRIMOIRE ? 'Accès Libre' : '1 Éclat'}
             </div>
           </button>
         ))}

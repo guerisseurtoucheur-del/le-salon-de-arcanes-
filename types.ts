@@ -7,7 +7,8 @@ export enum ViewType {
   PENDULUM = 'PENDULUM',
   CHAT = 'CHAT',
   CECIL_DEEP = 'CECIL_DEEP',
-  NEXUS = 'NEXUS'
+  NEXUS = 'NEXUS',
+  GRIMOIRE = 'GRIMOIRE'
 }
 
 export type TarotDeck = 'MARSEILLE' | 'ORACLE';
@@ -45,6 +46,16 @@ export interface GeneratedImage {
   timestamp: number;
 }
 
+export interface HistoryEntry {
+  id: string;
+  type: ViewType;
+  date: number;
+  title: string;
+  content: string;
+  image?: string;
+  cards?: TarotCard[];
+}
+
 export const ZODIAC_SIGNS: AstrologySign[] = [
   { name: 'Bélier', dates: '21 Mars - 19 Avril', element: 'Feu', symbol: '♈' },
   { name: 'Taureau', dates: '20 Avril - 20 Mai', element: 'Terre', symbol: '♉' },
@@ -68,5 +79,6 @@ export const AUDIO_THEMES: Record<ViewType, string> = {
   [ViewType.PENDULUM]: 'https://assets.mixkit.co/music/preview/mixkit-spirit-of-the-night-211.mp3',
   [ViewType.CECIL_DEEP]: 'https://assets.mixkit.co/music/preview/mixkit-cinematic-mystery-suspense-672.mp3',
   [ViewType.NEXUS]: 'https://assets.mixkit.co/music/preview/mixkit-ethereal-dreams-639.mp3',
-  [ViewType.CHAT]: 'https://assets.mixkit.co/music/preview/mixkit-ethereal-dreams-639.mp3'
+  [ViewType.CHAT]: 'https://assets.mixkit.co/music/preview/mixkit-ethereal-dreams-639.mp3',
+  [ViewType.GRIMOIRE]: 'https://assets.mixkit.co/music/preview/mixkit-meditation-soft-702.mp3'
 };
