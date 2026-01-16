@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Modality } from '@google/genai';
 import { encodeAudio, decodeAudio, decodeAudioData } from '../services/geminiService';
@@ -308,17 +307,35 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           ))}
         </div>
 
-        {/* --- DECK ÉVENTAIL --- */}
+        {/* Instruction tirer les cartes */}
+        {selectedCards.length < 3 && (
+          <div className="z-[60] -mt-2 mb-4 animate-in fade-in duration-1000 flex flex-col items-center gap-2">
+            <p className="font-mystic text-gold-bright text-[10px] md:text-sm uppercase tracking-[0.2em] animate-pulse">
+               tirer vos 3 premieres cartes
+            </p>
+            {/* Flèche Dansante */}
+            <div className="animate-dancing-arrow text-gold-bright">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+              </svg>
+            </div>
+          </div>
+        )}
+
+        {/* --- DECK ÉVENTAIL (Divisé en 2 rangées pour être moins serré) --- */}
         {(step === 'drawing' || (step === 'questioning' && selectedCards.length < 6)) && (
-          <div className="w-full flex flex-col items-center z-[55] animate-in fade-in duration-700 overflow-visible -mt-24 md:-mt-36">
-            <div className="relative w-full max-w-5xl h-52 md:h-64 flex justify-center items-end px-4 overflow-visible">
+          <div className="w-full flex flex-col items-center z-[55] animate-in fade-in duration-700 overflow-visible -mt-16 md:-mt-24 gap-12 md:gap-24">
+            
+            {/* Rangée 1 : Cartes 0 à 7 */}
+            <div className="relative w-full max-w-5xl h-32 md:h-48 flex justify-center items-end px-4 overflow-visible">
               <div className="flex relative w-fit mx-auto min-w-full justify-center overflow-visible">
-                {ORACLE_CARDS.map((card, i) => {
+                {ORACLE_CARDS.slice(0, 8).map((card, i) => {
                   const isSelected = selectedCards.find(c => c.name === card.name);
-                  const factor = isMobile ? 3 : 5;
-                  const spacing = isMobile ? 12 : 28;
-                  const rotation = (i - (ORACLE_CARDS.length / 2)) * factor;
-                  const translateX = (i - (ORACLE_CARDS.length / 2)) * spacing;
+                  const factor = isMobile ? 4 : 8;
+                  const spacing = isMobile ? 24 : 60;
+                  const cardsInRow = 8;
+                  const rotation = (i - (cardsInRow / 2)) * factor;
+                  const translateX = (i - (cardsInRow / 2)) * spacing;
                   return (
                     <button 
                       key={i} 
@@ -333,11 +350,37 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 })}
               </div>
             </div>
+
+            {/* Rangée 2 : Cartes 8 à 14 */}
+            <div className="relative w-full max-w-5xl h-32 md:h-48 flex justify-center items-end px-4 overflow-visible">
+              <div className="flex relative w-fit mx-auto min-w-full justify-center overflow-visible">
+                {ORACLE_CARDS.slice(8).map((card, i) => {
+                  const isSelected = selectedCards.find(c => c.name === card.name);
+                  const factor = isMobile ? 4 : 8;
+                  const spacing = isMobile ? 24 : 60;
+                  const cardsInRow = ORACLE_CARDS.length - 8;
+                  const rotation = (i - (cardsInRow / 2)) * factor;
+                  const translateX = (i - (cardsInRow / 2)) * spacing;
+                  return (
+                    <button 
+                      key={i + 8} 
+                      onClick={() => drawCard(card)} 
+                      disabled={!!isSelected}
+                      className={`absolute w-16 h-24 md:w-36 md:h-52 back-oracle rounded-lg shadow-xl border border-gold-muted/30 transition-all duration-300 ease-out hover:-translate-y-32 hover:scale-110 hover:z-[100] active:scale-95 flex items-center justify-center ${isSelected ? 'opacity-0 scale-0 pointer-events-none' : 'opacity-100 group'}`}
+                      style={{ transform: `translateX(${translateX}px) rotate(${rotation}deg)`, transformOrigin: 'bottom center', zIndex: i }}
+                    >
+                      <CardBackContent />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            
           </div>
         )}
 
         {/* Action Overlay & Parchemin Réduit (Dialogue Bubble) */}
-        <div className="w-full flex flex-col items-center gap-0 mt-2">
+        <div className="w-full flex flex-col items-center gap-0 mt-8">
             {step === 'flipping' && (
               <div className="animate-bounce z-[40] bg-black/80 px-8 py-3 rounded-full border border-gold-bright/30 shadow-2xl mt-4 mb-4">
                 <p className="font-mystic text-gold-bright text-xs md:text-xl tracking-widest uppercase">
@@ -410,6 +453,14 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         .backface-hidden { backface-visibility: hidden; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        @keyframes dancing-arrow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(8px); }
+        }
+        .animate-dancing-arrow {
+          animation: dancing-arrow 1.2s ease-in-out infinite;
+        }
+
         .parchment-unroll {
           animation: unroll-parchment 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
           transform-origin: top;

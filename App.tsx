@@ -80,10 +80,24 @@ const App: React.FC = () => {
   const [hasGreeted, setHasGreeted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const preloadedAudioDataRef = useRef<string | null>(null);
 
   useEffect(() => {
     localStorage.setItem('cecile_tokens', tokens.toString());
   }, [tokens]);
+
+  useEffect(() => {
+    // Pré-chargement silencieux dès le montage du composant
+    const prefetch = async () => {
+      try {
+        const data = await generateSpeech("Le salon de Cécile s'ouvre à vous. Prenez place et ouvrez une porte.");
+        preloadedAudioDataRef.current = data || null;
+      } catch (e) {
+        console.warn("Échec du pré-chargement vocal");
+      }
+    };
+    prefetch();
+  }, []);
 
   const triggerHaptic = (force = 15) => {
     if ('vibrate' in navigator) {
@@ -99,8 +113,15 @@ const App: React.FC = () => {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       }
       if (audioContextRef.current.state === 'suspended') await audioContextRef.current.resume();
+      
       setIsSpeaking(true);
-      const audioData = await generateSpeech("Le salon de Cécile s'ouvre à vous. Prenez place et ouvrez une porte.");
+      
+      // Utilisation du cache si disponible pour éliminer le délai réseau
+      let audioData = preloadedAudioDataRef.current;
+      if (!audioData) {
+        audioData = await generateSpeech("Le salon de Cécile s'ouvre à vous. Prenez place et ouvrez une porte.");
+      }
+
       if (audioData) {
         const buffer = await decodeAudioData(decodeAudio(audioData), audioContextRef.current, 24000, 1);
         const source = audioContextRef.current.createBufferSource();
@@ -108,8 +129,12 @@ const App: React.FC = () => {
         source.connect(audioContextRef.current.destination);
         source.onended = () => setIsSpeaking(false);
         source.start();
-      } else { setIsSpeaking(false); }
-    } catch (e) { setIsSpeaking(false); }
+      } else { 
+        setIsSpeaking(false); 
+      }
+    } catch (e) { 
+      setIsSpeaking(false); 
+    }
   };
 
   const handleGlobalClick = (e: React.MouseEvent | React.TouchEvent) => {
@@ -125,7 +150,7 @@ const App: React.FC = () => {
   const enterSalon = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Déclencher le message vocal immédiatement au clic sur Entrer
+    // Déclencher le message vocal immédiatement
     playWelcomeGreeting();
 
     // Son cristallin riche (wind chime)
@@ -138,7 +163,6 @@ const App: React.FC = () => {
     triggerHaptic(60);
     
     setIsEntering(true);
-    // On ne coupe plus la parole de Cécile ici pour qu'elle termine son accueil
     setTimeout(() => {
       setHasEntered(true);
       setIsEntering(false);
@@ -182,12 +206,10 @@ const App: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black overflow-hidden px-4">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.15)_0%,transparent_70%)]"></div>
           
-          {/* Symboles du Salon avec Pendule Dessiné */}
           <div className={`absolute top-10 left-0 w-full flex justify-center items-center gap-6 md:gap-12 transition-all duration-1000 ${isEntering ? 'opacity-0 -translate-y-20 blur-xl' : 'animate-in fade-in slide-in-from-top-10'}`}>
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60">🃏</span>
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60" style={{ animationDelay: '0.2s' }}>🔮</span>
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60" style={{ animationDelay: '0.4s' }}>✨</span>
-            {/* Dessin du Pendule */}
             <PendulumIcon className="w-8 h-8 md:w-12 md:h-12 text-gold-bright filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-70" style={{ animationDelay: '0.6s' }} />
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60" style={{ animationDelay: '0.8s' }}>👁️</span>
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60" style={{ animationDelay: '1.0s' }}>📖</span>
