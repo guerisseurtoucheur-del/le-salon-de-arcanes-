@@ -29,20 +29,16 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
   
   const tickAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Gestion du son Tik-Tak synchronisé avec le balancement
   useEffect(() => {
     if (!tickAudioRef.current) {
-      // Utilisation d'un son de métronome mécanique ou tik-tak
       tickAudioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/1070/1070-preview.mp3');
       tickAudioRef.current.loop = true;
       tickAudioRef.current.volume = 0.25;
     }
 
     if (isSwinging) {
-      // On essaye de jouer le son quand le pendule cherche
-      tickAudioRef.current.play().catch(e => console.warn("Audio bloqué par le navigateur:", e));
+      tickAudioRef.current.play().catch(e => console.warn("Audio bloqué:", e));
     } else {
-      // On arrête le son dès que le pendule se fixe
       tickAudioRef.current.pause();
       tickAudioRef.current.currentTime = 0;
     }
@@ -91,7 +87,7 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-12 py-10 overflow-hidden min-h-[90vh] relative">
+    <div className="flex flex-col items-center gap-6 md:gap-12 py-6 md:py-10 overflow-hidden min-h-[85vh] relative">
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-[#0a050d] opacity-90 shadow-inner">
            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] mix-blend-overlay opacity-30"></div>
@@ -101,15 +97,16 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
         <DecorativeCardBack symbol="🗝️" className="absolute bottom-20 right-[-20px] w-52 h-84 rotate-[15deg] opacity-50 blur-0 scale-105 z-10" />
       </div>
 
-      <div className="text-center max-w-lg space-y-4 animate-fade z-50">
-        <h2 className="text-4xl md:text-5xl font-mystic text-gold-bright tracking-[0.3em] uppercase drop-shadow-lg">Le Sanctuaire des Vérités</h2>
-        <p className="text-gold-muted font-serif italic text-xl">Le cristal capte les échos de votre destinée.</p>
+      <div className="text-center max-w-lg space-y-4 animate-fade z-50 px-4">
+        <h2 className="text-3xl md:text-5xl font-mystic text-gold-bright tracking-[0.2em] md:tracking-[0.3em] uppercase drop-shadow-lg">Le Sanctuaire des Vérités</h2>
+        <p className="text-gold-muted font-serif italic text-lg md:text-xl">Le cristal capte les échos de votre destinée.</p>
       </div>
 
-      <div className="relative h-[600px] w-full flex flex-col items-center pendulum-anchor mt-4">
-        <div className="w-32 h-4 bg-gradient-to-r from-transparent via-gold-muted to-transparent rounded-full relative z-30">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full border-4 border-gold-bright bg-velvet-deep flex items-center justify-center shadow-[0_0_20px_rgba(255,215,0,0.6)]">
-             <div className="w-4 h-4 bg-gold-bright rounded-full animate-pulse"></div>
+      {/* Pendule avec hauteur réactive */}
+      <div className="relative h-[400px] md:h-[600px] w-full flex flex-col items-center pendulum-anchor mt-2 md:mt-4">
+        <div className="w-24 md:w-32 h-3 md:h-4 bg-gradient-to-r from-transparent via-gold-muted to-transparent rounded-full relative z-30">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-8 h-8 md:w-12 md:h-12 rounded-full border-4 border-gold-bright bg-velvet-deep flex items-center justify-center shadow-[0_0_20px_rgba(255,215,0,0.6)]">
+             <div className="w-2 md:w-4 h-2 md:h-4 bg-gold-bright rounded-full animate-pulse"></div>
           </div>
         </div>
 
@@ -122,12 +119,13 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
             transition: 'transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1)' 
           }}
         >
-          <div className="w-[8px] h-[400px] flex flex-col items-center relative">
+          {/* Fil du pendule avec hauteur réactive */}
+          <div className="w-[8px] h-[250px] md:h-[400px] flex flex-col items-center relative">
             <div className="w-[2px] h-full bg-gold-muted/40 absolute left-1/2 -translate-x-1/2"></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,215,0,0.8)_20%,transparent_30%)] bg-[length:8px_12px]"></div>
           </div>
           <div className="relative -mt-1 group">
-             <div className="relative z-10 drop-shadow-[0_25px_35px_rgba(0,0,0,0.7)]">
+             <div className="relative z-10 drop-shadow-[0_25px_35px_rgba(0,0,0,0.7)] scale-75 md:scale-100">
                 <svg width="70" height="110" viewBox="0 0 70 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M35 0L70 40L55 90L35 110L15 90L0 40L35 0Z" fill="url(#crystal_grad)" stroke="#1a1510" strokeWidth="1"/>
                   <path d="M35 0V110" stroke="white" strokeOpacity="0.4" strokeWidth="0.5"/>
@@ -143,23 +141,24 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
           </div>
         </div>
         
-        <div className={`absolute bottom-4 w-full max-w-4xl flex justify-between px-24 font-mystic text-6xl tracking-[0.5em] pointer-events-none select-none`}>
-          <div className="flex flex-col items-center gap-6">
+        {/* Labels OUI/NON réactifs et repositionnés */}
+        <div className={`absolute bottom-8 md:bottom-4 w-full max-w-4xl flex justify-between px-10 md:px-24 font-mystic text-3xl md:text-6xl tracking-[0.3em] md:tracking-[0.5em] pointer-events-none select-none`}>
+          <div className="flex flex-col items-center">
             <span className={`transition-all duration-1000 ${result?.answer.includes('NON') ? 'text-red-500 opacity-100 scale-125' : 'opacity-10 text-gold-muted'}`}>NON</span>
           </div>
-          <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center">
             <span className={`transition-all duration-1000 ${result?.answer.includes('OUI') ? 'text-green-500 opacity-100 scale-125' : 'opacity-10 text-gold-muted'}`}>OUI</span>
           </div>
         </div>
       </div>
 
-      <div className="w-full max-w-2xl space-y-6 z-40 px-6 mt-[-40px]">
+      <div className="w-full max-w-2xl space-y-4 md:space-y-6 z-40 px-6 mt-0 md:mt-[-40px]">
         {!result && !isSwinging && (
           <div className="animate-in fade-in slide-in-from-bottom-12 duration-1000">
             <input 
               type="text"
               placeholder="Ex: Mon voyage sera-t-il propice ?"
-              className="w-full bg-black/95 border-2 border-gold-muted/40 p-8 rounded-[2rem] text-gold-bright text-2xl font-serif italic focus:outline-none focus:border-gold-bright transition-all shadow-2xl mb-10"
+              className="w-full bg-black/95 border-2 border-gold-muted/40 p-5 md:p-8 rounded-2xl md:rounded-[2rem] text-gold-bright text-lg md:text-2xl font-serif italic focus:outline-none focus:border-gold-bright transition-all shadow-2xl mb-4 md:mb-10"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && askPendulum()}
@@ -167,7 +166,7 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
             <button 
               onClick={askPendulum}
               disabled={!question.trim()}
-              className="w-full py-8 px-10 bg-gradient-to-r from-purple-950 via-purple-900 to-black border-2 border-gold-muted text-gold-bright font-mystic text-xl tracking-[0.3em] hover:scale-[1.05] transition-all rounded-xl uppercase shadow-xl"
+              className="w-full py-4 md:py-8 px-6 md:px-10 bg-gradient-to-r from-purple-950 via-purple-900 to-black border-2 border-gold-muted text-gold-bright font-mystic text-base md:text-xl tracking-[0.2em] md:tracking-[0.3em] hover:scale-[1.05] transition-all rounded-xl uppercase shadow-xl"
             >
               Interroger le Pendule
             </button>
@@ -175,20 +174,20 @@ const PendulumRoom: React.FC<{ onBack: () => void }> = () => {
         )}
 
         {isSwinging && (
-          <div className="text-center space-y-6 animate-pulse p-12 bg-black/60 rounded-[3rem] backdrop-blur-xl border border-gold-muted/30">
-            <p className="font-mystic text-gold-bright text-3xl tracking-[0.5em] uppercase">Capture des Vibrations...</p>
+          <div className="text-center space-y-6 animate-pulse p-8 md:p-12 bg-black/60 rounded-3xl md:rounded-[3rem] backdrop-blur-xl border border-gold-muted/30">
+            <p className="font-mystic text-gold-bright text-xl md:text-3xl tracking-[0.3em] md:tracking-[0.5em] uppercase">Capture des Vibrations...</p>
           </div>
         )}
 
         {result && (
-          <div className="text-center space-y-10 animate-in zoom-in-95 duration-700 p-14 glass-mystic gold-border rounded-[4rem] relative overflow-hidden shadow-2xl">
-            <h3 className={`text-8xl md:text-9xl font-mystic mb-4 tracking-[0.6em] ${
+          <div className="text-center space-y-6 md:space-y-10 animate-in zoom-in-95 duration-700 p-8 md:p-14 glass-mystic gold-border rounded-3xl md:rounded-[4rem] relative overflow-hidden shadow-2xl">
+            <h3 className={`text-6xl md:text-9xl font-mystic mb-2 md:mb-4 tracking-[0.4em] md:tracking-[0.6em] ${
               result.answer.includes('OUI') ? 'text-green-500' : result.answer.includes('NON') ? 'text-red-500' : 'text-gold-bright'
             }`}>
               {result.answer}
             </h3>
-            <p className="italic text-4xl md:text-5xl text-gold-muted font-cursive leading-relaxed px-10">"{result.reason}"</p>
-            <button onClick={reset} className="mt-10 px-16 py-5 rounded-full border-2 border-gold-muted/50 text-gold-muted hover:text-gold-bright hover:border-gold-bright transition-all font-mystic text-xl uppercase tracking-[0.4em]">Nouvelle Vision</button>
+            <p className="italic text-2xl md:text-5xl text-gold-muted font-cursive leading-relaxed px-4 md:px-10">"{result.reason}"</p>
+            <button onClick={reset} className="mt-6 md:mt-10 px-8 md:px-16 py-3 md:py-5 rounded-full border-2 border-gold-muted/50 text-gold-muted hover:text-gold-bright hover:border-gold-bright transition-all font-mystic text-sm md:text-xl uppercase tracking-[0.2em] md:tracking-[0.4em]">Nouvelle Vision</button>
           </div>
         )}
       </div>
