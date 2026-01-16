@@ -16,18 +16,22 @@ const PendulumIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
+const NexusIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 10 L90 30 V70 L50 90 L10 70 V30 Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M50 10 V90 M10 30 L90 70 M90 30 L10 70" stroke="currentColor" strokeWidth="1" strokeOpacity="0.3" />
+    <rect x="40" y="40" width="20" height="20" rotate="45" stroke="currentColor" strokeWidth="2" className="animate-pulse" />
+    <circle cx="50" cy="50" r="4" fill="currentColor" />
+  </svg>
+);
+
 const MysticOracleIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg viewBox="0 0 100 130" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Card Body */}
     <rect x="10" y="10" width="80" height="110" rx="8" fill="url(#cardGrad)" stroke="currentColor" strokeWidth="2"/>
-    {/* Inner Frame */}
     <rect x="18" y="18" width="64" height="94" rx="4" stroke="currentColor" strokeWidth="1" strokeOpacity="0.3"/>
-    {/* Third Eye Symbol */}
     <path d="M50 45 C65 45 78 55 78 55 C78 55 65 65 50 65 C35 65 22 55 22 55 C22 55 35 45 50 45Z" stroke="currentColor" strokeWidth="2"/>
     <circle cx="50" cy="55" r="5" fill="currentColor"/>
-    {/* Mystical Rays */}
     <path d="M50 35 V28M50 75 V82M70 55 H77M23 55 H30M65 40 L70 35M35 40 L30 35M65 70 L70 75M35 70 L30 75" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
-    {/* Ornaments */}
     <circle cx="50" cy="102" r="3" stroke="currentColor" strokeWidth="1"/>
     <path d="M40 102 H45M55 102 H60" stroke="currentColor" strokeWidth="1"/>
     <defs>
@@ -65,6 +69,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, tokens, onOpenShop, s
     { type: ViewType.CRYSTAL_BALL, label: 'Miroir des Visions', icon: '🔮', desc: 'Ce qui est caché sera révélé.' },
     { type: ViewType.ASTROLOGY, label: 'Cercle des Astres', icon: '✨', desc: 'Alignez votre âme sur le Cosmos.' },
     { type: ViewType.PENDULUM, label: 'Sanctuaire du Pendule', icon: <PendulumIcon className="w-16 h-16 text-gold-bright" />, desc: 'La vérité par l\'oscillation.' },
+    { type: ViewType.NEXUS, label: 'Le Nexus de Nano', icon: <NexusIcon className="w-16 h-16 text-gold-bright" />, desc: 'Convergence temporelle et quantique.' },
     { type: ViewType.CECIL_DEEP, label: 'Visions Profondes', icon: '👁️', desc: 'Révélations sur votre âme.' },
     { type: ViewType.GRIMOIRE, label: 'Le Grimoire', icon: '📖', desc: 'Relisez vos prophéties passées.' },
   ];

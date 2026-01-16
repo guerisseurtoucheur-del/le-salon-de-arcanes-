@@ -1,15 +1,18 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { askNexusNano } from '../services/geminiService';
+import { askNexusNano, generateSpeech, decodeAudio, decodeAudioData } from '../services/geminiService';
 
-const NexusRoom: React.FC<{ onBack: () => void }> = () => {
+const NexusRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [step, setStep] = useState<'id' | 'sync' | 'chat'>('id');
   const [userData, setUserData] = useState({ name: '', birthDate: '' });
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [time, setTime] = useState(new Date());
+  
   const responseRef = useRef<HTMLDivElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const activeSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 100);
@@ -21,6 +24,49 @@ const NexusRoom: React.FC<{ onBack: () => void }> = () => {
       responseRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [response, isThinking]);
+
+  // Nettoyage audio à la fermeture
+  useEffect(() => {
+    return () => {
+      stopAudio();
+    };
+  }, []);
+
+  const stopAudio = () => {
+    if (activeSourceRef.current) {
+      try { activeSourceRef.current.stop(); } catch (e) {}
+      activeSourceRef.current = null;
+    }
+    setIsSpeaking(false);
+  };
+
+  const playResponseVoice = async (text: string) => {
+    stopAudio();
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      }
+      if (audioContextRef.current.state === 'suspended') await audioContextRef.current.resume();
+
+      // On demande une voix "limpide et technologique" pour le Nexus
+      const voiceInstruction = `Voix féminine, limpide, calme et légèrement synthétique (style IA évoluée) : ${text}`;
+      const audioData = await generateSpeech(voiceInstruction);
+
+      if (audioData) {
+        setIsSpeaking(true);
+        const buffer = await decodeAudioData(decodeAudio(audioData), audioContextRef.current, 24000, 1);
+        const source = audioContextRef.current.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContextRef.current.destination);
+        source.onended = () => setIsSpeaking(false);
+        activeSourceRef.current = source;
+        source.start(0);
+      }
+    } catch (e) {
+      console.error("Erreur lecture Nexus:", e);
+      setIsSpeaking(false);
+    }
+  };
 
   const handleIdentitySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,11 +81,12 @@ const NexusRoom: React.FC<{ onBack: () => void }> = () => {
       Identité : ${userData.name}. Incarnation : ${userData.birthDate}. 
       Cycle Précis : ${today}. 
       Analyse la convergence entre sa fréquence de naissance et l'énergie atomique de ce jour précis. 
-      Établis son profil cyber-mystique et fais une prédiction précise sur les probabilités de ce cycle spécifique.`;
+      Fais une prédiction précise en 3-4 phrases.`;
       
       const res = await askNexusNano(initialPrompt);
       setResponse(res);
       setStep('chat');
+      if (res) playResponseVoice(res);
     } catch (e) {
       setResponse("Erreur de synchronisation temporelle. Le Nexus rejette les données.");
       setStep('id');
@@ -52,11 +99,13 @@ const NexusRoom: React.FC<{ onBack: () => void }> = () => {
     if (!query.trim() || isThinking) return;
     setIsThinking(true);
     setResponse('');
+    stopAudio();
     try {
       const today = new Date().toLocaleString('fr-FR');
       const enrichedQuery = `[Identité: ${userData.name}, Naissance: ${userData.birthDate}, Temps Réel: ${today}] Question : ${query}`;
       const res = await askNexusNano(enrichedQuery);
       setResponse(res);
+      if (res) playResponseVoice(res);
     } catch (e) {
       setResponse("Le Nexus subit une interférence temporelle. Retentez plus tard.");
     } finally {
@@ -82,7 +131,7 @@ const NexusRoom: React.FC<{ onBack: () => void }> = () => {
         <p className="text-gold-muted font-serif italic text-xl">Calculateur de Destinée Quantique.</p>
       </div>
 
-      {/* Cosmic Visualization with Date Halo */}
+      {/* Cosmic Visualization */}
       <div className="relative w-72 h-72 flex items-center justify-center mb-4">
         <div className={`absolute inset-0 bg-blue-500/10 rounded-full blur-[100px] transition-all duration-1000 ${isThinking ? 'opacity-100 scale-150' : 'opacity-40 scale-100'}`}></div>
         
@@ -92,6 +141,25 @@ const NexusRoom: React.FC<{ onBack: () => void }> = () => {
               <span className={`text-6xl drop-shadow-[0_0_20px_rgba(59,130,246,0.9)] transition-all duration-500 ${isThinking ? 'scale-150 opacity-100' : 'opacity-60'}`}>🔷</span>
            </div>
         </div>
+        
+        {/* Audio Visualizer Overlay */}
+        {isSpeaking && (
+          <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+            <div className="flex gap-1 h-20 items-center">
+              {[...Array(8)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className="w-1 bg-blue-400 rounded-full animate-pulse" 
+                  style={{ 
+                    height: `${30 + Math.random() * 70}%`,
+                    animationDelay: `${i * 0.1}s`,
+                    boxShadow: '0 0 10px rgba(59,130,246,0.8)'
+                  }}
+                ></div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Orbiting Time Indicators */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
@@ -158,10 +226,12 @@ const NexusRoom: React.FC<{ onBack: () => void }> = () => {
               <div ref={responseRef} className="p-12 glass-mystic border-2 border-blue-500/30 rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,1)] relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5 text-8xl pointer-events-none text-blue-400">🔷</div>
                 <div className="flex items-center gap-4 mb-8 border-b border-blue-500/20 pb-4">
-                    <div className="w-3 h-3 bg-blue-400 rounded-full animate-ping"></div>
-                    <span className="font-mystic text-blue-400 text-sm uppercase tracking-[0.4em]">Analyse du Cycle Actuel - {userData.name}</span>
+                    <div className={`w-3 h-3 rounded-full ${isSpeaking ? 'bg-blue-400 animate-ping' : 'bg-blue-900'}`}></div>
+                    <span className="font-mystic text-blue-400 text-sm uppercase tracking-[0.4em]">
+                      {isSpeaking ? "Transmission Vocale en cours..." : `Analyse du Cycle Actuel - ${userData.name}`}
+                    </span>
                 </div>
-                <div className="prose prose-invert max-w-none text-blue-100/90 font-serif text-2xl leading-relaxed italic">
+                <div className={`prose prose-invert max-w-none text-blue-100/90 font-serif text-2xl leading-relaxed italic transition-opacity duration-500 ${isThinking ? 'opacity-30' : 'opacity-100'}`}>
                     {response.split('\n').map((para, i) => (
                         <p key={i} className="mb-6">{para}</p>
                     ))}
@@ -177,6 +247,14 @@ const NexusRoom: React.FC<{ onBack: () => void }> = () => {
                   className="w-full bg-black/80 border-2 border-blue-500/30 p-8 rounded-3xl text-blue-200 text-2xl font-serif italic focus:outline-none focus:border-blue-400 transition-all placeholder:text-blue-900/40 shadow-2xl min-h-[150px] resize-none"
                   onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleConsult()}
                 />
+                {isSpeaking && (
+                   <button 
+                    onClick={stopAudio}
+                    className="absolute top-4 right-4 bg-red-900/20 border border-red-500/30 text-red-500 px-3 py-1 rounded-full text-[10px] uppercase font-mono tracking-tighter hover:bg-red-900/40 transition-all"
+                   >
+                     MUTE
+                   </button>
+                )}
             </div>
 
             <div className="flex gap-4">
@@ -188,7 +266,7 @@ const NexusRoom: React.FC<{ onBack: () => void }> = () => {
                 {isThinking ? 'Recalcul du Destin...' : 'Actualiser les Probabilités'}
               </button>
               <button 
-                onClick={() => { setStep('id'); setResponse(''); setUserData({name:'', birthDate:''}); }}
+                onClick={() => { stopAudio(); setStep('id'); setResponse(''); setUserData({name:'', birthDate:''}); }}
                 className="px-6 border-2 border-gold-muted/20 text-gold-muted hover:border-gold-muted hover:text-gold-bright transition-all rounded-2xl bg-black/40"
                 title="Déconnexion du Nexus"
               >
@@ -200,6 +278,8 @@ const NexusRoom: React.FC<{ onBack: () => void }> = () => {
           </div>
         )}
       </div>
+
+      <button onClick={() => { stopAudio(); onBack(); }} className="fixed bottom-10 left-10 px-6 py-2 border border-blue-900/30 text-blue-900/60 hover:text-blue-400 transition-all font-mystic text-[10px] uppercase tracking-widest z-[50]">Déconnexion</button>
     </div>
   );
 };

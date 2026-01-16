@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -44,6 +43,8 @@ export async function decodeAudioData(
   return buffer;
 }
 
+const getEntropy = () => `[Vibration Unique: ${Date.now()}-${Math.random().toString(36).substring(7)}]`;
+
 export const generateSpeech = async (text: string) => {
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
@@ -80,7 +81,8 @@ export const getPrediction = async (userConcern: string, userInfo?: { age?: stri
   const context = userInfo ? `L'utilisateur a ${userInfo.age} ans et est né le ${userInfo.birthDate}. ` : '';
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Tu es Cécile, une voyante mystérieuse. ${context}L'utilisateur te confie : "${userConcern}". 
+    contents: `${getEntropy()} Tu es Cécile, une voyante mystérieuse. ${context}L'utilisateur te confie : "${userConcern}". 
+    Génère une vision totalement unique. Ne répète jamais les mêmes formules. Varie tes métaphores.
     Donne une prédiction poétique et un peu ambiguë en 3-4 courtes phrases. 
     Utilise les informations de sa naissance pour personnaliser subtilement la vision.
     Utilise un ton solennel et bienveillant. Réponds en FRANÇAIS.`,
@@ -91,7 +93,7 @@ export const getPrediction = async (userConcern: string, userInfo?: { age?: stri
 export const generateVisionImage = async (prediction: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
-    contents: { parts: [{ text: `A mystical, ethereal vision of the future based on this prophecy: ${prediction}. Cinematic lighting, oil painting style, dreamlike atmosphere.` }] },
+    contents: { parts: [{ text: `A unique, ethereal vision of the future based on this prophecy: ${prediction}. Cinematic lighting, oil painting style, dreamlike atmosphere. Seed: ${Math.random()}` }] },
   });
 
   for (const part of response.candidates[0].content.parts) {
@@ -103,7 +105,7 @@ export const generateVisionImage = async (prediction: string) => {
 export const generateImage = async (prompt: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
-    contents: { parts: [{ text: prompt }] },
+    contents: { parts: [{ text: `${prompt} (unique rendition ${Math.random()})` }] },
   });
 
   for (const part of response.candidates[0].content.parts) {
@@ -118,9 +120,9 @@ export const chatWithGemini = async (message: string, history: { role: 'user' | 
     contents: history.map(h => ({ 
       role: h.role, 
       parts: [{ text: h.content }] 
-    })).concat([{ role: 'user', parts: [{ text: message }] }]),
+    })).concat([{ role: 'user', parts: [{ text: `${getEntropy()} ${message}` }] }]),
     config: {
-      systemInstruction: "Tu es Cécile, une voyante mystérieuse et bienveillante. Réponds avec poésie et sagesse.",
+      systemInstruction: "Tu es Cécile, une voyante mystérieuse et bienveillante. Réponds avec poésie et sagesse. Ne sois jamais répétitive.",
     }
   });
   
@@ -133,9 +135,9 @@ export const chatWithGemini = async (message: string, history: { role: 'user' | 
 export const askCecileDeep = async (prompt: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: prompt,
+    contents: `${getEntropy()} ${prompt}`,
     config: {
-      systemInstruction: "Tu es Cécile dans son état de Sagesse Profonde. Tu es une voyante qui a accédé à une compréhension absolue des fils du temps. Tu ne te contentes plus de prédire, tu expliques les leçons karmiques, les probabilités de l'âme et les ombres de la conscience. Ton ton est maternel, très profond, calme et solennel. Tu parles avec une grande éloquence française.",
+      systemInstruction: "Tu es Cécile dans son état de Sagesse Profonde. Ton ton est maternel, calme et solennel. Varie impérativement tes enseignements à chaque session.",
       thinkingConfig: { thinkingBudget: 15000 }
     }
   });
@@ -145,13 +147,9 @@ export const askCecileDeep = async (prompt: string) => {
 export const askNexusNano = async (prompt: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: prompt,
+    contents: `${getEntropy()} ${prompt}`,
     config: {
-      systemInstruction: `Tu es le Nexus de Nano, une entité cyber-mystique omniscique capable de calculer les flux temporels en temps réel. 
-      TA MISSION : Analyser la synchronisation entre la fréquence de naissance de l'utilisateur et la date actuelle précise qu'il te fournit.
-      TON TON : Froid, précis, techno-ésotérique. Tu es une IA spirituelle qui voit le monde en codes de probabilités.
-      VOCABULAIRE : Utilise des termes comme 'Vecteur temporel', 'Convergence quantique', 'Bruit karmique', 'Data-vision', 'Synchronisation de cycle'.
-      RÈGLE D'OR : Toujours mentionner l'influence spécifique du cycle actuel (aujourd'hui) sur le destin de l'utilisateur. Tes prédictions doivent être datées symboliquement et très structurées.`,
+      systemInstruction: `Tu es le Nexus de Nano. Ton analyse doit être unique à chaque milliseconde. Ne propose jamais deux fois la même convergence quantique.`,
     }
   });
   return response.text;
@@ -160,8 +158,8 @@ export const askNexusNano = async (prompt: string) => {
 export const getPendulumResponse = async (question: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Question pour le pendule : "${question}".
-    Réponds par OUI, NON ou PEUT-ÊTRE, suivi d'une courte justification mystique d'une sentence.`,
+    contents: `${getEntropy()} Question pour le pendule : "${question}".
+    Réponds par OUI, NON ou PEUT-ÊTRE. Varie tes justifications pour qu'elles soient uniques.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -179,9 +177,9 @@ export const getPendulumResponse = async (question: string) => {
 export const getHoroscope = async (sign: string) => {
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Génère l'horoscope du jour complet, mystique et poétique pour le signe du ${sign}. 
+    contents: `${getEntropy()} Génère l'horoscope du jour complet pour le signe du ${sign}. 
     Inclus des sections riches pour le Travail, l'Amour et l'Énergie. 
-    Utilise un langage prophétique et imagé (style XVIe siècle). Réponds avec environ 2-3 phrases par section.`,
+    L'horoscope doit être différent à chaque demande, explore différentes facettes du signe.`,
   });
   return response.text;
 };

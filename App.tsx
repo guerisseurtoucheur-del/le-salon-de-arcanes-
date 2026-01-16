@@ -22,7 +22,15 @@ const PendulumIcon: React.FC<{ className?: string }> = ({ className }) => (
     <circle cx="50" cy="5" r="3" fill="currentColor" />
     <path d="M50 5 L50 60" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
     <path d="M50 60 L65 80 L50 100 L35 80 Z" fill="currentColor" fillOpacity="0.8" stroke="currentColor" strokeWidth="1" />
-    <path d="M50 60 L50 100" stroke="white" strokeOpacity="0.3" strokeWidth="0.5" />
+  </svg>
+);
+
+const NexusIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 10 L90 30 V70 L50 90 L10 70 V30 Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M50 10 V90 M10 30 L90 70 M90 30 L10 70" stroke="currentColor" strokeWidth="1" strokeOpacity="0.3" />
+    <rect x="40" y="40" width="20" height="20" rotate="45" stroke="currentColor" strokeWidth="2" className="animate-pulse" />
+    <circle cx="50" cy="50" r="4" fill="currentColor" />
   </svg>
 );
 
@@ -87,7 +95,6 @@ const App: React.FC = () => {
   }, [tokens]);
 
   useEffect(() => {
-    // Pré-chargement silencieux dès le montage du composant
     const prefetch = async () => {
       try {
         const data = await generateSpeech("Le salon de Cécile s'ouvre à vous. Prenez place et ouvrez une porte.");
@@ -115,8 +122,6 @@ const App: React.FC = () => {
       if (audioContextRef.current.state === 'suspended') await audioContextRef.current.resume();
       
       setIsSpeaking(true);
-      
-      // Utilisation du cache si disponible pour éliminer le délai réseau
       let audioData = preloadedAudioDataRef.current;
       if (!audioData) {
         audioData = await generateSpeech("Le salon de Cécile s'ouvre à vous. Prenez place et ouvrez une porte.");
@@ -149,19 +154,13 @@ const App: React.FC = () => {
 
   const enterSalon = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    // Déclencher le message vocal immédiatement
     playWelcomeGreeting();
-
-    // Son cristallin riche (wind chime)
     const chime = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
     chime.volume = 0.6;
     chime.play().catch(() => {});
-    
     const id = Date.now();
     setBursts(prev => [...prev, { id, x: e.clientX, y: e.clientY, isBurst: true }]);
     triggerHaptic(60);
-    
     setIsEntering(true);
     setTimeout(() => {
       setHasEntered(true);
@@ -205,33 +204,26 @@ const App: React.FC = () => {
       {!hasEntered ? (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black overflow-hidden px-4">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.15)_0%,transparent_70%)]"></div>
-          
           <div className={`absolute top-10 left-0 w-full flex justify-center items-center gap-6 md:gap-12 transition-all duration-1000 ${isEntering ? 'opacity-0 -translate-y-20 blur-xl' : 'animate-in fade-in slide-in-from-top-10'}`}>
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60">🃏</span>
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60" style={{ animationDelay: '0.2s' }}>🔮</span>
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60" style={{ animationDelay: '0.4s' }}>✨</span>
             <PendulumIcon className="w-8 h-8 md:w-12 md:h-12 text-gold-bright filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-70" style={{ animationDelay: '0.6s' }} />
+            <NexusIcon className="w-8 h-8 md:w-12 md:h-12 text-gold-bright filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-70" style={{ animationDelay: '0.7s' }} />
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60" style={{ animationDelay: '0.8s' }}>👁️</span>
             <span className="text-2xl md:text-4xl filter drop-shadow-[0_0_10px_gold] animate-float-subtle opacity-60" style={{ animationDelay: '1.0s' }}>📖</span>
           </div>
-
           <div className={`absolute inset-0 flex items-center justify-between px-6 md:px-40 pointer-events-none transition-all duration-1000 ${isEntering ? 'opacity-0 scale-90 blur-xl' : ''}`}>
             <Candle />
             <Candle />
           </div>
-          
           <div className={`text-center flex flex-col items-center z-10 w-full transition-all duration-1000 ${isEntering ? 'opacity-0 scale-110 blur-2xl' : 'animate-in fade-in zoom-in'}`}>
             <div className="relative mb-4">
               <h1 className="text-5xl md:text-9xl font-mystic text-gold-bright tracking-widest uppercase drop-shadow-[0_0_30px_rgba(255,215,0,0.5)]">Le Salon de Cécile</h1>
               {isSpeaking && <div className="absolute -inset-10 border-2 border-gold-bright/30 rounded-full animate-ping pointer-events-none"></div>}
             </div>
             <p className="text-gold-muted font-cursive text-2xl md:text-6xl mb-16 italic opacity-80">L'invisible vous attend...</p>
-            
-            <button 
-              onClick={enterSalon} 
-              disabled={isEntering} 
-              className="group relative px-14 py-7 md:px-24 md:py-10 bg-black/40 border-2 border-gold-bright/30 rounded-full hover:border-gold-bright hover:shadow-[0_0_80px_rgba(255,215,0,0.7)] active:scale-95 transition-all"
-            >
+            <button onClick={enterSalon} disabled={isEntering} className="group relative px-14 py-7 md:px-24 md:py-10 bg-black/40 border-2 border-gold-bright/30 rounded-full hover:border-gold-bright hover:shadow-[0_0_80px_rgba(255,215,0,0.7)] active:scale-95 transition-all">
               <div className="absolute inset-0 rounded-full bg-gold-bright/10 opacity-0 group-hover:opacity-100 transition-opacity blur-3xl"></div>
               <span className="relative z-10 font-mystic text-gold-bright text-2xl md:text-4xl tracking-[0.3em] uppercase">Entrer</span>
             </button>
@@ -253,15 +245,12 @@ const App: React.FC = () => {
                 </button>
               )}
             </div>
-            
             <h2 className="font-mystic text-gold-bright text-sm md:text-xl tracking-[0.2em] uppercase hidden md:block">Le Salon de Cécile</h2>
-            
             <button onClick={() => setShowShop(true)} className="flex items-center gap-2 bg-gold-bright/10 border border-gold-bright/30 px-4 py-1.5 rounded-full hover:bg-gold-bright/20 transition-all">
               <span className="text-gold-bright font-mystic text-sm">{tokens}</span>
               <span className="text-xl">🪙</span>
             </button>
           </div>
-
           <div className={`fixed inset-0 z-[200] transition-all duration-700 ${isMenuOpen ? 'visible' : 'invisible'}`}>
             <div className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setIsMenuOpen(false)}></div>
             <div className={`absolute left-0 top-0 bottom-0 w-72 md:w-80 parchment shadow-[20px_0_60px_rgba(0,0,0,0.8)] antique-border transition-transform duration-700 flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -277,18 +266,17 @@ const App: React.FC = () => {
                 <MenuLink icon="🔮" label="Miroir des Visions" onClick={() => handleNavigation(ViewType.CRYSTAL_BALL)} />
                 <MenuLink icon="✨" label="Cercle des Astres" onClick={() => handleNavigation(ViewType.ASTROLOGY)} />
                 <MenuLink icon={<PendulumIcon className="w-6 h-6 text-amber-900" />} label="Sanctuaire du Pendule" onClick={() => handleNavigation(ViewType.PENDULUM)} />
+                <MenuLink icon={<NexusIcon className="w-6 h-6 text-amber-900" />} label="Nexus de Nano" onClick={() => handleNavigation(ViewType.NEXUS)} />
+                <MenuLink icon="👁️" label="Visions Profondes" onClick={() => handleNavigation(ViewType.CECIL_DEEP)} />
               </nav>
             </div>
           </div>
-
           <main className="max-w-7xl mx-auto px-4">
             {renderView()}
           </main>
-
           {showShop && <ShopOverlay onClose={() => setShowShop(false)} onBuy={(a) => { setTokens(t => t + a); setShowShop(false); }} />}
         </div>
       )}
-
       <style>{`
         .parchment { background-color: #fdf6e3; background-image: url('https://www.transparenttextures.com/patterns/parchment.png'); }
         .antique-border { border: 2px solid #b8860b; border-image: linear-gradient(to bottom, #b8860b, #ffd700, #b8860b) 1; }

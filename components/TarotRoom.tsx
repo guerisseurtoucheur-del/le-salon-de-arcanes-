@@ -81,7 +81,8 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     if (sessionRef.current) {
       if (initialPrompt) {
         try {
-          sessionRef.current.sendRealtimeInput({ parts: [{ text: initialPrompt }] });
+          const entropy = `[Entropie: ${Date.now()}-${Math.random()}]`;
+          sessionRef.current.sendRealtimeInput({ parts: [{ text: entropy + initialPrompt }] });
         } catch (e) {
           sessionRef.current = null;
           await startVoiceSession(initialPrompt);
@@ -115,7 +116,10 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             };
             source.connect(scriptProcessor);
             scriptProcessor.connect(audioContextRef.current!.destination);
-            if (initialPrompt) sessionPromise.then(s => s.sendRealtimeInput({ parts: [{ text: initialPrompt }] }));
+            if (initialPrompt) {
+              const entropy = `[Vibration: ${Date.now()}]`;
+              sessionPromise.then(s => s.sendRealtimeInput({ parts: [{ text: entropy + initialPrompt }] }));
+            }
           },
           onmessage: async (message: any) => {
             if (message.serverContent?.outputTranscription) {
@@ -158,7 +162,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile, une cartomancienne de renom. Ton ton est chaleureux, mystérieux et très professionnel. RÉPONDS TOUJOURS EN FRANÇAIS. Tu analyses les tirages avec une grande précision poétique. Tu vois parfaitement les cartes sur la table, tu n'as pas besoin qu'on te les décrive. Ton rôle est d'interpréter les arcanes et de guider le consultant avec sagesse.",
+          systemInstruction: "Tu es Cécile. Ton interprétation doit être UNIQUE à chaque session. Ne répète jamais deux fois les mêmes explications. Utilise ta sagesse pour varier tes paroles à chaque consultation. RÉPONDS TOUJOURS EN FRANÇAIS.",
           speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
           outputAudioTranscription: {},
           inputAudioTranscription: {}
@@ -198,7 +202,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       newFlipped.add(newSelection.length - 1);
       setFlippedIndices(newFlipped);
       
-      // Rappel immédiat du contexte complet lors d'une précision
       const context = newSelection.map((c, i) => `${i === 0 ? 'Passé' : i === 1 ? 'Présent' : i === 2 ? 'Futur' : 'Précision'} : ${c.name}`).join(", ");
       startVoiceSession(`L'arcane de ${card.name} s'ajoute à votre chemin. Rappel de la vision complète : ${context}. Interprète l'ajout.`);
     }
@@ -236,11 +239,11 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const performFullAnalysis = () => {
     setStep('interpreting');
     setTranscript("Cécile se concentre sur les fils de votre destin...");
-    const interpretationPrompt = `Analyse ce triptyque avec ton expertise de cartomancienne :
+    const interpretationPrompt = `Analyse ce triptyque avec ton expertise de cartomancienne. Sois unique dans tes mots :
     - Passé : ${selectedCards[0].name}
     - Présent : ${selectedCards[1].name}
     - Futur : ${selectedCards[2].name}
-    Donne une interprétation fluide et solennelle d'environ 30 à 45 secondes. Termine impérativement ton intervention en demandant au consultant s'il souhaite approfondir cette vision en tirant une, deux ou trois cartes supplémentaires de précision au talon.`;
+    Donne une interprétation fluide d'environ 40 secondes. Demande ensuite s'ils veulent des précisions.`;
     
     startVoiceSession(interpretationPrompt);
     setTimeout(() => setStep('questioning'), 5000);
@@ -252,16 +255,12 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     if (!question.trim()) return;
     
     const userQuery = question;
-    setQuestion(''); // On vide immédiatement pour le ressenti de fluidité
-    
-    // Feedback immédiat dans le transcript pour l'utilisateur
+    setQuestion('');
     setTranscript(prev => prev + "\n\n(Vous) : " + userQuery + "\n\nCécile vous répond...");
 
-    // On inclut tout le contexte des cartes dans le prompt pour que Cécile ne se trompe pas
+    const entropy = `[Vibration unique: ${Date.now()}-${Math.random()}]`;
     const cardsContext = selectedCards.map((c, i) => `${i === 0 ? 'Passé' : i === 1 ? 'Présent' : i === 2 ? 'Futur' : 'Précision'} : ${c.name}`).join(", ");
-    const fullPrompt = `RAPPEL DU TIRAGE : ${cardsContext}. 
-    QUESTION DU CONSULTANT : "${userQuery}". 
-    Réponds maintenant en tant que Cécile, en utilisant les symboles des cartes pour guider tes paroles.`;
+    const fullPrompt = `${entropy} RAPPEL DU TIRAGE : ${cardsContext}. QUESTION : "${userQuery}". Réponds de façon unique.`;
 
     if (sessionRef.current) {
       sessionRef.current.sendRealtimeInput({ parts: [{ text: fullPrompt }] });
@@ -449,7 +448,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-[110] w-full px-4 justify-center">
         <button onClick={() => { stopVoiceSession(); onBack(); }} className="px-5 py-2.5 bg-black/90 border border-gold-muted/30 text-gold-muted font-mystic text-[7px] uppercase tracking-[0.3em] rounded-full hover:border-gold-bright transition-all shadow-2xl">Quitter</button>
         {(step === 'interpreting' || step === 'questioning') && (
-            <button onClick={() => { setStep('drawing'); setSelectedCards([]); setFlippedIndices(new Set()); setTranscript(''); setQuestion(''); startVoiceSession("Un nouveau cycle. Le destin se remélange..."); }} className="px-5 py-2.5 bg-gold-bright text-black font-mystic text-[7px] uppercase tracking-[0.3em] rounded-full shadow-2xl hover:scale-105 transition-all">Nouveau Tirage</button>
+            <button onClick={() => { setStep('drawing'); setSelectedCards([]); setFlippedIndices(new Set()); setTranscript(''); setQuestion(''); startVoiceSession("Un nouveau cycle. Le destin se remélange..."); }} className="px-5 py-2.5 bg-gold-bright text-black font-mystic text-[7px] uppercase tracking-widest rounded-full shadow-2xl hover:scale-105 transition-all">Nouveau Tirage</button>
         )}
       </div>
 
