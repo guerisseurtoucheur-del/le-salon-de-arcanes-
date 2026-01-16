@@ -300,6 +300,7 @@ const App: React.FC = () => {
               <button className={`nav-tab-mobile ${currentView === ViewType.TAROT ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); handleNavigation(ViewType.TAROT); }}>Oracle</button>
               <button className={`nav-tab-mobile ${currentView === ViewType.CRYSTAL_BALL ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); handleNavigation(ViewType.CRYSTAL_BALL); }}>Boule</button>
               <button className={`nav-tab-mobile ${currentView === ViewType.ASTROLOGY ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); handleNavigation(ViewType.ASTROLOGY); }}>Astro</button>
+              <button className={`nav-tab-mobile ${currentView === ViewType.PENDULUM ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); handleNavigation(ViewType.PENDULUM); }}>Pendule</button>
               <button className={`nav-tab-mobile ${currentView === ViewType.CECIL_DEEP ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); handleNavigation(ViewType.CECIL_DEEP); }}>Visions</button>
             </nav>
           )}

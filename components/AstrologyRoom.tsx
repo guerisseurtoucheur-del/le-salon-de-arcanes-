@@ -3,6 +3,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ZODIAC_SIGNS } from '../types';
 import { getHoroscope, generateNostradamusSpeech, decodeAudio, decodeAudioData } from '../services/geminiService';
 
+const NORMAL_SYMBOLS: Record<string, string> = {
+  'Bélier': '🐏',
+  'Taureau': '🐂',
+  'Gémeaux': '👥',
+  'Cancer': '🦀',
+  'Lion': '🦁',
+  'Vierge': '👸',
+  'Balance': '⚖️',
+  'Scorpion': '🦂',
+  'Sagittaire': '🏹',
+  'Capricorne': '🐐',
+  'Verseau': '🏺',
+  'Poissons': '🐟'
+};
+
 const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
   const [horoscope, setHoroscope] = useState('');
@@ -28,7 +43,6 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
   }, []);
 
   const fetchHoroscope = async (sign: string) => {
-    // 1. Initialisation immédiate de l'AudioContext pour éviter tout délai
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
     }
@@ -36,7 +50,6 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
       audioContextRef.current.resume();
     }
 
-    // Arrêter toute lecture en cours
     if (sourceRef.current) {
       try { sourceRef.current.stop(); } catch(e) {}
     }
@@ -48,13 +61,11 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
     setIsAudioLoading(true);
     
     try {
-      // 2. Récupérer l'horoscope texte
       const text = await getHoroscope(sign);
       setHoroscope(text || '');
       setLoading(false);
 
       if (text) {
-        // 3. Générer et lire la voix IMMÉDIATEMENT
         const audioData = await generateNostradamusSpeech(text);
         if (audioData && audioContextRef.current) {
           const buffer = await decodeAudioData(decodeAudio(audioData), audioContextRef.current, 24000, 1);
@@ -94,10 +105,11 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
             <button 
               key={sign.name} 
               onClick={() => fetchHoroscope(sign.name)} 
-              className="p-8 bg-black/60 border-2 border-gold-muted/20 rounded-2xl hover:border-gold-bright hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all group flex flex-col items-center"
+              className="p-6 bg-black/60 border-2 border-gold-muted/20 rounded-2xl hover:border-gold-bright hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all group flex flex-col items-center"
             >
-              <span className="block text-6xl mb-6 text-gold-bright group-hover:scale-125 transition-transform duration-700">{sign.symbol}</span>
+              <span className="block text-6xl mb-4 text-gold-bright group-hover:scale-125 transition-transform duration-700">{NORMAL_SYMBOLS[sign.name] || sign.symbol}</span>
               <span className="block text-xl font-mystic text-gold-bright tracking-widest">{sign.name}</span>
+              <span className="block text-[10px] text-gold-muted/60 font-serif italic mt-1">{sign.dates}</span>
             </button>
           ))}
         </div>
@@ -105,8 +117,11 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
         <div className="space-y-12 animate-in fade-in slide-in-from-top-4">
           <div className="flex items-center justify-between border-b-2 border-gold-muted/30 pb-6">
             <div className="flex items-center gap-6">
-               <span className="text-6xl text-gold-bright">{ZODIAC_SIGNS.find(s => s.name === selectedSign)?.symbol}</span>
-               <h2 className="text-5xl font-mystic text-gold-bright uppercase tracking-wider">{selectedSign}</h2>
+               <span className="text-6xl text-gold-bright">{NORMAL_SYMBOLS[selectedSign] || ZODIAC_SIGNS.find(s => s.name === selectedSign)?.symbol}</span>
+               <div className="flex flex-col">
+                 <h2 className="text-5xl font-mystic text-gold-bright uppercase tracking-wider leading-none">{selectedSign}</h2>
+                 <span className="text-gold-muted/60 font-serif italic mt-1">{ZODIAC_SIGNS.find(s => s.name === selectedSign)?.dates}</span>
+               </div>
             </div>
             <button 
               onClick={() => {
@@ -162,9 +177,8 @@ const AstrologyRoom: React.FC<{ onBack: () => void }> = () => {
               </div>
             )}
             
-            {/* Décoration d'arrière-plan */}
             <div className="absolute -bottom-10 -right-10 text-9xl text-gold-bright/5 rotate-12 pointer-events-none select-none font-mystic">
-              {ZODIAC_SIGNS.find(s => s.name === selectedSign)?.symbol}
+              {NORMAL_SYMBOLS[selectedSign] || ZODIAC_SIGNS.find(s => s.name === selectedSign)?.symbol}
             </div>
           </div>
         </div>
