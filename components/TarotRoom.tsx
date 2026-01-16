@@ -57,7 +57,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
-    startVoiceSession("Bonjour. Je suis Cécile. Installez-vous sur ce velours sacré. Choisissez trois cartes pour que nous puissions lire les fils de votre existence.");
+    startVoiceSession("Bonjour. Je suis Cécile. Installez-vous. Choisissez trois cartes pour que nous puissions lire les fils de votre existence.");
     
     return () => {
       stopVoiceSession();
@@ -127,7 +127,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             }
             if (message.serverContent?.inputTranscription) {
               const text = message.serverContent.inputTranscription.text;
-              if (text.trim().length > 5 && step === 'questioning') {
+              if (text.trim().length > 5 && (step === 'questioning' || step === 'interpreting')) {
                 setQuestion(prev => prev.length < text.length ? text : prev);
               }
             }
@@ -158,7 +158,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "Tu es Cécile, une cartomancienne experte. Ton ton est chaleureux et mystérieux. RÉPONDS TOUJOURS EN FRANÇAIS. Tu vois parfaitement les cartes sur la table, ne demande jamais à l'utilisateur ce qu'il a tiré. Commente les cartes avec assurance et poésie.",
+          systemInstruction: "Tu es Cécile, une cartomancienne de renom. Ton ton est chaleureux, mystérieux et très professionnel. RÉPONDS TOUJOURS EN FRANÇAIS. Tu analyses les tirages avec une grande précision poétique. Tu vois les cartes sur la table, ne demande jamais confirmation du tirage. Ton rôle est d'interpréter les arcanes et de guider le consultant.",
           speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
           outputAudioTranscription: {},
           inputAudioTranscription: {}
@@ -192,12 +192,21 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
     if (newSelection.length === 3) {
       setStep('flipping');
-      startVoiceSession("Les trois piliers sont posés. Retournez-les pour que je puisse les interpréter...");
+      startVoiceSession("C'est parfait. Maintenant, retournez ces trois arcanes pour que je puisse en lire les secrets.");
     } else if (newSelection.length > 3) {
       const newFlipped = new Set(flippedIndices);
       newFlipped.add(newSelection.length - 1);
       setFlippedIndices(newFlipped);
-      startVoiceSession(`L'arcane de ${card.name} vient apporter une précision nécessaire.`);
+      startVoiceSession(`L'arcane de ${card.name} s'ajoute à votre chemin pour éclairer les zones d'ombre.`);
+    }
+  };
+
+  const drawFromStack = () => {
+    if (selectedCards.length >= 6) return;
+    const remaining = ORACLE_CARDS.filter(c => !selectedCards.find(sc => sc.name === c.name));
+    if (remaining.length > 0) {
+      const randomIndex = Math.floor(Math.random() * remaining.length);
+      drawCard(remaining[randomIndex]);
     }
   };
 
@@ -208,23 +217,8 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     newFlipped.add(index);
     setFlippedIndices(newFlipped);
     
-    const card = selectedCards[index];
-    const position = index === 0 ? "le Passé" : index === 1 ? "le Présent" : "le Futur";
-    
-    if (newFlipped.size < 3) {
-      startVoiceSession(`Pour ${position}, c'est l'arcane de ${card.name} qui se révèle.`);
-    } else {
-      setStep('interpreting');
-      setTranscript("Cécile se concentre sur les fils de votre destin...");
-      
-      const interpretationPrompt = `Tirage complet révélé : 
-      - Passé : ${selectedCards[0].name}
-      - Présent : ${selectedCards[1].name}
-      - Futur : ${card.name}
-      Interprète maintenant ce triptyque sans poser de question sur ce qui a été tiré, car tu le vois. Révèle ma destinée.`;
-      
-      startVoiceSession(interpretationPrompt);
-      setTimeout(() => setStep('questioning'), 10000);
+    if (newFlipped.size === 3) {
+      performFullAnalysis();
     }
   };
 
@@ -233,15 +227,21 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     if (step !== 'flipping') return;
     const allIndices = new Set([0, 1, 2]);
     setFlippedIndices(allIndices);
+    performFullAnalysis();
+  };
+
+  const performFullAnalysis = () => {
     setStep('interpreting');
     setTranscript("Cécile se concentre sur les fils de votre destin...");
-    
-    const interpretationPrompt = `Le consultant a retourné toutes les cartes.
-    Le tirage est composé de : ${selectedCards[0].name} pour le passé, ${selectedCards[1].name} pour le présent, et ${selectedCards[2].name} pour le futur.
-    Interprète immédiatement cette vision sans demander confirmation du tirage.`;
+    const interpretationPrompt = `Analyse ce triptyque avec ton expertise de cartomancienne :
+    - Passé : ${selectedCards[0].name}
+    - Présent : ${selectedCards[1].name}
+    - Futur : ${selectedCards[2].name}
+    Donne une interprétation fluide et solennelle. Termine impérativement ton intervention en demandant au consultant s'il souhaite approfondir cette vision en tirant une, deux ou trois cartes supplémentaires de précision au talon.`;
     
     startVoiceSession(interpretationPrompt);
-    setTimeout(() => setStep('questioning'), 10000);
+    // On passe à 'questioning' après un délai pour laisser Cécile parler
+    setTimeout(() => setStep('questioning'), 15000);
   };
 
   const askFinalQuestion = (e?: React.FormEvent) => {
@@ -249,7 +249,7 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     resumeAudio();
     if (!question.trim()) return;
     setTranscript("Cécile écoute votre question...");
-    startVoiceSession(`L'utilisateur demande : "${question}". Réponds-lui à travers le prisme de ses cartes.`);
+    startVoiceSession(`L'utilisateur demande : "${question}". Réponds-lui en t'appuyant sur les cartes présentes sur la table.`);
   };
 
   return (
@@ -260,7 +260,6 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
       {/* Header Area */}
       <div className="flex flex-col items-center z-[60] mb-8 space-y-4 w-full">
-        {/* Statut Cécile */}
         <div className={`flex items-center gap-4 px-6 py-2 bg-black/80 backdrop-blur-3xl rounded-full border-2 transition-all duration-700 ${voiceStatus === 'speaking' ? 'border-gold-bright shadow-[0_0_40px_rgba(255,215,0,0.5)] scale-105' : 'border-gold-muted/20 scale-100'}`}>
           <div className="flex gap-1 items-end h-4">
              {[...Array(6)].map((_, i) => (
@@ -273,31 +272,28 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Main Table Area */}
+      {/* Main Spread Area */}
       <div className="w-full max-w-6xl z-10 flex flex-col items-center gap-0 px-4 overflow-visible">
         
-        {/* Spread Slots Area */}
+        {/* Emplacements des cartes */}
         <div className="w-full flex flex-wrap justify-center gap-3 md:gap-8 min-h-[160px] md:min-h-[260px] items-center z-[50]">
           {selectedCards.map((card, i) => (
             <div 
                 key={i} 
                 onClick={() => i < 3 && flipCard(i)} 
-                className={`w-24 h-36 md:w-52 md:h-72 cursor-pointer perspective-1000 group transition-all duration-1000 ${flippedIndices.has(i) ? '' : 'hover:-translate-y-4 hover:shadow-[0_20px_50px_rgba(255,215,0,0.2)]'}`}
+                className={`w-24 h-36 md:w-52 md:h-72 cursor-pointer perspective-1000 group transition-all duration-1000 ${flippedIndices.has(i) ? '' : 'hover:-translate-y-4 shadow-lg'}`}
             >
               <div className={`relative w-full h-full transition-all duration-700 preserve-3d shadow-2xl rounded-xl ${flippedIndices.has(i) ? 'rotate-y-180' : ''}`}>
                 <div className="absolute inset-0 back-oracle backface-hidden flex items-center justify-center rounded-xl z-[2]">
                    <CardBackContent />
                 </div>
-                <div className="absolute inset-0 rotate-y-180 backface-hidden bg-gradient-to-br from-[#fdf6e3] to-[#e6dbb9] p-3 md:p-6 flex flex-col items-center justify-between border-2 md:border-4 border-gold-muted rounded-xl shadow-inner z-[1]">
+                <div className="absolute inset-0 rotate-y-180 backface-hidden bg-gradient-to-br from-[#fdf6e3] to-[#e6dbb9] p-3 md:p-6 flex flex-col items-center justify-between border-2 border-gold-muted rounded-xl shadow-inner z-[1]">
                    <div className="text-amber-950/40 font-mystic text-[8px] md:text-xs uppercase tracking-tighter border-b border-amber-900/10 w-full text-center pb-1">
                       {i === 0 ? "Le Passé" : i === 1 ? "Le Présent" : i === 2 ? "Le Futur" : "Précision"}
                    </div>
                    <div className="flex-1 flex flex-col items-center justify-center gap-2 md:gap-4">
                       <span className="text-3xl md:text-7xl filter drop-shadow-lg">{card.image}</span>
                       <h4 className="text-center font-mystic text-[10px] md:text-xl text-amber-950 uppercase tracking-widest leading-tight">{card.name}</h4>
-                   </div>
-                   <div className="w-full text-center border-t border-amber-900/10 pt-2 hidden md:block">
-                      <p className="text-[10px] text-amber-900/70 font-serif italic leading-tight">{card.meaning}</p>
                    </div>
                 </div>
               </div>
@@ -310,129 +306,135 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           ))}
         </div>
 
-        {/* --- DECK ÉVENTAIL --- */}
-        {(step === 'drawing' || step === 'flipping' || (step === 'questioning' && selectedCards.length < 6)) && (
-          <div className={`w-full flex flex-col items-center z-[55] transition-all duration-700 overflow-visible ${selectedCards.length >= 3 ? '-mt-48 md:-mt-72 gap-2 md:gap-4' : '-mt-16 md:-mt-24 gap-12 md:gap-24'}`}>
-            
-            {/* Rangée 1 */}
-            <div className={`relative w-full max-w-5xl flex justify-center items-end px-4 overflow-visible transition-all duration-700 ${selectedCards.length >= 3 ? 'h-24 md:h-36' : 'h-32 md:h-48'}`}>
-              <div className="flex relative w-fit mx-auto min-w-full justify-center overflow-visible">
-                {ORACLE_CARDS.slice(0, 8).map((card, i) => {
-                  const isSelected = selectedCards.find(c => c.name === card.name);
-                  const factor = isMobile ? 4 : 8;
-                  const spacing = isMobile ? 24 : 60;
-                  const cardsInRow = 8;
-                  const rotation = (i - (cardsInRow / 2)) * factor;
-                  const translateX = (i - (cardsInRow / 2)) * spacing;
-                  return (
-                    <button 
-                      key={i} 
-                      onClick={() => drawCard(card)} 
-                      disabled={!!isSelected}
-                      className={`absolute w-16 h-24 md:w-36 md:h-52 back-oracle rounded-lg shadow-xl border border-gold-muted/30 transition-all duration-300 ease-out hover:-translate-y-32 hover:scale-110 hover:z-[100] active:scale-95 flex items-center justify-center ${isSelected ? 'opacity-0 scale-0 pointer-events-none' : 'opacity-100 group'}`}
-                      style={{ transform: `translateX(${translateX}px) rotate(${rotation}deg)`, transformOrigin: 'bottom center', zIndex: i }}
-                    >
-                      <CardBackContent />
-                    </button>
-                  );
-                })}
-              </div>
+        {/* --- BANDEAU INDICATIF (Juste sous les bulles vides) --- */}
+        {selectedCards.length < 3 && (
+          <div className="z-[60] -mt-2 md:-mt-4 mb-8 animate-in fade-in slide-in-from-top-2 duration-700 flex flex-col items-center w-full">
+            <div className="flex items-center gap-2 md:gap-4 px-3 md:px-6 py-1 md:py-1.5 bg-black/40 border border-gold-bright/30 rounded-full backdrop-blur-md shadow-[0_0_20px_rgba(255,215,0,0.1)]">
+               <span className="animate-bounce-horizontal text-gold-bright text-[10px] md:text-base">✨</span>
+               <span className="font-mystic text-gold-bright text-[8px] md:text-xs uppercase tracking-[0.2em] whitespace-nowrap">
+                  {selectedCards.length === 0 ? "Choisissez 3 arcanes pour commencer" : 
+                   selectedCards.length === 1 ? "Encore 2 cartes à tirer" : 
+                   "Une dernière carte pour sceller le destin"}
+               </span>
+               <span className="animate-bounce-horizontal-reverse text-gold-bright text-[10px] md:text-base">✨</span>
             </div>
-
-            {/* Rangée 2 */}
-            <div className={`relative w-full max-w-5xl flex justify-center items-end px-4 overflow-visible transition-all duration-700 ${selectedCards.length >= 3 ? 'h-24 md:h-36' : 'h-32 md:h-48'}`}>
-              <div className="flex relative w-fit mx-auto min-w-full justify-center overflow-visible">
-                {ORACLE_CARDS.slice(8).map((card, i) => {
-                  const isSelected = selectedCards.find(c => c.name === card.name);
-                  const factor = isMobile ? 4 : 8;
-                  const spacing = isMobile ? 24 : 60;
-                  const cardsInRow = ORACLE_CARDS.length - 8;
-                  const rotation = (i - (cardsInRow / 2)) * factor;
-                  const translateX = (i - (cardsInRow / 2)) * spacing;
-                  return (
-                    <button 
-                      key={i + 8} 
-                      onClick={() => drawCard(card)} 
-                      disabled={!!isSelected}
-                      className={`absolute w-16 h-24 md:w-36 md:h-52 back-oracle rounded-lg shadow-xl border border-gold-muted/30 transition-all duration-300 ease-out hover:-translate-y-32 hover:scale-110 hover:z-[100] active:scale-95 flex items-center justify-center ${isSelected ? 'opacity-0 scale-0 pointer-events-none' : 'opacity-100 group'}`}
-                      style={{ transform: `translateX(${translateX}px) rotate(${rotation}deg)`, transformOrigin: 'bottom center', zIndex: i }}
-                    >
-                      <CardBackContent />
-                    </button>
-                  );
-                })}
-              </div>
+            {/* Flèche pointant vers le bas pour le deck */}
+            <div className="mt-2 animate-bounce">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 5V19M12 19L5 12M12 19L19 12" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               </svg>
             </div>
           </div>
         )}
 
-        {/* Action Overlay & Parchemin */}
-        <div className={`w-full flex flex-col items-center gap-0 transition-all duration-700 ${selectedCards.length >= 3 ? 'mt-4' : 'mt-8'}`}>
-            {step === 'flipping' && (
-              <button 
-                onClick={flipAll}
-                className="animate-bounce z-[40] bg-black/80 px-8 py-3 rounded-full border border-gold-bright/30 shadow-2xl mt-4 mb-4 hover:border-gold-bright hover:bg-black transition-all cursor-pointer group"
-              >
-                <p className="font-mystic text-gold-bright text-xs md:text-xl tracking-widest uppercase group-hover:scale-105 transition-transform">
-                   ✨ Retournez les Arcanes ✨
-                </p>
-              </button>
-            )}
-
-            {/* Bulle de Parchemin (Transcript) */}
-            {transcript && (
-              <div className="w-full max-w-xl animate-in fade-in slide-in-from-top-4 duration-1000 z-[20] mb-4 mt-0 mx-auto px-4">
-                  <div className="parchment-unroll p-3 md:p-4 rounded-[1.5rem] md:rounded-[2rem] shadow-[0_10px_40px_rgba(0,0,0,0.7)] antique-border bg-[#fdf6e3] relative overflow-hidden border border-amber-900/10">
-                      <div className="absolute top-2 right-4 font-mystic text-[6px] text-amber-900/30 uppercase tracking-widest">Oracle Whispers</div>
-                      <div className="prose prose-stone max-w-none text-center">
-                          <div className="max-h-[100px] md:max-h-[140px] overflow-y-auto no-scrollbar">
-                            <p className="transcript-reveal italic text-[10px] md:text-base text-amber-950 font-serif leading-relaxed">
-                               <span className="text-amber-900 font-mystic text-lg mr-1">✧</span>
-                               {transcript}
-                            </p>
-                          </div>
-                          <div ref={transcriptRef} className="h-0 w-full" />
-                      </div>
-                  </div>
-              </div>
-            )}
-
-            {/* Question Area */}
-            {step === 'questioning' && (
-              <div className="w-full max-w-lg animate-in slide-in-from-bottom-10 duration-700 space-y-2 z-[30] pb-6 mt-0">
-                <div className="relative group shadow-2xl">
-                  <textarea 
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    placeholder="Une fois les cartes tirées et retournées, posez votre question à Cécile..."
-                    className="w-full bg-black/90 border border-gold-bright/20 p-4 rounded-2xl text-gold-bright text-sm md:text-lg font-serif italic focus:border-gold-bright transition-all min-h-[80px] md:min-h-[100px] resize-none pr-12 shadow-inner"
-                  />
-                  <div className="absolute right-3 bottom-3">
-                    <div className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all ${voiceStatus === 'listening' ? 'bg-gold-bright text-black border-gold-bright scale-110 shadow-[0_0_15px_gold]' : 'bg-black border-gold-bright/30 text-gold-bright'}`}>
-                      <span className="text-[10px]">🎙️</span>
-                    </div>
+        {/* --- DECK DE CARTES --- */}
+        {selectedCards.length < 6 && (
+          <div className={`w-full flex flex-col items-center z-[55] transition-all duration-700 ${selectedCards.length < 3 ? 'mt-4' : 'mt-8'}`}>
+            {selectedCards.length < 3 ? (
+              /* Phase 1 : L'éventail complet pour le tirage initial */
+              <div className="flex flex-col items-center gap-12 md:gap-24 -mt-16 md:-mt-24">
+                <div className="relative w-full max-w-5xl h-32 md:h-48 flex justify-center items-end px-4">
+                  <div className="flex relative w-fit mx-auto min-w-full justify-center">
+                    {ORACLE_CARDS.slice(0, 8).map((card, i) => (
+                      <button 
+                        key={i} 
+                        onClick={() => drawCard(card)} 
+                        disabled={selectedCards.some(sc => sc.name === card.name)}
+                        className={`absolute w-16 h-24 md:w-36 md:h-52 back-oracle rounded-lg shadow-xl border border-gold-muted/30 transition-all duration-300 hover:-translate-y-32 hover:scale-110 active:scale-95 flex items-center justify-center ${selectedCards.some(sc => sc.name === card.name) ? 'opacity-0 scale-0 pointer-events-none' : 'opacity-100'}`}
+                        style={{ transform: `translateX(${(i - 4) * (isMobile ? 24 : 60)}px) rotate(${(i - 4) * (isMobile ? 4 : 8)}deg)`, transformOrigin: 'bottom center', zIndex: i }}
+                      ><CardBackContent /></button>
+                    ))}
                   </div>
                 </div>
+                <div className="relative w-full max-w-5xl h-32 md:h-48 flex justify-center items-end px-4">
+                  <div className="flex relative w-fit mx-auto min-w-full justify-center">
+                    {ORACLE_CARDS.slice(8).map((card, i) => (
+                      <button 
+                        key={i+8} 
+                        onClick={() => drawCard(card)} 
+                        disabled={selectedCards.some(sc => sc.name === card.name)}
+                        className={`absolute w-16 h-24 md:w-36 md:h-52 back-oracle rounded-lg shadow-xl border border-gold-muted/30 transition-all duration-300 hover:-translate-y-32 hover:scale-110 active:scale-95 flex items-center justify-center ${selectedCards.some(sc => sc.name === card.name) ? 'opacity-0 scale-0 pointer-events-none' : 'opacity-100'}`}
+                        style={{ transform: `translateX(${(i - 3.5) * (isMobile ? 24 : 60)}px) rotate(${(i - 3.5) * (isMobile ? 4 : 8)}deg)`, transformOrigin: 'bottom center', zIndex: i }}
+                      ><CardBackContent /></button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Phase 2 : Le paquet unique (Talon) pour les précisions */
+              <div className="flex flex-col items-center gap-4 mt-4">
+                <p className="font-mystic text-gold-muted text-[8px] md:text-xs uppercase tracking-widest opacity-60">Envie d'approfondir la vision ? Piochez au talon (max 3).</p>
                 <button 
-                  onClick={askFinalQuestion}
-                  disabled={!question.trim() || voiceStatus === 'connecting'}
-                  className="w-full py-3 bg-gradient-to-r from-gold-muted via-gold-bright to-gold-muted text-black font-mystic text-[9px] md:text-xs tracking-[0.2em] uppercase rounded-xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+                  onClick={drawFromStack}
+                  className="relative w-20 h-28 md:w-36 md:h-52 back-oracle rounded-lg shadow-[0_15px_30px_rgba(0,0,0,0.5)] border border-gold-muted/40 hover:-translate-y-2 transition-transform cursor-pointer group"
                 >
-                  Interroger l'Oracle
+                  <div className="absolute -bottom-1 -right-1 w-full h-full bg-black/40 rounded-lg -z-10"></div>
+                  <div className="absolute -bottom-2 -right-2 w-full h-full bg-black/20 rounded-lg -z-20"></div>
+                  <CardBackContent />
+                  <div className="absolute inset-0 bg-gold-bright/0 group-hover:bg-gold-bright/5 transition-colors rounded-lg"></div>
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Zone de dialogue et actions */}
+        <div className="w-full flex flex-col items-center gap-6 mt-4 z-[70]">
+          {step === 'flipping' && (
+            <button onClick={flipAll} className="animate-bounce bg-black/80 px-8 py-3 rounded-full border border-gold-bright shadow-2xl hover:scale-105 transition-all">
+              <span className="font-mystic text-gold-bright text-xs md:text-xl tracking-widest uppercase">✨ Dévoiler les Arcanes ✨</span>
+            </button>
+          )}
+
+          {/* Transcript (Bulle de Cécile) */}
+          {transcript && (
+            <div className="w-full max-w-xl animate-in fade-in slide-in-from-top-4 duration-1000">
+                <div className="parchment-unroll p-4 md:p-6 rounded-[2rem] shadow-2xl antique-border bg-[#fdf6e3] relative overflow-hidden">
+                    <div className="max-h-[140px] md:max-h-[200px] overflow-y-auto no-scrollbar">
+                      <p className="italic text-xs md:text-lg text-amber-950 font-serif leading-relaxed text-center">
+                         <span className="text-amber-900 font-mystic text-xl mr-2">✧</span>{transcript}
+                      </p>
+                    </div>
+                    <div ref={transcriptRef} />
+                </div>
+            </div>
+          )}
+
+          {/* Zone de Question */}
+          {(step === 'questioning' || (step === 'interpreting' && transcript)) && (
+            <div className="w-full max-w-lg space-y-4 px-4 animate-in fade-in duration-700">
+              <div className="relative group shadow-2xl">
+                <textarea 
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="Posez votre question à Cécile sur ce tirage..."
+                  className="w-full bg-black/95 border border-gold-bright/30 p-4 rounded-3xl text-gold-bright text-sm md:text-xl font-serif italic focus:border-gold-bright transition-all min-h-[100px] resize-none pr-28 shadow-inner"
+                />
+                <div className="absolute right-4 bottom-4 flex items-center gap-2">
+                  <button 
+                    onClick={askFinalQuestion}
+                    disabled={!question.trim()}
+                    title="Valider la question"
+                    className="w-10 h-10 rounded-full bg-gold-bright text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg disabled:opacity-20 disabled:grayscale"
+                  >
+                    <span className="text-lg font-bold">✓</span>
+                  </button>
+                  <div className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${voiceStatus === 'listening' ? 'bg-gold-bright text-black shadow-[0_0_15px_gold]' : 'bg-black text-gold-bright border-gold-bright/30'}`}>
+                    <span className="text-xs">🎙️</span>
+                  </div>
+                </div>
+              </div>
+              <button onClick={askFinalQuestion} className="w-full py-4 bg-gradient-to-r from-gold-muted via-gold-bright to-gold-muted text-black font-mystic text-[10px] md:text-xs tracking-[0.2em] uppercase rounded-xl shadow-xl hover:scale-[1.02] transition-all">Interroger l'Oracle</button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Persistent Navigation Footer */}
+      {/* Navigation */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-[110] w-full px-4 justify-center">
-        <button onClick={() => { stopVoiceSession(); onBack(); }} className="px-5 py-2.5 bg-black/90 border border-gold-muted/30 text-gold-muted font-mystic text-[7px] uppercase tracking-[0.3em] rounded-full hover:border-gold-bright transition-all">Quitter</button>
+        <button onClick={() => { stopVoiceSession(); onBack(); }} className="px-5 py-2.5 bg-black/90 border border-gold-muted/30 text-gold-muted font-mystic text-[7px] uppercase tracking-[0.3em] rounded-full hover:border-gold-bright transition-all shadow-2xl">Quitter</button>
         {(step === 'interpreting' || step === 'questioning') && (
-            <button 
-                onClick={() => { setStep('drawing'); setSelectedCards([]); setFlippedIndices(new Set()); setTranscript(''); setQuestion(''); startVoiceSession("Un nouveau cycle commence. Levez à nouveau le voile..."); }}
-                className="px-5 py-2.5 bg-gold-bright text-black font-mystic text-[7px] uppercase tracking-[0.3em] rounded-full shadow-2xl hover:scale-105 transition-all"
-            >Nouveau Tirage</button>
+            <button onClick={() => { setStep('drawing'); setSelectedCards([]); setFlippedIndices(new Set()); setTranscript(''); setQuestion(''); startVoiceSession("Un nouveau cycle. Le destin se remélange..."); }} className="px-5 py-2.5 bg-gold-bright text-black font-mystic text-[7px] uppercase tracking-[0.3em] rounded-full shadow-2xl hover:scale-105 transition-all">Nouveau Tirage</button>
         )}
       </div>
 
@@ -452,16 +454,25 @@ const TarotRoom: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         
         @keyframes unroll-parchment {
           0% { max-height: 0; opacity: 0; transform: scaleY(0.8); }
-          100% { max-height: 300px; opacity: 1; transform: scaleY(1); }
+          100% { max-height: 400px; opacity: 1; transform: scaleY(1); }
         }
 
-        .transcript-reveal {
-          animation: text-reveal-scroll 1s ease-out forwards;
+        @keyframes bounce-horizontal {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(5px); }
+        }
+        
+        @keyframes bounce-horizontal-reverse {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(-5px); }
         }
 
-        @keyframes text-reveal-scroll {
-          0% { opacity: 0; transform: translateY(3px); }
-          100% { opacity: 1; transform: translateY(0); }
+        .animate-bounce-horizontal {
+          animation: bounce-horizontal 1.5s infinite ease-in-out;
+        }
+        
+        .animate-bounce-horizontal-reverse {
+          animation: bounce-horizontal-reverse 1.5s infinite ease-in-out;
         }
       `}</style>
     </div>
